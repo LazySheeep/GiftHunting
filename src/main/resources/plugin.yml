@@ -1,6 +1,6 @@
-name: MCZJUChristmas
+name: Christmas
 version: 1.0.0
-main: io.lazysheeep.mczjuchristmas.MCZJUChristmas
+main: io.lazysheeep.mczju.christmas.Christmas
 description: Plugin for the Christmas celebration of MCZJU
 author: LazySheeep
 api-version: '1.19'
@@ -12,7 +12,20 @@ permissions:
     default: not op
 
 commands:
-  testcmd:
-    description: "test command"
-    usage: "/testcmd"
+  christmas:
+    description: "command of plugin Christmas"
+    usage: |
+      /christmas  get num     --- print gift_number
+                      spawn   --- print locations of gift spawn
+                      setter  --- give player Gift Spawn Setter
+      
+                  set num <gift_number> --- set the gift_number to <gift_number>
+                      spawn             --- add the location player are targeting as a new gift spawn
+      
+                  spawn all             --- spawn gift at every gift spawn
+                        <spawn_amount>  --- randomly spawn <spawn_amount> gifts
+      
+                  event start   --- start the game
+                        end     --- end the game
+    aliases: [chris, christmas]
     permission: permission.op

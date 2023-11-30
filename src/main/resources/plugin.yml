@@ -15,17 +15,14 @@ commands:
   christmas:
     description: "command of plugin Christmas"
     usage: |
-      /christmas  get num     --- print gift_number
-                      spawn   --- print locations of gift spawn
-                      setter  --- give player Gift Spawn Setter
-      
-                  set num <gift_number> --- set the gift_number to <gift_number>
-                      spawn             --- add the location player are targeting as a new gift spawn
+      /christmas  get spawner   --- print locations of gift spawners
+                      setter    --- give player Gift Spawn Setter
       
                   spawn all             --- spawn gift at every gift spawn
                         <spawn_amount>  --- randomly spawn <spawn_amount> gifts
       
                   event start   --- start the game
                         end     --- end the game
+                        stats   --- print event stats
     aliases: [chris, christmas]
     permission: permission.op

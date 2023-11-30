@@ -22,8 +22,8 @@ public class Gift
 {
     public enum GiftType
     {
-        NORMAL(5, 10, 1),
-        SPECIAL(20, 10, 10);
+        NORMAL(Christmas.plugin.cfg.clicksPerFetch_normal, Christmas.plugin.cfg.scorePerFetch_normal, Christmas.plugin.cfg.capacityInFetches_normal),
+        SPECIAL(Christmas.plugin.cfg.clicksPerFetch_special, Christmas.plugin.cfg.scorePerFetch_special, Christmas.plugin.cfg.capacityInFetches_special);
 
         private GiftType(int clicksPerFetch, int scorePerFetch, int capacityInFetches)
         {
@@ -38,6 +38,10 @@ public class Gift
     }
 
     private static final List<Gift> giftPool = new ArrayList<Gift>();
+    public static int getNumber()
+    {
+        return giftPool.size();
+    }
 
     public static Gift getGift(Entity entity)
     {
@@ -100,7 +104,7 @@ public class Gift
         {
             if(this.capacityInFetches > 0)
             {
-                Score score = Christmas.scoreboardObj.getScore(player);
+                Score score = Christmas.plugin.scoreboardObj.getScore(player);
                 score.setScore(score.getScore() + this.scorePerFetch);
 
                 player.sendMessage(Component.text("score +" + this.scorePerFetch));
@@ -116,7 +120,6 @@ public class Gift
                 this.clicksToNextFetch = clicksPerFetch;
             }
         }
-
     }
 
     public void remove()

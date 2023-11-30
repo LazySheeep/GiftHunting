@@ -1,8 +1,6 @@
 package io.lazysheeep.mczju.christmas;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class Util
 {
@@ -26,5 +24,32 @@ public class Util
         }
 
         return ret;
+    }
+
+    public static <T> List<T> castList(List<?> list, Class<T> clazz)
+    {
+        if(list == null) return null;
+        List<T> result = new ArrayList<>();
+        for (Object item : list)
+        {
+            result.add(clazz.cast(item));
+        }
+        return result;
+    }
+
+    public static <K, V> List<Map<K, V>> castMapList(List<Map<?, ?>> mapList, Class<K> clazzK, Class<V> clazzV)
+    {
+        if(mapList == null) return null;
+        List<Map<K, V>> result = new ArrayList<>();
+        for(Map<?, ?> map : mapList)
+        {
+            Map<K, V> newMap = new HashMap<>();
+            for (Map.Entry<?, ?> entry : map.entrySet())
+            {
+                newMap.put(clazzK.cast(entry.getKey()), clazzV.cast(entry.getValue()));
+            }
+            result.add(newMap);
+        }
+        return result;
     }
 }

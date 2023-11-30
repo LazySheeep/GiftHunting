@@ -1,17 +1,22 @@
 package io.lazysheeep.mczju.christmas;
 
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
-import io.lazysheeep.mczju.christmas.command.Chris;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.permissions.Permission;
 import org.bukkit.util.Vector;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 public class EventListener implements Listener
 {
@@ -27,7 +32,7 @@ public class EventListener implements Listener
         && event.getItem().getItemMeta().displayName().equals(Component.text("Gift Spawner Setter")))
         {
             Location newLocation = event.getPlayer().getTargetBlock(8).getLocation().toCenterLocation().add(new Vector(0.0f, -0.95f, 0.0f));
-            Christmas.cfg.giftSpawnerLocations.add(newLocation);
+            Christmas.plugin.cfg.giftSpawnerLocations.add(newLocation);
             event.getPlayer().sendMessage(Component.text("New Gift Spawner Added!" + newLocation.toString()));
         }
     }
@@ -48,18 +53,61 @@ public class EventListener implements Listener
     @EventHandler(priority = EventPriority.LOWEST)
     public void onServerTickStartEvent(ServerTickStartEvent event)
     {
-        if(Christmas.eventStats.state == Christmas.EventStats.State.READYING)
+        if(Christmas.plugin.eventStats.state == Christmas.EventStats.State.READYING)
         {
-            Christmas.eventStats.timer ++;
-            if(Christmas.eventStats.timer >= 6000)
+            Christmas.plugin.eventStats.timer ++;
+
+            if(Christmas.plugin.eventStats.timer % 20 == 0)
             {
-                Christmas.eventStats.state = Christmas.EventStats.State.PROGRESSING;
-                Christmas.eventStats.timer = 0;
+                Collection<? extends Player> onlinePlayers = Christmas.plugin.getServer().getOnlinePlayers();
+                for(Player player : onlinePlayers)
+                {
+                    player.sendActionBar(Component.text("距活动开始还有：" + (Christmas.plugin.cfg.readyStateDuration-Christmas.plugin.eventStats.timer)/20 + " 秒"));
+                }
+            }
+
+            if(Christmas.plugin.eventStats.timer >= Christmas.plugin.cfg.readyStateDuration)
+            {
+                Christmas.plugin.eventStats.state = Christmas.EventStats.State.PROGRESSING;
+                Christmas.plugin.eventStats.timer = 0;
             }
         }
-        else if(Christmas.eventStats.state == Christmas.EventStats.State.PROGRESSING)
+        else if(Christmas.plugin.eventStats.state == Christmas.EventStats.State.PROGRESSING)
         {
-            Christmas.eventStats.timer ++;
+            Christmas.plugin.eventStats.timer ++;
+
+            for(Map<String, Object> giftBatch : Christmas.plugin.cfg.giftBatches)
+            {
+                if((Integer)giftBatch.get("time") == Christmas.plugin.eventStats.timer)
+                {
+                    deliverGiftBatch(giftBatch);
+                    // Christmas.plugin.cfg.giftBatches.remove(giftBatch);
+                }
+            }
+        }
+    }
+
+    private void deliverGiftBatch(Map<String, Object> giftBatch)
+    {
+        // TODO
+        String type = (String)giftBatch.get("type");
+        switch (type)
+        {
+            case "NORMAL" ->
+            {
+                int amount = (Integer)giftBatch.get("amount");
+                List<Location> spawnLocations = Util.RandomPick(Christmas.plugin.cfg.giftSpawnerLocations, amount);
+                for (Location loc : spawnLocations)
+                {
+                    new Gift(loc, Gift.GiftType.NORMAL);
+                }
+                Christmas.plugin.getServer().broadcast(Component.text("Spawned " + amount + " gifts!"), "op");
+            }
+            case "SPECIAL" ->
+            {
+
+            }
+            default -> {}
         }
     }
 }

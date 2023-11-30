@@ -1,4 +1,29 @@
-gift_number: 16
+readyStateDuration: 6000
+progressStateDuration: 36000
 
+giftBatches:
+  - type: NORMAL
+    time: 20
+    amount: 100
+  - type: SPECIAL
+    time: 6000
+  - type: NORMAL
+    time: 12000
+    amount: 75
+  - type: SPECIAL
+    time: 18000
+  - type: NORMAL
+    time: 24000
+    amount: 50
+  - type: SPECIAL
+    time: 32000
 
-locations: []
+clicksPerFetch_normal: 5
+scorePerFetch_normal: 10
+capacityInFetches_normal: 1
+
+clicksPerFetch_special: 15
+scorePerFetch_special: 10
+capacityInFetches_special: 10
+
+giftSpawnerLocations: []

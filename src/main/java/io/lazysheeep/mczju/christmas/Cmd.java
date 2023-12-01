@@ -1,8 +1,5 @@
 package io.lazysheeep.mczju.christmas;
 
-import io.lazysheeep.mczju.christmas.Christmas;
-import io.lazysheeep.mczju.christmas.Gift;
-import io.lazysheeep.mczju.christmas.Util;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -11,7 +8,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -63,7 +59,7 @@ public class Cmd implements CommandExecutor
                     default -> // spawn <spawn_number>
                     {
                         int spawnAmount = Integer.parseInt(args[1]);
-                        List<Location> spawnLocations = Util.RandomPick(Christmas.plugin.cfg.giftSpawnerLocations, spawnAmount);
+                        List<Location> spawnLocations = Util.randomPick(Christmas.plugin.cfg.giftSpawnerLocations, spawnAmount);
                         for (Location loc : spawnLocations)
                         {
                             new Gift(loc, Gift.GiftType.NORMAL);
@@ -73,31 +69,40 @@ public class Cmd implements CommandExecutor
                 }
                 else return false;
             }
-            case "event" ->
+            case "event" -> // event ...
             {
                 if(args.length >= 2) switch (args[1])
                 {
-                    case "start" ->
+                    case "start" -> // start the event
                     {
                         if (Christmas.plugin.eventStats.state == Christmas.EventStats.State.IDLE)
                         {
+                            // set event state
                             Christmas.plugin.eventStats.state = Christmas.EventStats.State.READYING;
                             Christmas.plugin.eventStats.timer = 0;
+                            // reset player's score
+                            for(Player player : Christmas.plugin.getServer().getOnlinePlayers())
+                            {
+                                Christmas.plugin.scoreboardObj.getScore(player).setScore(0);
+                            }
+                            // clear untracked gifts
+                            Gift.clearUnTracked();
                         }
                         else
                             sender.sendMessage(Component.text("The event has already begun!"));
                     }
-                    case "end" ->
+                    case "end" -> // end the event
                     {
                         if (Christmas.plugin.eventStats.state == Christmas.EventStats.State.IDLE)
                             sender.sendMessage(Component.text("The event is not in progress!"));
                         else
                         {
+                            // set event state
                             Christmas.plugin.eventStats.state = Christmas.EventStats.State.IDLE;
                             Christmas.plugin.eventStats.timer = 0;
                         }
                     }
-                    case "stats" ->
+                    case "stats" -> // print event stats
                     {
                         String msg = "";
                         msg += "state: " + Christmas.plugin.eventStats.state.toString() + "\n";

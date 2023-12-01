@@ -10,6 +10,7 @@ import java.util.Map;
 
 public class Cfg
 {
+    public String worldName;
     public int readyStateDuration;
     public int progressStateDuration;
     public List<Map<String, Object>> giftBatches;
@@ -35,6 +36,8 @@ public class Cfg
     // load cfg from file
     public void load()
     {
+        this.worldName = fileConfig.getString("worldName");
+
         this.readyStateDuration = fileConfig.getInt("readyStateDuration");
         this.progressStateDuration = fileConfig.getInt("progressStateDuration");
 

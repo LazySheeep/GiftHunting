@@ -1,10 +1,15 @@
 package io.lazysheeep.mczju.christmas;
 
+import org.bukkit.Location;
+import org.bukkit.util.Vector;
+
 import java.util.*;
 
 public class Util
 {
-    public static <T> List<T> RandomPick(List<T> list, int amount)
+    private static final Random random = new Random();
+
+    public static <T> List<T> randomPick(List<T> list, int amount)
     {
         List<T> ret = new ArrayList<T>();
         int[] array = new int[list.size()];
@@ -15,7 +20,6 @@ public class Util
             array[i] = i;
         }
 
-        Random random = new Random();
         for(int i = 0; i < amount; i ++)
         {
             int r = Math.abs(random.nextInt()) % (array.length - i);
@@ -24,6 +28,25 @@ public class Util
         }
 
         return ret;
+    }
+
+    public static <T> T randomPickOne(List<T> list)
+    {
+        return list.get(Math.abs(random.nextInt()) % list.size());
+    }
+
+    public static float getRandomFloat(float min, float max)
+    {
+        return min + random.nextFloat() * (max-min);
+    }
+
+    public static Vector getRandomOffset(float intensityX, float intensityY, float intensityZ)
+    {
+        Vector vec = new Vector();
+        if(intensityX != 0.0f) vec.setX((random.nextFloat()-0.5f) * 2.0f * intensityX);
+        if(intensityY != 0.0f) vec.setX((random.nextFloat()-0.5f) * 2.0f * intensityY);
+        if(intensityZ != 0.0f) vec.setX((random.nextFloat()-0.5f) * 2.0f * intensityZ);
+        return vec;
     }
 
     public static <T> List<T> castList(List<?> list, Class<T> clazz)

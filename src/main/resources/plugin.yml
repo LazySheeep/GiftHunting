@@ -6,10 +6,9 @@ author: LazySheeep
 api-version: '1.19'
 
 permissions:
-  permission.op:
+  christmas.op:
+    description: give access to christmas commands and receive debug messages
     default: op
-  permission.nop:
-    default: not op
 
 commands:
   christmas:
@@ -25,4 +24,4 @@ commands:
                         end     --- end the game
                         stats   --- print event stats
     aliases: [chris, christmas]
-    permission: permission.op
+    permission: christmas.op

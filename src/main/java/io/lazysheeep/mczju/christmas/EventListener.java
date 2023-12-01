@@ -11,7 +11,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.permissions.Permission;
 import org.bukkit.util.Vector;
 
 import java.util.Collection;
@@ -96,16 +95,18 @@ public class EventListener implements Listener
             case "NORMAL" ->
             {
                 int amount = (Integer)giftBatch.get("amount");
-                List<Location> spawnLocations = Util.RandomPick(Christmas.plugin.cfg.giftSpawnerLocations, amount);
+                List<Location> spawnLocations = Util.randomPick(Christmas.plugin.cfg.giftSpawnerLocations, amount);
                 for (Location loc : spawnLocations)
                 {
                     new Gift(loc, Gift.GiftType.NORMAL);
                 }
-                Christmas.plugin.getServer().broadcast(Component.text("Spawned " + amount + " gifts!"), "op");
+                Christmas.plugin.getServer().broadcast(Component.text("Spawned " + amount + " NORMAL" + " gifts!"), "christmas.op");
             }
             case "SPECIAL" ->
             {
-
+                Location spawnLocation = Util.randomPickOne(Christmas.plugin.cfg.giftSpawnerLocations);
+                new Gift(spawnLocation, Gift.GiftType.SPECIAL);
+                Christmas.plugin.getServer().broadcast(Component.text("Spawned 1 SPECIAL gift!"), "christmas.op");
             }
             default -> {}
         }

@@ -44,8 +44,8 @@ public class Util
     {
         Vector vec = new Vector();
         if(intensityX != 0.0f) vec.setX((random.nextFloat()-0.5f) * 2.0f * intensityX);
-        if(intensityY != 0.0f) vec.setX((random.nextFloat()-0.5f) * 2.0f * intensityY);
-        if(intensityZ != 0.0f) vec.setX((random.nextFloat()-0.5f) * 2.0f * intensityZ);
+        if(intensityY != 0.0f) vec.setY((random.nextFloat()-0.5f) * 2.0f * intensityY);
+        if(intensityZ != 0.0f) vec.setZ((random.nextFloat()-0.5f) * 2.0f * intensityZ);
         return vec;
     }
 

@@ -32,7 +32,7 @@ public class EventListener implements Listener
         {
             Location newLocation = event.getPlayer().getTargetBlock(8).getLocation().toCenterLocation().add(new Vector(0.0f, -0.95f, 0.0f));
             Christmas.plugin.cfg.giftSpawnerLocations.add(newLocation);
-            event.getPlayer().sendMessage(Component.text("New Gift Spawner Added!" + newLocation.toString()));
+            event.getPlayer().sendMessage(MessageFactory.getAddGiftSpawnerMsg(newLocation));
         }
     }
 
@@ -61,7 +61,7 @@ public class EventListener implements Listener
                 Collection<? extends Player> onlinePlayers = Christmas.plugin.getServer().getOnlinePlayers();
                 for(Player player : onlinePlayers)
                 {
-                    player.sendActionBar(Component.text("距活动开始还有：" + (Christmas.plugin.cfg.readyStateDuration-Christmas.plugin.eventStats.timer)/20 + " 秒"));
+                    player.sendActionBar(MessageFactory.getEventCountDownActionbarMsg());
                 }
             }
 
@@ -100,13 +100,13 @@ public class EventListener implements Listener
                 {
                     new Gift(loc, Gift.GiftType.NORMAL);
                 }
-                Christmas.plugin.getServer().broadcast(Component.text("Spawned " + amount + " NORMAL" + " gifts!"), "christmas.op");
+                Christmas.plugin.getServer().broadcast(MessageFactory.getSpawnGiftMsg(amount, Gift.GiftType.NORMAL), "christmas.op");
             }
             case "SPECIAL" ->
             {
                 Location spawnLocation = Util.randomPickOne(Christmas.plugin.cfg.giftSpawnerLocations);
                 new Gift(spawnLocation, Gift.GiftType.SPECIAL);
-                Christmas.plugin.getServer().broadcast(Component.text("Spawned 1 SPECIAL gift!"), "christmas.op");
+                Christmas.plugin.getServer().broadcast(MessageFactory.getSpawnGiftMsg(1, Gift.GiftType.SPECIAL), "christmas.op");
             }
             default -> {}
         }

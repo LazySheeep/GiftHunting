@@ -2,11 +2,6 @@ package io.lazysheeep.mczju.christmas;
 
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.ComponentLike;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.Style;
-import org.apache.logging.log4j.message.MessageFactory;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -18,8 +13,6 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scoreboard.Score;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,7 +62,7 @@ public class Gift
             gift.giftEntity.remove();
             gift.giftEntity = null;
         }
-        Christmas.plugin.getServer().broadcast(Component.text("Cleared " + giftPool.size() + " gifts!"), "christmas.op");
+        Christmas.plugin.getServer().broadcast(MessageFactory.getClearAllGiftMsg(giftPool.size()), "christmas.op");
         giftPool.clear();
     }
 
@@ -84,7 +77,7 @@ public class Gift
                 counter ++;
             }
         }
-        Christmas.plugin.getServer().broadcast(Component.text("Cleared " + counter + " untracked gifts!"), "christmas.op");
+        Christmas.plugin.getServer().broadcast(MessageFactory.getClearUntrackedGiftMsg(counter), "christmas.op");
     }
 
 
@@ -127,7 +120,7 @@ public class Gift
     public void clicked(Player player)
     {
         this.clicksToNextFetch --;
-        player.sendActionBar(getClickMessage());
+        player.sendActionBar(MessageFactory.getGiftClickedActionbarMsg(this.clicksToNextFetch, this.clicksPerFetch, this.capacityInFetches));
 
         if(this.clicksToNextFetch <= 0)
         {
@@ -136,7 +129,7 @@ public class Gift
                 Score score = Christmas.plugin.scoreboardObj.getScore(player);
                 score.setScore(score.getScore() + this.scorePerFetch);
 
-                player.sendActionBar(Component.text("开启礼物 分数+" + this.scorePerFetch));
+                player.sendActionBar(MessageFactory.getGiftFetchedActionbarMsg(this.scorePerFetch));
 
                 this.capacityInFetches --;
             }
@@ -149,18 +142,6 @@ public class Gift
                 this.clicksToNextFetch = clicksPerFetch;
             }
         }
-    }
-
-    private Component getClickMessage()
-    {
-        Component result = Component.text("开启中>>>", NamedTextColor.AQUA);
-        result = result.append(Component.text(" [", NamedTextColor.YELLOW));
-        int pp = (int)(20*((float)this.clicksToNextFetch/this.clicksPerFetch));
-        result = result.append(Component.text("|".repeat(pp), NamedTextColor.GREEN));
-        result = result.append(Component.text("|".repeat(20-pp), NamedTextColor.GRAY));
-        result = result.append(Component.text("] ", NamedTextColor.YELLOW));
-        result = result.append(Component.text("[*]".repeat(this.capacityInFetches-1), NamedTextColor.YELLOW));
-        return result;
     }
 
     public void remove()

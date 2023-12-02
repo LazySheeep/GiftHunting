@@ -54,7 +54,7 @@ public class Cmd implements CommandExecutor
                         {
                             new Gift(loc, Gift.GiftType.NORMAL);
                         }
-                        sender.sendMessage(Component.text("Spawned " + Christmas.plugin.cfg.giftSpawnerLocations.size() + " gifts!"));
+                        sender.sendMessage(MessageFactory.getSpawnGiftMsg(Christmas.plugin.cfg.giftSpawnerLocations.size(), Gift.GiftType.NORMAL));
                     }
                     default -> // spawn <spawn_number>
                     {
@@ -64,7 +64,7 @@ public class Cmd implements CommandExecutor
                         {
                             new Gift(loc, Gift.GiftType.NORMAL);
                         }
-                        sender.sendMessage(Component.text("Spawned " + spawnAmount + " gifts!"));
+                        sender.sendMessage(MessageFactory.getSpawnGiftMsg(spawnAmount, Gift.GiftType.NORMAL));
                     }
                 }
                 else return false;
@@ -89,12 +89,12 @@ public class Cmd implements CommandExecutor
                             Gift.clearUnTracked();
                         }
                         else
-                            sender.sendMessage(Component.text("The event has already begun!"));
+                            sender.sendMessage(MessageFactory.getEventCantStartMsg());
                     }
                     case "end" -> // end the event
                     {
                         if (Christmas.plugin.eventStats.state == Christmas.EventStats.State.IDLE)
-                            sender.sendMessage(Component.text("The event is not in progress!"));
+                            sender.sendMessage(MessageFactory.getEventCantEndMsg());
                         else
                         {
                             // set event state
@@ -104,12 +104,7 @@ public class Cmd implements CommandExecutor
                     }
                     case "stats" -> // print event stats
                     {
-                        String msg = "";
-                        msg += "state: " + Christmas.plugin.eventStats.state.toString() + "\n";
-                        msg += "timer: " + Christmas.plugin.eventStats.timer + "\n";
-                        msg += "giftSpawners: " + Christmas.plugin.cfg.giftSpawnerLocations.size() + "\n";
-                        msg += "trackedGifts: " + Gift.getNumber() + "\n";
-                        sender.sendMessage(Component.text(msg));
+                        sender.sendMessage(MessageFactory.getEventStatsMsg());
                     }
                     default -> { return false; }
                 }

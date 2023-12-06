@@ -1,17 +1,16 @@
 package io.lazysheeep.mczju.christmas;
 
-import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
 import java.util.*;
 
-public class Util
+public class CUtil
 {
     private static final Random random = new Random();
 
     public static <T> List<T> randomPick(List<T> list, int amount)
     {
-        List<T> ret = new ArrayList<T>();
+        List<T> ret = new ArrayList<>();
         int[] array = new int[list.size()];
 
         if(amount > array.length) amount = array.length;

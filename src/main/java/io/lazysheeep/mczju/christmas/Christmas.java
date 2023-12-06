@@ -2,6 +2,7 @@ package io.lazysheeep.mczju.christmas;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.World;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Criteria;
 import org.bukkit.scoreboard.Objective;
@@ -10,8 +11,8 @@ import org.bukkit.scoreboard.Scoreboard;
 public final class Christmas extends JavaPlugin
 {
     public static Christmas plugin;
-    public static World world;
-    public Cfg cfg;
+    public World world;
+    public CConfig config;
     public Objective scoreboardObj;
 
     public static class EventStats
@@ -29,19 +30,24 @@ public final class Christmas extends JavaPlugin
     public void onEnable()
     {
         // load cfg
-        this.cfg = new Cfg(this);
-        this.cfg.load();
+        this.config = new CConfig(this);
+        this.config.load();
 
         // set static reference
         plugin = this;
-        world = this.getServer().getWorld(cfg.worldName);
-        if(world == null) this.getServer().sendMessage(Component.text("World \"" + cfg.worldName + "\" not found!"));
+        world = this.getServer().getWorld(config.worldName);
+        if(world == null)
+            this.getServer().sendMessage(Component.text("[ERROR] World \"" + config.worldName + "\" not found!"));
 
         // register events
-        this.getServer().getPluginManager().registerEvents(new EventListener(), this);
+        this.getServer().getPluginManager().registerEvents(new CEventListener(), this);
 
         // register commands
-        this.getCommand("christmas").setExecutor(new Cmd());
+        PluginCommand command = this.getCommand("christmas");
+        if(command != null)
+            command.setExecutor(new CCommand());
+        else
+            this.getServer().broadcast(Component.text("[ERROR] Something Wrong!"));
 
         // get scoreboard
         Scoreboard scoreboard = this.getServer().getScoreboardManager().getMainScoreboard();
@@ -49,6 +55,7 @@ public final class Christmas extends JavaPlugin
         if(scoreboardObj == null)
         {
             this.scoreboardObj = scoreboard.registerNewObjective("Christmas", Criteria.DUMMY, Component.text("Christmas"));
+            this.getServer().broadcast(Component.text("Scoreboard \"Christmas\" not found, created one"));
         }
 
         // init event stats
@@ -59,6 +66,6 @@ public final class Christmas extends JavaPlugin
     @Override
     public void onDisable()
     {
-        cfg.save();
+        config.save();
     }
 }

@@ -5,10 +5,11 @@ import org.bukkit.configuration.file.FileConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class Cfg
+public class CConfig
 {
     public String worldName;
     public int readyStateDuration;
@@ -20,13 +21,25 @@ public class Cfg
     public int clicksPerFetch_special;
     public int scorePerFetch_special;
     public int capacityInFetches_special;
-    public List<Location> giftSpawnerLocations;
+    private List<Location> giftSpawnerLocations;
 
+    public List<Location> getGiftSpawnerLocations()
+    {
+        ArrayList<Location> result = new ArrayList<>();
+        for(Location element : giftSpawnerLocations)
+            result.add(element.clone());
+        return result;
+    }
+
+    public void addGiftSpawnerLocation(Location location)
+    {
+        giftSpawnerLocations.add(location);
+    }
 
     private final FileConfiguration fileConfig;
     private final Christmas plugin;
 
-    public Cfg(Christmas plugin)
+    public CConfig(Christmas plugin)
     {
         plugin.saveDefaultConfig();
         this.fileConfig = plugin.getConfig();
@@ -41,7 +54,7 @@ public class Cfg
         this.readyStateDuration = fileConfig.getInt("readyStateDuration");
         this.progressStateDuration = fileConfig.getInt("progressStateDuration");
 
-        this.giftBatches = Util.castMapList(fileConfig.getMapList("giftBatches"), String.class, Object.class);
+        this.giftBatches = CUtil.castMapList(fileConfig.getMapList("giftBatches"), String.class, Object.class);
 
         this.clicksPerFetch_normal = fileConfig.getInt("clicksPerFetch_normal");
         this.scorePerFetch_normal = fileConfig.getInt("scorePerFetch_normal");
@@ -51,7 +64,7 @@ public class Cfg
         this.scorePerFetch_special = fileConfig.getInt("scorePerFetch_special");
         this.capacityInFetches_special = fileConfig.getInt("capacityInFetches_special");
 
-        this.giftSpawnerLocations = Util.castList(fileConfig.getList("giftSpawnerLocations"), Location.class);
+        this.giftSpawnerLocations = CUtil.castList(fileConfig.getList("giftSpawnerLocations"), Location.class);
     }
 
     // save cfg to file

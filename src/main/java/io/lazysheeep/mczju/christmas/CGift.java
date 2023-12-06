@@ -18,14 +18,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class Gift
+public class CGift
 {
     public enum GiftType
     {
-        NORMAL(Christmas.plugin.cfg.clicksPerFetch_normal, Christmas.plugin.cfg.scorePerFetch_normal, Christmas.plugin.cfg.capacityInFetches_normal),
-        SPECIAL(Christmas.plugin.cfg.clicksPerFetch_special, Christmas.plugin.cfg.scorePerFetch_special, Christmas.plugin.cfg.capacityInFetches_special);
+        NORMAL(Christmas.plugin.config.clicksPerFetch_normal, Christmas.plugin.config.scorePerFetch_normal, Christmas.plugin.config.capacityInFetches_normal),
+        SPECIAL(Christmas.plugin.config.clicksPerFetch_special, Christmas.plugin.config.scorePerFetch_special, Christmas.plugin.config.capacityInFetches_special);
 
-        private GiftType(int clicksPerFetch, int scorePerFetch, int capacityInFetches)
+        GiftType(int clicksPerFetch, int scorePerFetch, int capacityInFetches)
         {
             this.clicksPerFetch = clicksPerFetch;
             this.scorePerFetch = scorePerFetch;
@@ -37,15 +37,15 @@ public class Gift
         public final int capacityInFetches;
     }
 
-    private static final List<Gift> giftPool = new ArrayList<Gift>();
+    private static final List<CGift> giftPool = new ArrayList<>();
     public static int getNumber()
     {
         return giftPool.size();
     }
 
-    public static Gift getGift(Entity entity)
+    public static CGift getGift(Entity entity)
     {
-        for(Gift gift : giftPool)
+        for(CGift gift : giftPool)
         {
             if(gift.giftEntity == entity)
             {
@@ -57,19 +57,19 @@ public class Gift
 
     public static void clearAll()
     {
-        for(Gift gift : giftPool)
+        for(CGift gift : giftPool)
         {
             gift.giftEntity.remove();
             gift.giftEntity = null;
         }
-        Christmas.plugin.getServer().broadcast(MessageFactory.getClearAllGiftMsg(giftPool.size()), "christmas.op");
+        Christmas.plugin.getServer().broadcast(CMessageFactory.getClearAllGiftMsg(giftPool.size()), "christmas.op");
         giftPool.clear();
     }
 
     public static void clearUnTracked()
     {
         int counter = 0;
-        for(ArmorStand e : Christmas.world.getEntitiesByClass(ArmorStand.class))
+        for(ArmorStand e : Christmas.plugin.world.getEntitiesByClass(ArmorStand.class))
         {
             if(e.getScoreboardTags().contains("Christmas") && getGift(e) == null)
             {
@@ -77,25 +77,25 @@ public class Gift
                 counter ++;
             }
         }
-        Christmas.plugin.getServer().broadcast(MessageFactory.getClearUntrackedGiftMsg(counter), "christmas.op");
+        Christmas.plugin.getServer().broadcast(CMessageFactory.getClearUntrackedGiftMsg(counter), "christmas.op");
     }
 
 
-    public ArmorStand giftEntity = null;
+    public ArmorStand giftEntity;
     public final int clicksPerFetch;
     public final int scorePerFetch;
     public int capacityInFetches;
     public int clicksToNextFetch;
 
-    public Gift(Location location, GiftType type)
+    public CGift(Location location, GiftType type)
     {
         this.clicksPerFetch = type.clicksPerFetch;
         this.scorePerFetch = type.scorePerFetch;
         this.capacityInFetches = type.capacityInFetches;
         this.clicksToNextFetch = clicksPerFetch;
 
-        location.add(Util.getRandomOffset(0.4f, 0.0f, 0.4f));
-        location.setYaw(Util.getRandomFloat(0.0f, 360.0f));
+        location.add(CUtil.getRandomOffset(0.4f, 0.0f, 0.4f));
+        location.setYaw(CUtil.getRandomFloat(0.0f, 360.0f));
         this.giftEntity = (ArmorStand) location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
         this.giftEntity.customName(Component.text("ChristmasGift"));
         this.giftEntity.addScoreboardTag("Christmas");
@@ -120,28 +120,31 @@ public class Gift
     public void clicked(Player player)
     {
         this.clicksToNextFetch --;
-        player.sendActionBar(MessageFactory.getGiftClickedActionbarMsg(this.clicksToNextFetch, this.clicksPerFetch, this.capacityInFetches));
+        player.sendActionBar(CMessageFactory.getGiftClickedActionbarMsg(this.clicksToNextFetch, this.clicksPerFetch, this.capacityInFetches));
 
         if(this.clicksToNextFetch <= 0)
         {
             if(this.capacityInFetches > 0) // fetch a gift
             {
-                Score score = Christmas.plugin.scoreboardObj.getScore(player);
-                score.setScore(score.getScore() + this.scorePerFetch);
-
-                player.sendActionBar(MessageFactory.getGiftFetchedActionbarMsg(this.scorePerFetch));
-
-                this.capacityInFetches --;
+                this.fetched(player);
             }
             if(this.capacityInFetches <= 0) // gift empty
-            {
                 this.remove();
-            }
             else
-            {
                 this.clicksToNextFetch = clicksPerFetch;
-            }
         }
+    }
+
+    private void fetched(Player player)
+    {
+        Score score = Christmas.plugin.scoreboardObj.getScore(player);
+        score.setScore(score.getScore() + this.scorePerFetch);
+
+        player.getInventory().addItem(CItemFactory.booster);
+
+        player.sendActionBar(CMessageFactory.getGiftFetchedActionbarMsg(this.scorePerFetch));
+
+        this.capacityInFetches --;
     }
 
     public void remove()

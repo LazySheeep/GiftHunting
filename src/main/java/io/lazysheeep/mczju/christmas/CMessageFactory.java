@@ -4,9 +4,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 
-public class MessageFactory
+public class CMessageFactory
 {
-    private MessageFactory() {}
+    private CMessageFactory() {}
 
     public static Component getClearAllGiftMsg(int count)
     {
@@ -18,7 +18,7 @@ public class MessageFactory
         return Component.text("Cleared " + count + " untracked gifts!");
     }
 
-    public static Component getSpawnGiftMsg(int amount, Gift.GiftType type)
+    public static Component getSpawnGiftMsg(int amount, CGift.GiftType type)
     {
         return Component.text("Spawned " + amount + " " + type.toString() + " gifts!");
     }
@@ -42,7 +42,7 @@ public class MessageFactory
 
     public static Component getEventCountDownActionbarMsg()
     {
-        return Component.text("距活动开始还有：" + (Christmas.plugin.cfg.readyStateDuration-Christmas.plugin.eventStats.timer)/20 + " 秒");
+        return Component.text("距活动开始还有：" + (Christmas.plugin.config.readyStateDuration-Christmas.plugin.eventStats.timer)/20 + " 秒");
     }
 
     public static Component getEventStatsMsg()
@@ -50,8 +50,8 @@ public class MessageFactory
         String msg = "";
         msg += "state: " + Christmas.plugin.eventStats.state.toString() + "\n";
         msg += "timer: " + Christmas.plugin.eventStats.timer + "\n";
-        msg += "giftSpawners: " + Christmas.plugin.cfg.giftSpawnerLocations.size() + "\n";
-        msg += "trackedGifts: " + Gift.getNumber() + "\n";
+        msg += "giftSpawners: " + Christmas.plugin.config.getGiftSpawnerLocations().size() + "\n";
+        msg += "trackedGifts: " + CGift.getNumber() + "\n";
         return Component.text(msg);
     }
 

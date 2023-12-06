@@ -2,17 +2,16 @@ package io.lazysheeep.mczju.christmas;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class Cmd implements CommandExecutor
+public class CCommand implements CommandExecutor
 {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args)
@@ -25,18 +24,13 @@ public class Cmd implements CommandExecutor
                 {
                     case "spawner" ->    // get spawners
                     {
-                        sender.sendMessage(Component.text(Christmas.plugin.cfg.giftSpawnerLocations.toString()));
+                        sender.sendMessage(Component.text(Christmas.plugin.config.getGiftSpawnerLocations().toString()));
                     }
                     case "setter" ->    // get setter
                     {
                         if(sender instanceof Player player)
                         {
-                            ItemStack spawnerItem = new ItemStack(Material.STICK);
-                            spawnerItem.editMeta(itemMeta ->
-                            {
-                                itemMeta.displayName(Component.text("Gift Spawner Setter"));
-                            });
-                            player.getInventory().addItem(spawnerItem);
+                            player.getInventory().addItem(CItemFactory.giftSpawnerSetter);
                         }
                     }
                     default -> { return false; }
@@ -50,21 +44,21 @@ public class Cmd implements CommandExecutor
                 {
                     case "all" ->  // spawn all
                     {
-                        for (Location loc : Christmas.plugin.cfg.giftSpawnerLocations)
+                        for (Location loc : Christmas.plugin.config.getGiftSpawnerLocations())
                         {
-                            new Gift(loc, Gift.GiftType.NORMAL);
+                            new CGift(loc, CGift.GiftType.NORMAL);
                         }
-                        sender.sendMessage(MessageFactory.getSpawnGiftMsg(Christmas.plugin.cfg.giftSpawnerLocations.size(), Gift.GiftType.NORMAL));
+                        sender.sendMessage(CMessageFactory.getSpawnGiftMsg(Christmas.plugin.config.getGiftSpawnerLocations().size(), CGift.GiftType.NORMAL));
                     }
                     default -> // spawn <spawn_number>
                     {
                         int spawnAmount = Integer.parseInt(args[1]);
-                        List<Location> spawnLocations = Util.randomPick(Christmas.plugin.cfg.giftSpawnerLocations, spawnAmount);
+                        List<Location> spawnLocations = CUtil.randomPick(Christmas.plugin.config.getGiftSpawnerLocations(), spawnAmount);
                         for (Location loc : spawnLocations)
                         {
-                            new Gift(loc, Gift.GiftType.NORMAL);
+                            new CGift(loc, CGift.GiftType.NORMAL);
                         }
-                        sender.sendMessage(MessageFactory.getSpawnGiftMsg(spawnAmount, Gift.GiftType.NORMAL));
+                        sender.sendMessage(CMessageFactory.getSpawnGiftMsg(spawnAmount, CGift.GiftType.NORMAL));
                     }
                 }
                 else return false;
@@ -80,21 +74,22 @@ public class Cmd implements CommandExecutor
                             // set event state
                             Christmas.plugin.eventStats.state = Christmas.EventStats.State.READYING;
                             Christmas.plugin.eventStats.timer = 0;
-                            // reset player's score
-                            for(Player player : Christmas.plugin.getServer().getOnlinePlayers())
+                            // reset all player's score
+                            for(OfflinePlayer player : Christmas.plugin.getServer().getOfflinePlayers())
                             {
-                                Christmas.plugin.scoreboardObj.getScore(player).setScore(0);
+                                Christmas.plugin.scoreboardObj.getScore(player).resetScore();
                             }
-                            // clear untracked gifts
-                            Gift.clearUnTracked();
+                            // clear all gifts
+                            CGift.clearAll();
+                            CGift.clearUnTracked();
                         }
                         else
-                            sender.sendMessage(MessageFactory.getEventCantStartMsg());
+                            sender.sendMessage(CMessageFactory.getEventCantStartMsg());
                     }
-                    case "end" -> // end the event
+                    case "stop" -> // end the event
                     {
                         if (Christmas.plugin.eventStats.state == Christmas.EventStats.State.IDLE)
-                            sender.sendMessage(MessageFactory.getEventCantEndMsg());
+                            sender.sendMessage(CMessageFactory.getEventCantEndMsg());
                         else
                         {
                             // set event state
@@ -104,7 +99,7 @@ public class Cmd implements CommandExecutor
                     }
                     case "stats" -> // print event stats
                     {
-                        sender.sendMessage(MessageFactory.getEventStatsMsg());
+                        sender.sendMessage(CMessageFactory.getEventStatsMsg());
                     }
                     default -> { return false; }
                 }

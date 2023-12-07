@@ -48,6 +48,11 @@ public class CUtil
         return vec;
     }
 
+    public static boolean getRandomBool(float probability)
+    {
+        return (random.nextFloat() < probability);
+    }
+
     public static <T> List<T> castList(List<?> list, Class<T> clazz)
     {
         if(list == null) return null;

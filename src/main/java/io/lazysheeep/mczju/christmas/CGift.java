@@ -140,7 +140,8 @@ public class CGift
         Score score = Christmas.plugin.scoreboardObj.getScore(player);
         score.setScore(score.getScore() + this.scorePerFetch);
 
-        player.getInventory().addItem(CItemFactory.booster);
+        if(CUtil.getRandomBool(0.2f))
+            player.getInventory().addItem(CItemFactory.booster);
 
         player.sendActionBar(CMessageFactory.getGiftFetchedActionbarMsg(this.scorePerFetch));
 

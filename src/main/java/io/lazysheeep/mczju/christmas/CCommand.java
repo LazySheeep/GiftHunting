@@ -1,5 +1,6 @@
 package io.lazysheeep.mczju.christmas;
 
+import io.lazysheeep.mczju.christmas.ui.Message;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -105,6 +106,25 @@ public class CCommand implements CommandExecutor
                 }
                 else return false;
             }
+
+            case "test" ->
+            {
+                if(sender instanceof Player player)
+                {
+                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.CHAT, Component.text("test chat message 0"), 20));
+                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.CHAT, Component.text("test chat message 1"), 20));
+                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.CHAT, Component.text("test chat message 2"), 20));
+
+                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_PREFIX, Component.text("actionbar_prefix "), -1));
+                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_INFIX, Component.text("actionbar_infix "), 100));
+                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 1"), 20));
+                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 2"), 20));
+                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 3"), 20));
+                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 4"), 20));
+                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 5"), 20));
+                }
+            }
+
             default -> { return false; }
         }
         else return false;

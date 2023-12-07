@@ -1,5 +1,7 @@
 package io.lazysheeep.mczju.christmas;
 
+import io.lazysheeep.mczju.christmas.ui.UI;
+import io.lazysheeep.mczju.christmas.ui.UIManager;
 import net.kyori.adventure.text.Component;
 import org.bukkit.World;
 import org.bukkit.command.PluginCommand;
@@ -11,8 +13,9 @@ import org.bukkit.scoreboard.Scoreboard;
 public final class Christmas extends JavaPlugin
 {
     public static Christmas plugin;
-    public World world;
     public CConfig config;
+    public UIManager uiManager = new UIManager(this);
+    public World world;
     public Objective scoreboardObj;
 
     public static class EventStats
@@ -30,7 +33,7 @@ public final class Christmas extends JavaPlugin
     public void onEnable()
     {
         // load cfg
-        this.config = new CConfig(this);
+        config = new CConfig(this);
         this.config.load();
 
         // set static reference
@@ -39,8 +42,9 @@ public final class Christmas extends JavaPlugin
         if(world == null)
             this.getServer().sendMessage(Component.text("[ERROR] World \"" + config.worldName + "\" not found!"));
 
-        // register events
+        // register event listener
         this.getServer().getPluginManager().registerEvents(new CEventListener(), this);
+        this.getServer().getPluginManager().registerEvents(uiManager, this);
 
         // register commands
         PluginCommand command = this.getCommand("christmas");

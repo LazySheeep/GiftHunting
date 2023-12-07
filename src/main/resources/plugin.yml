@@ -6,6 +6,9 @@ author: LazySheeep
 api-version: '1.19'
 
 permissions:
+  christmas.player:
+    description: the player of christmas event
+    default: true
   christmas.op:
     description: give access to christmas commands and receive debug messages
     default: op

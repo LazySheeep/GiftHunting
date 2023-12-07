@@ -104,8 +104,7 @@ public class CEventListener implements Listener
             // display countdown every second
             if(Christmas.plugin.eventStats.timer % 20 == 0)
             {
-                Collection<? extends Player> onlinePlayers = Christmas.plugin.getServer().getOnlinePlayers();
-                for(Player player : onlinePlayers)
+                for(Player player : Christmas.plugin.getServer().getOnlinePlayers())
                 {
                     player.sendActionBar(CMessageFactory.getEventCountDownActionbarMsg());
                 }
@@ -115,6 +114,13 @@ public class CEventListener implements Listener
             {
                 Christmas.plugin.eventStats.state = Christmas.EventStats.State.PROGRESSING;
                 Christmas.plugin.eventStats.timer = 0;
+
+                // give @a club
+                for(Player player : Christmas.plugin.getServer().getOnlinePlayers())
+                {
+                    player.getInventory().remove(CItemFactory.club);
+                    player.getInventory().addItem(CItemFactory.club);
+                }
             }
         }
         // PROGRESSING
@@ -134,7 +140,6 @@ public class CEventListener implements Listener
 
     private void deliverGiftBatch(Map<String, Object> giftBatch)
     {
-        // TODO
         String type = (String)giftBatch.get("type");
         switch (type)
         {

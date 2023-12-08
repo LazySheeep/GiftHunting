@@ -1,51 +1,70 @@
 package io.lazysheeep.mczju.christmas;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 
 public class CMessageFactory
 {
     private CMessageFactory() {}
 
-    public static Component getClearAllGiftMsg(int count)
+    public static TextComponent getClearAllGiftMsg(int count)
     {
         return Component.text("Cleared " + count + " gifts!");
     }
 
-    public static Component getClearUntrackedGiftMsg(int count)
+    public static TextComponent getClearUntrackedGiftMsg(int count)
     {
         return Component.text("Cleared " + count + " untracked gifts!");
     }
 
-    public static Component getSpawnGiftMsg(int amount, CGift.GiftType type)
+    public static TextComponent getSpawnGiftMsg(int amount, CGift.GiftType type)
     {
         return Component.text("Spawned " + amount + " " + type.toString() + " gifts!");
     }
 
-    public static Component getGiftClickedActionbarMsg(int clicksToNextFetch, int clicksPerFetch, int capacityInFetches)
+    public static TextComponent getGiftClickedActionbarMsg(CGift gift)
     {
-        Component msg = Component.text("开启中>>>", NamedTextColor.AQUA);
-        msg = msg.append(Component.text(" [", NamedTextColor.YELLOW));
-        int pp = (int)(20*((float)clicksToNextFetch/clicksPerFetch));
-        msg = msg.append(Component.text("|".repeat(pp), NamedTextColor.GREEN));
-        msg = msg.append(Component.text("|".repeat(20-pp), NamedTextColor.GRAY));
-        msg = msg.append(Component.text("] ", NamedTextColor.YELLOW));
-        msg = msg.append(Component.text("[*]".repeat(capacityInFetches-1), NamedTextColor.YELLOW));
-        return msg;
+        int pp = (int)(20*((float)gift.clicksToNextFetch/gift.clicksPerFetch));
+        return Component.text("开启中>>>", NamedTextColor.AQUA)
+            .append(Component.text(" [", NamedTextColor.YELLOW))
+            .append(Component.text("|".repeat(pp), NamedTextColor.GREEN))
+            .append(Component.text("|".repeat(20-pp), NamedTextColor.GRAY))
+            .append(Component.text("] ", NamedTextColor.YELLOW))
+            .append(Component.text("[*]".repeat(gift.capacityInFetches-1), NamedTextColor.YELLOW));
     }
 
-    public static Component getGiftFetchedActionbarMsg(int scorePerFetch)
+    public static TextComponent getGiftFetchedActionbarMsg(int scorePerFetch)
     {
         return Component.text("开启礼物 分数+" + scorePerFetch);
     }
 
-    public static Component getEventCountDownActionbarMsg()
+    public static TextComponent getTimerActionbarMsg()
     {
-        return Component.text("距活动开始还有：" + (Christmas.plugin.config.readyStateDuration-Christmas.plugin.eventStats.timer)/20 + " 秒");
+        int mm = (Christmas.plugin.eventStats.timer/20) / 60;
+        int ss = (Christmas.plugin.eventStats.timer/20) % 60;
+        return Component.text(String.format("Time %02d:%02d", mm, ss), NamedTextColor.YELLOW);
     }
 
-    public static Component getEventStatsMsg()
+    public static TextComponent getScoreActionbarMsg(int score)
+    {
+        return Component.text("Score: ", NamedTextColor.AQUA)
+            .append(Component.text(score, NamedTextColor.YELLOW));
+    }
+
+    public static TextComponent getScoreIncreasedActionbarMsg(int prevScore, int increment)
+    {
+        return getScoreActionbarMsg(prevScore).append(Component.text("+" + increment, NamedTextColor.LIGHT_PURPLE));
+    }
+
+    public static TextComponent getEventCountDownActionbarMsg()
+    {
+        return Component.text("距活动开始还有: " + (Christmas.plugin.config.readyStateDuration-Christmas.plugin.eventStats.timer)/20 + " 秒");
+    }
+
+    public static TextComponent getEventStatsMsg()
     {
         String msg = "";
         msg += "state: " + Christmas.plugin.eventStats.state.toString() + "\n";
@@ -55,17 +74,17 @@ public class CMessageFactory
         return Component.text(msg);
     }
 
-    public static Component getAddGiftSpawnerMsg(Location location)
+    public static TextComponent getAddGiftSpawnerMsg(Location location)
     {
         return Component.text("New Gift Spawner Added!\n" + location.toString());
     }
 
-    public static Component getEventCantStartMsg()
+    public static TextComponent getEventCantStartMsg()
     {
         return Component.text("The event has already begun!");
     }
 
-    public static Component getEventCantEndMsg()
+    public static TextComponent getEventCantEndMsg()
     {
         return Component.text("The event is not in progress!");
     }

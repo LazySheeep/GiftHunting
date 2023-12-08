@@ -77,9 +77,10 @@ public class CCommand implements CommandExecutor
                             Christmas.plugin.eventStats.timer = 0;
                             // reset all player's score
                             for(OfflinePlayer player : Christmas.plugin.getServer().getOfflinePlayers())
-                            {
                                 Christmas.plugin.scoreboardObj.getScore(player).resetScore();
-                            }
+                            // flush player UI
+                            for(Player player : Christmas.plugin.getServer().getOnlinePlayers())
+                                Christmas.plugin.uiManager.flush(player, Message.Type.ACTIONBAR_PREFIX, Message.Type.ACTIONBAR_INFIX, Message.Type.ACTIONBAR_SUFFIX);
                             // clear all gifts
                             CGift.clearAll();
                             CGift.clearUnTracked();
@@ -111,17 +112,18 @@ public class CCommand implements CommandExecutor
             {
                 if(sender instanceof Player player)
                 {
-                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.CHAT, Component.text("test chat message 0"), 20));
-                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.CHAT, Component.text("test chat message 1"), 20));
-                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.CHAT, Component.text("test chat message 2"), 20));
+                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.CHAT, Component.text("test chat message 0"), Message.LoadMode.REPLACE, 20));
+                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.CHAT, Component.text("test chat message 1"), Message.LoadMode.WAIT, 20));
+                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.CHAT, Component.text("test chat message 2"), Message.LoadMode.WAIT, 20));
 
-                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_PREFIX, Component.text("actionbar_prefix "), -1));
-                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_INFIX, Component.text("actionbar_infix "), 100));
-                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 1"), 20));
-                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 2"), 20));
-                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 3"), 20));
-                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 4"), 20));
-                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 5"), 20));
+                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_PREFIX, Component.text("actionbar_prefix "), Message.LoadMode.REPLACE, -1));
+                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_INFIX, Component.text("actionbar_infix "), Message.LoadMode.REPLACE, 100));
+
+                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 1"), Message.LoadMode.REPLACE, 20));
+                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 2"), Message.LoadMode.WAIT, 20));
+                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 3"), Message.LoadMode.WAIT, 20));
+                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 4"), Message.LoadMode.WAIT, 20));
+                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 5"), Message.LoadMode.WAIT,20));
                 }
             }
 

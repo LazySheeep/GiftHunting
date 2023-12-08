@@ -1,6 +1,7 @@
 package io.lazysheeep.mczju.christmas;
 
 
+import io.lazysheeep.mczju.christmas.ui.Message;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -120,7 +121,7 @@ public class CGift
     public void clicked(Player player)
     {
         this.clicksToNextFetch --;
-        player.sendActionBar(CMessageFactory.getGiftClickedActionbarMsg(this.clicksToNextFetch, this.clicksPerFetch, this.capacityInFetches));
+        Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_INFIX, CMessageFactory.getGiftClickedActionbarMsg(this), Message.LoadMode.REPLACE, 10));
 
         if(this.clicksToNextFetch <= 0)
         {
@@ -138,12 +139,15 @@ public class CGift
     private void fetched(Player player)
     {
         Score score = Christmas.plugin.scoreboardObj.getScore(player);
+
+        Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, CMessageFactory.getScoreIncreasedActionbarMsg(score.getScore(), this.scorePerFetch), Message.LoadMode.REPLACE, 10));
+
         score.setScore(score.getScore() + this.scorePerFetch);
+
+        Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, CMessageFactory.getScoreActionbarMsg(score.getScore()), Message.LoadMode.WAIT, -1));
 
         if(CUtil.getRandomBool(0.2f))
             player.getInventory().addItem(CItemFactory.booster);
-
-        player.sendActionBar(CMessageFactory.getGiftFetchedActionbarMsg(this.scorePerFetch));
 
         this.capacityInFetches --;
     }
@@ -154,5 +158,4 @@ public class CGift
         giftEntity = null;
         giftPool.remove(this);
     }
-
 }

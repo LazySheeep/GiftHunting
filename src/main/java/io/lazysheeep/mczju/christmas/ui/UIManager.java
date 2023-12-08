@@ -1,5 +1,7 @@
 package io.lazysheeep.mczju.christmas.ui;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -23,6 +25,7 @@ public class UIManager implements Listener
     {
         Player player = event.getPlayer();
         UI ui = new UI(player);
+        ui.setActionbarInfixWidth(32);
         player.setMetadata("UI", new FixedMetadataValue(plugin, ui));
         plugin.getServer().getPluginManager().registerEvents(ui, plugin);
     }
@@ -40,6 +43,21 @@ public class UIManager implements Listener
     public void sendMessage(Player player, Message message)
     {
         getPlayerUI(player).sendMessage(message);
+    }
+
+    public void sendMessage(Player player, Message.Type type, TextComponent content, Message.LoadMode loadMode, int lifeTime)
+    {
+        getPlayerUI(player).sendMessage(new Message(type, content, loadMode, lifeTime));
+    }
+
+    public void broadcastMessage(String permission, Message message)
+    {
+
+    }
+
+    public void flush(Player player, Message.Type... types)
+    {
+        getPlayerUI(player).flush(types);
     }
 
 }

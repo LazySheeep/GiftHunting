@@ -1,6 +1,7 @@
 package io.lazysheeep.mczju.christmas;
 
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
+import io.lazysheeep.mczju.christmas.ui.Message;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
@@ -40,7 +41,7 @@ public class CEventListener implements Listener
                 {
                     Location newLocation = clickedBlock.getLocation().toCenterLocation().add(new Vector(0.0f, -0.95f, 0.0f));
                     Christmas.plugin.config.addGiftSpawnerLocation(newLocation);
-                    event.getPlayer().sendMessage(CMessageFactory.getAddGiftSpawnerMsg(newLocation));
+                    Christmas.plugin.uiManager.sendMessage(event.getPlayer(), new Message(Message.Type.CHAT, CMessageFactory.getAddGiftSpawnerMsg(newLocation), Message.LoadMode.REPLACE, 1));
                 }
             }
             else if(item.isSimilar(CItemFactory.booster))       // use booster to take off
@@ -106,7 +107,7 @@ public class CEventListener implements Listener
             {
                 for(Player player : Christmas.plugin.getServer().getOnlinePlayers())
                 {
-                    player.sendActionBar(CMessageFactory.getEventCountDownActionbarMsg());
+                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_INFIX, CMessageFactory.getEventCountDownActionbarMsg(), Message.LoadMode.REPLACE, 20));
                 }
             }
             // goto PROGRESSING
@@ -115,11 +116,13 @@ public class CEventListener implements Listener
                 Christmas.plugin.eventStats.state = Christmas.EventStats.State.PROGRESSING;
                 Christmas.plugin.eventStats.timer = 0;
 
-                // give @a club
                 for(Player player : Christmas.plugin.getServer().getOnlinePlayers())
                 {
+                    // give club
                     player.getInventory().remove(CItemFactory.club);
                     player.getInventory().addItem(CItemFactory.club);
+                    // set actionbar
+                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, CMessageFactory.getScoreActionbarMsg(0), Message.LoadMode.REPLACE, -1));
                 }
             }
         }
@@ -127,6 +130,13 @@ public class CEventListener implements Listener
         else if(Christmas.plugin.eventStats.state == Christmas.EventStats.State.PROGRESSING)
         {
             Christmas.plugin.eventStats.timer ++;
+
+            // display time
+            for(Player player : Christmas.plugin.getServer().getOnlinePlayers())
+            {
+                Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_PREFIX, CMessageFactory.getTimerActionbarMsg(), Message.LoadMode.IMMEDIATE, 1));
+            }
+
             // deliver gifts
             for(Map<String, Object> giftBatch : Christmas.plugin.config.giftBatches)
             {

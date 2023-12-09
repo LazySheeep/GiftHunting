@@ -1,23 +1,23 @@
-name: Christmas
+name: GiftHunting
 version: 1.0.0
-main: io.lazysheeep.mczju.christmas.Christmas
-description: Plugin for the Christmas celebration of MCZJU
+main: io.lazysheeep.gifthunting.GiftHunting
+description: Plugin for the gift-hunting game
 author: LazySheeep
 api-version: '1.19'
 
 permissions:
-  christmas.player:
-    description: the player of christmas event
+  gifthunting.player:
+    description: the player of gifthunting game
     default: true
-  christmas.op:
-    description: give access to christmas commands and receive debug messages
+  gifthunting.op:
+    description: give access to gifthunting commands and receive debug messages
     default: op
 
 commands:
-  christmas:
-    description: "command of plugin Christmas"
+  gifthunting:
+    description: "command of plugin GiftHunting"
     usage: |
-      /christmas  get spawner   --- print locations of gift spawners
+      /gifthunting  get spawner   --- print locations of gift spawners
                       setter    --- give player Gift Spawn Setter
       
                   spawn all             --- spawn gift at every gift spawn
@@ -26,5 +26,5 @@ commands:
                   event start   --- start the game
                         end     --- end the game
                         stats   --- print event stats
-    aliases: [chris, christmas]
-    permission: christmas.op
+    aliases: [gh, gifthunting]
+    permission: gifthunting.op

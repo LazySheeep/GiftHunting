@@ -1,4 +1,4 @@
-package io.lazysheeep.mczju.christmas;
+package io.lazysheeep.gifthunting;
 
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class CConfig
+public class Config
 {
     public String worldName;
     public int readyStateDuration;
@@ -37,9 +37,9 @@ public class CConfig
     }
 
     private final FileConfiguration fileConfig;
-    private final Christmas plugin;
+    private final GiftHunting plugin;
 
-    public CConfig(Christmas plugin)
+    public Config(GiftHunting plugin)
     {
         plugin.saveDefaultConfig();
         this.fileConfig = plugin.getConfig();
@@ -54,7 +54,7 @@ public class CConfig
         this.readyStateDuration = fileConfig.getInt("readyStateDuration");
         this.progressStateDuration = fileConfig.getInt("progressStateDuration");
 
-        this.giftBatches = CUtil.castMapList(fileConfig.getMapList("giftBatches"), String.class, Object.class);
+        this.giftBatches = Util.castMapList(fileConfig.getMapList("giftBatches"), String.class, Object.class);
 
         this.clicksPerFetch_normal = fileConfig.getInt("clicksPerFetch_normal");
         this.scorePerFetch_normal = fileConfig.getInt("scorePerFetch_normal");
@@ -64,7 +64,7 @@ public class CConfig
         this.scorePerFetch_special = fileConfig.getInt("scorePerFetch_special");
         this.capacityInFetches_special = fileConfig.getInt("capacityInFetches_special");
 
-        this.giftSpawnerLocations = CUtil.castList(fileConfig.getList("giftSpawnerLocations"), Location.class);
+        this.giftSpawnerLocations = Util.castList(fileConfig.getList("giftSpawnerLocations"), Location.class);
     }
 
     // save cfg to file

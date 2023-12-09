@@ -1,7 +1,7 @@
-package io.lazysheeep.mczju.christmas;
+package io.lazysheeep.gifthunting;
 
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
-import io.lazysheeep.mczju.christmas.ui.Message;
+import io.lazysheeep.gifthunting.ui.Message;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
@@ -16,11 +16,10 @@ import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class CEventListener implements Listener
+public class EventListener implements Listener
 {
     // player click
     @EventHandler(priority = EventPriority.LOWEST)
@@ -35,16 +34,16 @@ public class CEventListener implements Listener
         if(item != null)
         {
             // switch between different items
-            if(item.isSimilar(CItemFactory.giftSpawnerSetter))  // use giftSpawnerSetter to set a spawner
+            if(item.isSimilar(ItemFactory.giftSpawnerSetter))  // use giftSpawnerSetter to set a spawner
             {
                 if(action == Action.RIGHT_CLICK_BLOCK && clickedBlock != null)
                 {
                     Location newLocation = clickedBlock.getLocation().toCenterLocation().add(new Vector(0.0f, -0.95f, 0.0f));
-                    Christmas.plugin.config.addGiftSpawnerLocation(newLocation);
-                    Christmas.plugin.uiManager.sendMessage(event.getPlayer(), new Message(Message.Type.CHAT, CMessageFactory.getAddGiftSpawnerMsg(newLocation), Message.LoadMode.REPLACE, 1));
+                    GiftHunting.plugin.config.addGiftSpawnerLocation(newLocation);
+                    GiftHunting.plugin.uiManager.sendMessage(event.getPlayer(), new Message(Message.Type.CHAT, MessageFactory.getAddGiftSpawnerMsg(newLocation), Message.LoadMode.REPLACE, 1));
                 }
             }
-            else if(item.isSimilar(CItemFactory.booster))       // use booster to take off
+            else if(item.isSimilar(ItemFactory.booster))       // use booster to take off
             {
                 if(action.isRightClick())
                 {
@@ -63,9 +62,9 @@ public class CEventListener implements Listener
         Player player = event.getPlayer();
         ItemStack item = player.getInventory().getItem(event.getNewSlot());
 
-        if(player.hasPermission("christmas.op"))
+        if(player.hasPermission("gifthunting.op"))
         {
-            showSpawnerLocations = (item != null && item.isSimilar(CItemFactory.giftSpawnerSetter));
+            showSpawnerLocations = (item != null && item.isSimilar(ItemFactory.giftSpawnerSetter));
         }
     }
 
@@ -73,7 +72,7 @@ public class CEventListener implements Listener
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerArmorStandManipulate(PlayerArmorStandManipulateEvent event)
     {
-        CGift gift = CGift.getGift(event.getRightClicked());
+        Gift gift = Gift.getGift(event.getRightClicked());
         if(gift != null)
         {
             gift.clicked(event.getPlayer());
@@ -88,10 +87,10 @@ public class CEventListener implements Listener
         // ALWAYS
         if(showSpawnerLocations)
         {
-            for(Player player : Christmas.plugin.getServer().getOnlinePlayers())
+            for(Player player : GiftHunting.plugin.getServer().getOnlinePlayers())
             {
-                if(player.hasPermission("christmas.op"))
-                    for(Location spawnerLocation : Christmas.plugin.config.getGiftSpawnerLocations())
+                if(player.hasPermission("gifthunting.op"))
+                    for(Location spawnerLocation : GiftHunting.plugin.config.getGiftSpawnerLocations())
                     {
                         player.spawnParticle(Particle.COMPOSTER, spawnerLocation.add(new Vector(0.0f, 1.95f, 0.0f)), 1, 0.0f, 0.0f, 0.0f);
                     }
@@ -99,48 +98,48 @@ public class CEventListener implements Listener
         }
 
         // READYING
-        if(Christmas.plugin.eventStats.state == Christmas.EventStats.State.READYING)
+        if(GiftHunting.plugin.eventStats.state == GiftHunting.EventStats.State.READYING)
         {
-            Christmas.plugin.eventStats.timer ++;
+            GiftHunting.plugin.eventStats.timer ++;
             // display countdown every second
-            if(Christmas.plugin.eventStats.timer % 20 == 0)
+            if(GiftHunting.plugin.eventStats.timer % 20 == 0)
             {
-                for(Player player : Christmas.plugin.getServer().getOnlinePlayers())
+                for(Player player : GiftHunting.plugin.getServer().getOnlinePlayers())
                 {
-                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_INFIX, CMessageFactory.getEventCountDownActionbarMsg(), Message.LoadMode.REPLACE, 20));
+                    GiftHunting.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_INFIX, MessageFactory.getEventCountDownActionbarMsg(), Message.LoadMode.REPLACE, 20));
                 }
             }
             // goto PROGRESSING
-            if(Christmas.plugin.eventStats.timer >= Christmas.plugin.config.readyStateDuration)
+            if(GiftHunting.plugin.eventStats.timer >= GiftHunting.plugin.config.readyStateDuration)
             {
-                Christmas.plugin.eventStats.state = Christmas.EventStats.State.PROGRESSING;
-                Christmas.plugin.eventStats.timer = 0;
+                GiftHunting.plugin.eventStats.state = GiftHunting.EventStats.State.PROGRESSING;
+                GiftHunting.plugin.eventStats.timer = 0;
 
-                for(Player player : Christmas.plugin.getServer().getOnlinePlayers())
+                for(Player player : GiftHunting.plugin.getServer().getOnlinePlayers())
                 {
                     // give club
-                    player.getInventory().remove(CItemFactory.club);
-                    player.getInventory().addItem(CItemFactory.club);
+                    player.getInventory().remove(ItemFactory.club);
+                    player.getInventory().addItem(ItemFactory.club);
                     // set actionbar
-                    Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, CMessageFactory.getScoreActionbarMsg(0), Message.LoadMode.REPLACE, -1));
+                    GiftHunting.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, MessageFactory.getScoreActionbarMsg(0), Message.LoadMode.REPLACE, -1));
                 }
             }
         }
         // PROGRESSING
-        else if(Christmas.plugin.eventStats.state == Christmas.EventStats.State.PROGRESSING)
+        else if(GiftHunting.plugin.eventStats.state == GiftHunting.EventStats.State.PROGRESSING)
         {
-            Christmas.plugin.eventStats.timer ++;
+            GiftHunting.plugin.eventStats.timer ++;
 
             // display time
-            for(Player player : Christmas.plugin.getServer().getOnlinePlayers())
+            for(Player player : GiftHunting.plugin.getServer().getOnlinePlayers())
             {
-                Christmas.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_PREFIX, CMessageFactory.getTimerActionbarMsg(), Message.LoadMode.IMMEDIATE, 1));
+                GiftHunting.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_PREFIX, MessageFactory.getTimerActionbarMsg(), Message.LoadMode.IMMEDIATE, 1));
             }
 
             // deliver gifts
-            for(Map<String, Object> giftBatch : Christmas.plugin.config.giftBatches)
+            for(Map<String, Object> giftBatch : GiftHunting.plugin.config.giftBatches)
             {
-                if((Integer)giftBatch.get("time") == Christmas.plugin.eventStats.timer)
+                if((Integer)giftBatch.get("time") == GiftHunting.plugin.eventStats.timer)
                 {
                     deliverGiftBatch(giftBatch);
                 }
@@ -156,18 +155,18 @@ public class CEventListener implements Listener
             case "NORMAL" ->
             {
                 int amount = (Integer)giftBatch.get("amount");
-                List<Location> spawnLocations = CUtil.randomPick(Christmas.plugin.config.getGiftSpawnerLocations(), amount);
+                List<Location> spawnLocations = Util.randomPick(GiftHunting.plugin.config.getGiftSpawnerLocations(), amount);
                 for (Location loc : spawnLocations)
                 {
-                    new CGift(loc, CGift.GiftType.NORMAL);
+                    new Gift(loc, Gift.GiftType.NORMAL);
                 }
-                Christmas.plugin.getServer().broadcast(CMessageFactory.getSpawnGiftMsg(amount, CGift.GiftType.NORMAL), "christmas.op");
+                GiftHunting.plugin.getServer().broadcast(MessageFactory.getSpawnGiftMsg(amount, Gift.GiftType.NORMAL), "gifthunting.op");
             }
             case "SPECIAL" ->
             {
-                Location spawnLocation = CUtil.randomPickOne(Christmas.plugin.config.getGiftSpawnerLocations());
-                new CGift(spawnLocation, CGift.GiftType.SPECIAL);
-                Christmas.plugin.getServer().broadcast(CMessageFactory.getSpawnGiftMsg(1, CGift.GiftType.SPECIAL), "christmas.op");
+                Location spawnLocation = Util.randomPickOne(GiftHunting.plugin.config.getGiftSpawnerLocations());
+                new Gift(spawnLocation, Gift.GiftType.SPECIAL);
+                GiftHunting.plugin.getServer().broadcast(MessageFactory.getSpawnGiftMsg(1, Gift.GiftType.SPECIAL), "gifthunting.op");
             }
             default -> {}
         }

@@ -1,14 +1,13 @@
-package io.lazysheeep.mczju.christmas;
+package io.lazysheeep.gifthunting;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
 
-public class CMessageFactory
+public class MessageFactory
 {
-    private CMessageFactory() {}
+    private MessageFactory() {}
 
     public static TextComponent getClearAllGiftMsg(int count)
     {
@@ -20,12 +19,12 @@ public class CMessageFactory
         return Component.text("Cleared " + count + " untracked gifts!");
     }
 
-    public static TextComponent getSpawnGiftMsg(int amount, CGift.GiftType type)
+    public static TextComponent getSpawnGiftMsg(int amount, Gift.GiftType type)
     {
         return Component.text("Spawned " + amount + " " + type.toString() + " gifts!");
     }
 
-    public static TextComponent getGiftClickedActionbarMsg(CGift gift)
+    public static TextComponent getGiftClickedActionbarMsg(Gift gift)
     {
         int pp = (int)(20*((float)gift.clicksToNextFetch/gift.clicksPerFetch));
         return Component.text("开启中>>>", NamedTextColor.AQUA)
@@ -43,8 +42,8 @@ public class CMessageFactory
 
     public static TextComponent getTimerActionbarMsg()
     {
-        int mm = (Christmas.plugin.eventStats.timer/20) / 60;
-        int ss = (Christmas.plugin.eventStats.timer/20) % 60;
+        int mm = (GiftHunting.plugin.eventStats.timer/20) / 60;
+        int ss = (GiftHunting.plugin.eventStats.timer/20) % 60;
         return Component.text(String.format("Time %02d:%02d", mm, ss), NamedTextColor.YELLOW);
     }
 
@@ -61,16 +60,16 @@ public class CMessageFactory
 
     public static TextComponent getEventCountDownActionbarMsg()
     {
-        return Component.text("距活动开始还有: " + (Christmas.plugin.config.readyStateDuration-Christmas.plugin.eventStats.timer)/20 + " 秒");
+        return Component.text("距活动开始还有: " + (GiftHunting.plugin.config.readyStateDuration- GiftHunting.plugin.eventStats.timer)/20 + " 秒");
     }
 
     public static TextComponent getEventStatsMsg()
     {
         String msg = "";
-        msg += "state: " + Christmas.plugin.eventStats.state.toString() + "\n";
-        msg += "timer: " + Christmas.plugin.eventStats.timer + "\n";
-        msg += "giftSpawners: " + Christmas.plugin.config.getGiftSpawnerLocations().size() + "\n";
-        msg += "trackedGifts: " + CGift.getNumber() + "\n";
+        msg += "state: " + GiftHunting.plugin.eventStats.state.toString() + "\n";
+        msg += "timer: " + GiftHunting.plugin.eventStats.timer + "\n";
+        msg += "giftSpawners: " + GiftHunting.plugin.config.getGiftSpawnerLocations().size() + "\n";
+        msg += "trackedGifts: " + Gift.getNumber() + "\n";
         return Component.text(msg);
     }
 

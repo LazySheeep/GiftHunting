@@ -1,4 +1,4 @@
-package io.lazysheeep.mczju.christmas.ui;
+package io.lazysheeep.gifthunting.ui;
 
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
 import net.kyori.adventure.text.Component;
@@ -8,7 +8,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 

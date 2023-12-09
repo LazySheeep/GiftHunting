@@ -1,7 +1,6 @@
-package io.lazysheeep.mczju.christmas;
+package io.lazysheeep.gifthunting;
 
-import io.lazysheeep.mczju.christmas.ui.UI;
-import io.lazysheeep.mczju.christmas.ui.UIManager;
+import io.lazysheeep.gifthunting.ui.UIManager;
 import net.kyori.adventure.text.Component;
 import org.bukkit.World;
 import org.bukkit.command.PluginCommand;
@@ -10,10 +9,10 @@ import org.bukkit.scoreboard.Criteria;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 
-public final class Christmas extends JavaPlugin
+public final class GiftHunting extends JavaPlugin
 {
-    public static Christmas plugin;
-    public CConfig config;
+    public static GiftHunting plugin;
+    public Config config;
     public UIManager uiManager = new UIManager(this);
     public World world;
     public Objective scoreboardObj;
@@ -33,7 +32,7 @@ public final class Christmas extends JavaPlugin
     public void onEnable()
     {
         // load cfg
-        config = new CConfig(this);
+        config = new Config(this);
         this.config.load();
 
         // set static reference
@@ -43,23 +42,23 @@ public final class Christmas extends JavaPlugin
             this.getServer().sendMessage(Component.text("[ERROR] World \"" + config.worldName + "\" not found!"));
 
         // register event listener
-        this.getServer().getPluginManager().registerEvents(new CEventListener(), this);
+        this.getServer().getPluginManager().registerEvents(new EventListener(), this);
         this.getServer().getPluginManager().registerEvents(uiManager, this);
 
         // register commands
-        PluginCommand command = this.getCommand("christmas");
+        PluginCommand command = this.getCommand("gifthunting");
         if(command != null)
-            command.setExecutor(new CCommand());
+            command.setExecutor(new CCommandExecutor());
         else
             this.getServer().broadcast(Component.text("[ERROR] Something Wrong!"));
 
         // get scoreboard
         Scoreboard scoreboard = this.getServer().getScoreboardManager().getMainScoreboard();
-        this.scoreboardObj = scoreboard.getObjective("Christmas");
+        this.scoreboardObj = scoreboard.getObjective("GiftHunting");
         if(scoreboardObj == null)
         {
-            this.scoreboardObj = scoreboard.registerNewObjective("Christmas", Criteria.DUMMY, Component.text("Christmas"));
-            this.getServer().broadcast(Component.text("Scoreboard \"Christmas\" not found, created one"));
+            this.scoreboardObj = scoreboard.registerNewObjective("GiftHunting", Criteria.DUMMY, Component.text("GiftHunting"));
+            this.getServer().broadcast(Component.text("Scoreboard \"GiftHunting\" not found, created one"));
         }
 
         // init event stats

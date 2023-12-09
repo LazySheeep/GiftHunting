@@ -1,4 +1,4 @@
-package io.lazysheeep.mczju.christmas.ui;
+package io.lazysheeep.gifthunting.ui;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;

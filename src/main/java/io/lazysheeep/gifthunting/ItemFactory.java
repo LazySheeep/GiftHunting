@@ -1,4 +1,4 @@
-package io.lazysheeep.mczju.christmas;
+package io.lazysheeep.gifthunting;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -9,7 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CItemFactory
+public class ItemFactory
 {
     static public final ItemStack giftSpawnerSetter;
     static
@@ -58,5 +58,5 @@ public class CItemFactory
         });
     }
 
-    private CItemFactory() {}
+    private ItemFactory() {}
 }

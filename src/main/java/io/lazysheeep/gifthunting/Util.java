@@ -1,10 +1,10 @@
-package io.lazysheeep.mczju.christmas;
+package io.lazysheeep.gifthunting;
 
 import org.bukkit.util.Vector;
 
 import java.util.*;
 
-public class CUtil
+public class Util
 {
     private static final Random random = new Random();
 

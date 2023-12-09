@@ -1,7 +1,8 @@
 package io.lazysheeep.gifthunting;
 
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
-import io.lazysheeep.gifthunting.ui.Message;
+import io.lazysheeep.uimanager.Message;
+import io.lazysheeep.uimanager.UIManager;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
@@ -40,7 +41,7 @@ public class EventListener implements Listener
                 {
                     Location newLocation = clickedBlock.getLocation().toCenterLocation().add(new Vector(0.0f, -0.95f, 0.0f));
                     GiftHunting.plugin.config.addGiftSpawnerLocation(newLocation);
-                    GiftHunting.plugin.uiManager.sendMessage(event.getPlayer(), new Message(Message.Type.CHAT, MessageFactory.getAddGiftSpawnerMsg(newLocation), Message.LoadMode.REPLACE, 1));
+                    UIManager.sendMessage(event.getPlayer(), new Message(Message.Type.CHAT, MessageFactory.getAddGiftSpawnerMsg(newLocation), Message.LoadMode.REPLACE, 1));
                 }
             }
             else if(item.isSimilar(ItemFactory.booster))       // use booster to take off
@@ -106,7 +107,7 @@ public class EventListener implements Listener
             {
                 for(Player player : GiftHunting.plugin.getServer().getOnlinePlayers())
                 {
-                    GiftHunting.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_INFIX, MessageFactory.getEventCountDownActionbarMsg(), Message.LoadMode.REPLACE, 20));
+                    UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_INFIX, MessageFactory.getEventCountDownActionbarMsg(), Message.LoadMode.REPLACE, 20));
                 }
             }
             // goto PROGRESSING
@@ -121,7 +122,7 @@ public class EventListener implements Listener
                     player.getInventory().remove(ItemFactory.club);
                     player.getInventory().addItem(ItemFactory.club);
                     // set actionbar
-                    GiftHunting.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, MessageFactory.getScoreActionbarMsg(0), Message.LoadMode.REPLACE, -1));
+                    UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, MessageFactory.getScoreActionbarMsg(0), Message.LoadMode.REPLACE, -1));
                 }
             }
         }
@@ -133,7 +134,7 @@ public class EventListener implements Listener
             // display time
             for(Player player : GiftHunting.plugin.getServer().getOnlinePlayers())
             {
-                GiftHunting.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_PREFIX, MessageFactory.getTimerActionbarMsg(), Message.LoadMode.IMMEDIATE, 1));
+                UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_PREFIX, MessageFactory.getTimerActionbarMsg(), Message.LoadMode.IMMEDIATE, 1));
             }
 
             // deliver gifts

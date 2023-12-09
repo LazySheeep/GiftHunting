@@ -1,6 +1,6 @@
 package io.lazysheeep.gifthunting;
 
-import io.lazysheeep.gifthunting.ui.UIManager;
+import io.lazysheeep.uimanager.UIManager;
 import net.kyori.adventure.text.Component;
 import org.bukkit.World;
 import org.bukkit.command.PluginCommand;
@@ -13,7 +13,6 @@ public final class GiftHunting extends JavaPlugin
 {
     public static GiftHunting plugin;
     public Config config;
-    public UIManager uiManager = new UIManager(this);
     public World world;
     public Objective scoreboardObj;
 
@@ -43,7 +42,6 @@ public final class GiftHunting extends JavaPlugin
 
         // register event listener
         this.getServer().getPluginManager().registerEvents(new EventListener(), this);
-        this.getServer().getPluginManager().registerEvents(uiManager, this);
 
         // register commands
         PluginCommand command = this.getCommand("gifthunting");

@@ -1,7 +1,8 @@
 package io.lazysheeep.gifthunting;
 
 
-import io.lazysheeep.gifthunting.ui.Message;
+import io.lazysheeep.uimanager.Message;
+import io.lazysheeep.uimanager.UIManager;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -121,7 +122,7 @@ public class Gift
     public void clicked(Player player)
     {
         this.clicksToNextFetch --;
-        GiftHunting.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_INFIX, MessageFactory.getGiftClickedActionbarMsg(this), Message.LoadMode.REPLACE, 10));
+        UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_INFIX, MessageFactory.getGiftClickedActionbarMsg(this), Message.LoadMode.REPLACE, 10));
 
         if(this.clicksToNextFetch <= 0)
         {
@@ -140,11 +141,11 @@ public class Gift
     {
         Score score = GiftHunting.plugin.scoreboardObj.getScore(player);
 
-        GiftHunting.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, MessageFactory.getScoreIncreasedActionbarMsg(score.getScore(), this.scorePerFetch), Message.LoadMode.REPLACE, 10));
+        UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, MessageFactory.getScoreIncreasedActionbarMsg(score.getScore(), this.scorePerFetch), Message.LoadMode.REPLACE, 10));
 
         score.setScore(score.getScore() + this.scorePerFetch);
 
-        GiftHunting.plugin.uiManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, MessageFactory.getScoreActionbarMsg(score.getScore()), Message.LoadMode.WAIT, -1));
+        UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, MessageFactory.getScoreActionbarMsg(score.getScore()), Message.LoadMode.WAIT, -1));
 
         if(Util.getRandomBool(0.2f))
             player.getInventory().addItem(ItemFactory.booster);

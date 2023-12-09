@@ -5,6 +5,9 @@ description: Plugin for the gift-hunting game
 author: LazySheeep
 api-version: '1.19'
 
+depend:
+  - UIManager
+
 permissions:
   gifthunting.player:
     description: the player of gifthunting game

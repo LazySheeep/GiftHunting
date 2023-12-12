@@ -9,7 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ItemFactory
+class ItemFactory
 {
     static public final ItemStack giftSpawnerSetter;
     static

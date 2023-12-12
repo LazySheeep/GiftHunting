@@ -2,6 +2,7 @@ package io.lazysheeep.gifthunting;
 
 import io.lazysheeep.uimanager.UIManager;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -9,59 +10,61 @@ import org.bukkit.scoreboard.Criteria;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public final class GiftHunting extends JavaPlugin
 {
     public static GiftHunting plugin;
-    public Config config;
+    static GameManager gameManager;
+    static Config config;
+    public Logger logger;
     public World world;
     public Objective scoreboardObj;
 
-    public static class EventStats
-    {
-        public enum State
-        {
-            IDLE, READYING, PROGRESSING, PAUSED, FINISHED
-        }
-        public State state;
-        public int timer;
-    }
-    public EventStats eventStats = new EventStats();
 
     @Override
     public void onEnable()
     {
-        // load cfg
-        config = new Config(this);
-        this.config.load();
-
         // set static reference
         plugin = this;
-        world = this.getServer().getWorld(config.worldName);
+        logger = this.getLogger();
+        gameManager = new GameManager();
+
+        // load cfg
+        config = new Config(this);
+        config.load();
+
+        // get world
+        world = Bukkit.getServer().getWorld(config.worldName);
         if(world == null)
-            this.getServer().sendMessage(Component.text("[ERROR] World \"" + config.worldName + "\" not found!"));
+            logger.log(Level.WARNING, "World \"" + config.worldName + "\" not found!");
 
         // register event listener
-        this.getServer().getPluginManager().registerEvents(new EventListener(), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerEventListener(), this);
+        Bukkit.getPluginManager().registerEvents(gameManager, this);
 
         // register commands
         PluginCommand command = this.getCommand("gifthunting");
         if(command != null)
             command.setExecutor(new CCommandExecutor());
         else
-            this.getServer().broadcast(Component.text("[ERROR] Something Wrong!"));
+            logger.log(Level.SEVERE, "Can't get command! There must be something wrong!");
 
         // get scoreboard
-        Scoreboard scoreboard = this.getServer().getScoreboardManager().getMainScoreboard();
-        this.scoreboardObj = scoreboard.getObjective("GiftHunting");
+        String scoreboardName = "GiftHunting";
+        Scoreboard scoreboard = Bukkit.getServer().getScoreboardManager().getMainScoreboard();
+        this.scoreboardObj = scoreboard.getObjective(scoreboardName);
         if(scoreboardObj == null)
         {
-            this.scoreboardObj = scoreboard.registerNewObjective("GiftHunting", Criteria.DUMMY, Component.text("GiftHunting"));
-            this.getServer().broadcast(Component.text("Scoreboard \"GiftHunting\" not found, created one"));
+            this.scoreboardObj = scoreboard.registerNewObjective(scoreboardName, Criteria.DUMMY, Component.text(scoreboardName));
+            logger.log(Level.INFO, "Scoreboard \"" + scoreboardName + "\" not found, created one");
         }
 
-        // init event stats
-        this.eventStats.state = EventStats.State.IDLE;
-        this.eventStats.timer = 0;
+        // set UI width
+        UIManager.setActionbarInfixWidth(32);
+
+        logger.log(Level.INFO, "Enabled");
     }
 
     @Override

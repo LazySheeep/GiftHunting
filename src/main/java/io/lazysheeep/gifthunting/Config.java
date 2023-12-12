@@ -8,12 +8,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
-public class Config
+class Config
 {
     public String worldName;
     public int readyStateDuration;
     public int progressStateDuration;
+    public int finishedStateDuration;
     public List<Map<String, Object>> giftBatches;
     public int clicksPerFetch_normal;
     public int scorePerFetch_normal;
@@ -31,9 +33,30 @@ public class Config
         return result;
     }
 
-    public void addGiftSpawnerLocation(Location location)
+    public int getGiftSpawnerCount()
+    {
+        return giftSpawnerLocations.size();
+    }
+
+    public void addGiftSpawner(Location location)
     {
         giftSpawnerLocations.add(location);
+    }
+
+    public boolean removeGiftSpawner(Location location)
+    {
+        if(giftSpawnerLocations.contains(location))
+        {
+            giftSpawnerLocations.remove(location);
+            return true;
+        }
+        return false;
+    }
+
+    public void clearGiftSpawners()
+    {
+        giftSpawnerLocations.clear();
+        GiftHunting.plugin.logger.log(Level.INFO, "cleared gift-spawners");
     }
 
     private final FileConfiguration fileConfig;
@@ -53,6 +76,7 @@ public class Config
 
         this.readyStateDuration = fileConfig.getInt("readyStateDuration");
         this.progressStateDuration = fileConfig.getInt("progressStateDuration");
+        this.finishedStateDuration = fileConfig.getInt("finishedStateDuration");
 
         this.giftBatches = Util.castMapList(fileConfig.getMapList("giftBatches"), String.class, Object.class);
 
@@ -65,6 +89,8 @@ public class Config
         this.capacityInFetches_special = fileConfig.getInt("capacityInFetches_special");
 
         this.giftSpawnerLocations = Util.castList(fileConfig.getList("giftSpawnerLocations"), Location.class);
+
+        GiftHunting.plugin.logger.log(Level.INFO, "config loaded");
     }
 
     // save cfg to file
@@ -78,5 +104,7 @@ public class Config
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        GiftHunting.plugin.logger.log(Level.INFO, "config saved");
     }
 }

@@ -20,14 +20,14 @@ commands:
   gifthunting:
     description: "command of plugin GiftHunting"
     usage: |
-      /gifthunting  get spawner   --- print locations of gift spawners
-                      setter    --- give player Gift Spawn Setter
-      
-                  spawn all             --- spawn gift at every gift spawn
-                        <spawn_amount>  --- randomly spawn <spawn_amount> gifts
-      
-                  event start   --- start the game
-                        end     --- end the game
-                        stats   --- print event stats
+      /gifthunting  get setter    --- get item giftSpawnSetter
+                        booster   --- get item booster
+                        club      --- get item club
+                    clear spawner   --- clear all the spawner
+                          gift      --- clear all the gifts
+                          untracked --- clear all untracked gifts
+                    game  start   --- start the game
+                          end     --- end the game
+                          stats   --- print game stats
     aliases: [gh, gifthunting]
     permission: gifthunting.op

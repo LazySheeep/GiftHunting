@@ -19,7 +19,7 @@ repositories {
 
 dependencies {
     compileOnly "io.papermc.paper:paper-api:1.19.2-R0.1-SNAPSHOT"
-    implementation 'com.github.LazySheeep:UIManager:master-SNAPSHOT'
+    implementation 'com.github.LazySheeep:UIManager:0.3.2'
 }
 
 def targetJavaVersion = 17

@@ -18,14 +18,15 @@ import org.bukkit.scoreboard.Score;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 
-public class Gift
+class Gift
 {
-    public enum GiftType
+    enum GiftType
     {
-        NORMAL(GiftHunting.plugin.config.clicksPerFetch_normal, GiftHunting.plugin.config.scorePerFetch_normal, GiftHunting.plugin.config.capacityInFetches_normal),
-        SPECIAL(GiftHunting.plugin.config.clicksPerFetch_special, GiftHunting.plugin.config.scorePerFetch_special, GiftHunting.plugin.config.capacityInFetches_special);
+        NORMAL(GiftHunting.config.clicksPerFetch_normal, GiftHunting.config.scorePerFetch_normal, GiftHunting.config.capacityInFetches_normal),
+        SPECIAL(GiftHunting.config.clicksPerFetch_special, GiftHunting.config.scorePerFetch_special, GiftHunting.config.capacityInFetches_special);
 
         GiftType(int clicksPerFetch, int scorePerFetch, int capacityInFetches)
         {
@@ -40,10 +41,11 @@ public class Gift
     }
 
     private static final List<Gift> giftPool = new ArrayList<>();
-    public static int getNumber()
+    public static int getGiftCount()
     {
         return giftPool.size();
     }
+    static final String tagName = "GiftHunting";
 
     public static Gift getGift(Entity entity)
     {
@@ -57,29 +59,32 @@ public class Gift
         return null;
     }
 
-    public static void clearAll()
+    public static int clearGifts()
     {
+        int counter = giftPool.size();
         for(Gift gift : giftPool)
         {
             gift.giftEntity.remove();
             gift.giftEntity = null;
         }
-        GiftHunting.plugin.getServer().broadcast(MessageFactory.getClearAllGiftMsg(giftPool.size()), "gifthunting.op");
+        GiftHunting.plugin.logger.log(Level.INFO, MessageFactory.getClearAllGiftLog(giftPool.size()));
         giftPool.clear();
+        return counter;
     }
 
-    public static void clearUnTracked()
+    public static int clearUnTracked()
     {
         int counter = 0;
         for(ArmorStand e : GiftHunting.plugin.world.getEntitiesByClass(ArmorStand.class))
         {
-            if(e.getScoreboardTags().contains("GiftHunting") && getGift(e) == null)
+            if(e.getScoreboardTags().contains(tagName) && getGift(e) == null)
             {
                 e.remove();
                 counter ++;
             }
         }
-        GiftHunting.plugin.getServer().broadcast(MessageFactory.getClearUntrackedGiftMsg(counter), "gifthunting.op");
+        GiftHunting.plugin.logger.log(Level.INFO, MessageFactory.getClearUntrackedGiftLog(counter));
+        return counter;
     }
 
 
@@ -100,7 +105,7 @@ public class Gift
         location.setYaw(Util.getRandomFloat(0.0f, 360.0f));
         this.giftEntity = (ArmorStand) location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
         this.giftEntity.customName(Component.text("GiftHuntingGift"));
-        this.giftEntity.addScoreboardTag("GiftHunting");
+        this.giftEntity.addScoreboardTag(tagName);
         this.giftEntity.setCanMove(false);
         this.giftEntity.setInvulnerable(true);
         this.giftEntity.setInvisible(true);
@@ -122,7 +127,7 @@ public class Gift
     public void clicked(Player player)
     {
         this.clicksToNextFetch --;
-        UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_INFIX, MessageFactory.getGiftClickedActionbarMsg(this), Message.LoadMode.REPLACE, 10));
+        UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_INFIX, MessageFactory.getGiftClickedActionbar(this), Message.LoadMode.REPLACE, 10));
 
         if(this.clicksToNextFetch <= 0)
         {
@@ -141,11 +146,11 @@ public class Gift
     {
         Score score = GiftHunting.plugin.scoreboardObj.getScore(player);
 
-        UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, MessageFactory.getScoreIncreasedActionbarMsg(score.getScore(), this.scorePerFetch), Message.LoadMode.REPLACE, 10));
+        UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, MessageFactory.getProgressingActionbarSuffixWhenScoreIncreased(score.getScore(), this.scorePerFetch), Message.LoadMode.REPLACE, 20));
 
         score.setScore(score.getScore() + this.scorePerFetch);
 
-        UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, MessageFactory.getScoreActionbarMsg(score.getScore()), Message.LoadMode.WAIT, -1));
+        UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, MessageFactory.getProgressingActionbarSuffix(score.getScore()), Message.LoadMode.WAIT, -1));
 
         if(Util.getRandomBool(0.2f))
             player.getInventory().addItem(ItemFactory.booster);

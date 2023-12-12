@@ -3,15 +3,11 @@ package io.lazysheeep.gifthunting;
 import io.lazysheeep.uimanager.Message;
 import io.lazysheeep.uimanager.UIManager;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 public class CCommandExecutor implements CommandExecutor
 {
@@ -20,89 +16,82 @@ public class CCommandExecutor implements CommandExecutor
     {
         if(args.length >= 1) switch (args[0])
         {
-            case "get" ->  // get ...
+            case "get" ->   // get item
             {
                 if(args.length >= 2) switch (args[1])
                 {
-                    case "spawner" ->    // get spawners
-                    {
-                        sender.sendMessage(Component.text(GiftHunting.plugin.config.getGiftSpawnerLocations().toString()));
-                    }
-                    case "setter" ->    // get setter
+                    case "setter" ->
                     {
                         if(sender instanceof Player player)
-                        {
                             player.getInventory().addItem(ItemFactory.giftSpawnerSetter);
-                        }
+                    }
+                    case "booster" ->
+                    {
+                        if(sender instanceof Player player)
+                            player.getInventory().addItem(ItemFactory.booster);
+                    }
+                    case "club" ->
+                    {
+                        if(sender instanceof Player player)
+                            player.getInventory().addItem(ItemFactory.club);
                     }
                     default -> { return false; }
                 }
                 else return false;
             }
 
-            case "spawn" ->    // spawn ...
+            case "clear" ->
             {
                 if(args.length >= 2) switch (args[1])
                 {
-                    case "all" ->  // spawn all
+                    case "spawner" ->
                     {
-                        for (Location loc : GiftHunting.plugin.config.getGiftSpawnerLocations())
-                        {
-                            new Gift(loc, Gift.GiftType.NORMAL);
-                        }
-                        sender.sendMessage(MessageFactory.getSpawnGiftMsg(GiftHunting.plugin.config.getGiftSpawnerLocations().size(), Gift.GiftType.NORMAL));
+                        GiftHunting.config.clearGiftSpawners();
                     }
-                    default -> // spawn <spawn_number>
+                    case "gift" ->
                     {
-                        int spawnAmount = Integer.parseInt(args[1]);
-                        List<Location> spawnLocations = Util.randomPick(GiftHunting.plugin.config.getGiftSpawnerLocations(), spawnAmount);
-                        for (Location loc : spawnLocations)
-                        {
-                            new Gift(loc, Gift.GiftType.NORMAL);
-                        }
-                        sender.sendMessage(MessageFactory.getSpawnGiftMsg(spawnAmount, Gift.GiftType.NORMAL));
+                        int counter = Gift.clearGifts();
+                        if(sender instanceof Player player)
+                            UIManager.sendMessage(player, new Message(Message.Type.CHAT, MessageFactory.getClearAllGiftLog(counter), Message.LoadMode.IMMEDIATE, 1));
                     }
+                    case "untracked" ->
+                    {
+                        int counter = Gift.clearUnTracked();
+                        if(sender instanceof Player player)
+                            UIManager.sendMessage(player, new Message(Message.Type.CHAT, MessageFactory.getClearUntrackedGiftLog(counter), Message.LoadMode.IMMEDIATE, 1));
+                    }
+                    default -> { return false; }
                 }
                 else return false;
             }
-            case "event" -> // event ...
+
+            case "game" ->  // manage game state
             {
                 if(args.length >= 2) switch (args[1])
                 {
-                    case "start" -> // start the event
+                    case "start" -> // start the game
                     {
-                        if (GiftHunting.plugin.eventStats.state == GiftHunting.EventStats.State.IDLE)
-                        {
-                            // set event state
-                            GiftHunting.plugin.eventStats.state = GiftHunting.EventStats.State.READYING;
-                            GiftHunting.plugin.eventStats.timer = 0;
-                            // reset all player's score
-                            for(OfflinePlayer player : GiftHunting.plugin.getServer().getOfflinePlayers())
-                                GiftHunting.plugin.scoreboardObj.getScore(player).resetScore();
-                            // flush player UI
-                            for(Player player : GiftHunting.plugin.getServer().getOnlinePlayers())
-                                UIManager.flush(player, Message.Type.ACTIONBAR_PREFIX, Message.Type.ACTIONBAR_INFIX, Message.Type.ACTIONBAR_SUFFIX);
-                            // clear all gifts
-                            Gift.clearAll();
-                            Gift.clearUnTracked();
-                        }
-                        else
+                        if (!GiftHunting.gameManager.switchState(GameManager.State.READYING))
                             sender.sendMessage(MessageFactory.getEventCantStartMsg());
                     }
-                    case "stop" -> // end the event
+                    case "end" -> // end the game
                     {
-                        if (GiftHunting.plugin.eventStats.state == GiftHunting.EventStats.State.IDLE)
+                        if (!GiftHunting.gameManager.switchState(GameManager.State.IDLE))
                             sender.sendMessage(MessageFactory.getEventCantEndMsg());
-                        else
-                        {
-                            // set event state
-                            GiftHunting.plugin.eventStats.state = GiftHunting.EventStats.State.IDLE;
-                            GiftHunting.plugin.eventStats.timer = 0;
-                        }
+                    }
+                    case "pause" ->
+                    {
+                        if(!GiftHunting.gameManager.switchState(GameManager.State.PAUSED))
+                            sender.sendMessage(MessageFactory.getEventCantPauseMsg());
+                    }
+                    case "unpause" ->
+                    {
+                        if(!GiftHunting.gameManager.switchState(GameManager.State.UNPAUSE))
+                            sender.sendMessage(MessageFactory.getEventCantUnpauseMsg());
                     }
                     case "stats" -> // print event stats
                     {
-                        sender.sendMessage(MessageFactory.getEventStatsMsg());
+                        sender.sendMessage(MessageFactory.getGameStatsMsg());
                     }
                     default -> { return false; }
                 }

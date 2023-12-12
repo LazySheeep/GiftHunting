@@ -2,6 +2,7 @@ worldName: world
 
 readyStateDuration: 6000
 progressStateDuration: 36000
+finishedStateDuration: 200
 
 giftBatches:
   - type: NORMAL

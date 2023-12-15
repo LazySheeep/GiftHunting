@@ -6,7 +6,7 @@ author: LazySheeep
 api-version: '1.19'
 
 depend:
-  - UIManager
+  - LazuliUI
 
 permissions:
   gifthunting.player:

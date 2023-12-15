@@ -1,12 +1,9 @@
 package io.lazysheeep.gifthunting;
 
 
-import io.lazysheeep.uimanager.Message;
-import io.lazysheeep.uimanager.UIManager;
+import io.lazysheeep.lazuliui.LazuliUI;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -91,7 +88,8 @@ class Gift
     public ArmorStand giftEntity;
     public final int clicksPerFetch;
     public final int scorePerFetch;
-    public int capacityInFetches;
+    public final int capacityInFetches;
+    public int remainingCapacity;
     public int clicksToNextFetch;
 
     public Gift(Location location, GiftType type)
@@ -99,7 +97,8 @@ class Gift
         this.clicksPerFetch = type.clicksPerFetch;
         this.scorePerFetch = type.scorePerFetch;
         this.capacityInFetches = type.capacityInFetches;
-        this.clicksToNextFetch = clicksPerFetch;
+        this.remainingCapacity = this.capacityInFetches;
+        this.clicksToNextFetch = this.clicksPerFetch;
 
         location.add(Util.getRandomOffset(0.4f, 0.0f, 0.4f));
         location.setYaw(Util.getRandomFloat(0.0f, 360.0f));
@@ -127,15 +126,16 @@ class Gift
     public void clicked(Player player)
     {
         this.clicksToNextFetch --;
-        UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_INFIX, MessageFactory.getGiftClickedActionbar(this), Message.LoadMode.REPLACE, 10));
+        LazuliUI.sendMessage(player, MessageFactory.getGiftClickedActionbar(this));
+        giftEntity.getWorld().playSound(giftEntity, Sound.BLOCK_WOOL_HIT, SoundCategory.MASTER, 1.0f, 1.0f);
 
         if(this.clicksToNextFetch <= 0)
         {
-            if(this.capacityInFetches > 0) // fetch a gift
+            if(this.remainingCapacity > 0) // fetch a gift
             {
                 this.fetched(player);
             }
-            if(this.capacityInFetches <= 0) // gift empty
+            if(this.remainingCapacity <= 0) // gift empty
                 this.remove();
             else
                 this.clicksToNextFetch = clicksPerFetch;
@@ -144,18 +144,24 @@ class Gift
 
     private void fetched(Player player)
     {
+        // send actionbar infix:
+        LazuliUI.sendMessage(player, MessageFactory.getGiftFetchedActionbar(this));
+        // send actionbar suffix list:
+        // score: value +increment
+        LazuliUI.sendMessage(player, MessageFactory.getProgressingActionbarSuffixWhenScoreIncreased(player, this.scorePerFetch));
+        // play sound
+        player.getWorld().playSound(player, Sound.BLOCK_NOTE_BLOCK_CHIME, SoundCategory.MASTER, 1.0f, 1.0f);
+        // score increase
         Score score = GiftHunting.plugin.scoreboardObj.getScore(player);
-
-        UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, MessageFactory.getProgressingActionbarSuffixWhenScoreIncreased(score.getScore(), this.scorePerFetch), Message.LoadMode.REPLACE, 20));
-
         score.setScore(score.getScore() + this.scorePerFetch);
-
-        UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, MessageFactory.getProgressingActionbarSuffix(score.getScore()), Message.LoadMode.WAIT, -1));
-
+        // randomly give item
         if(Util.getRandomBool(0.2f))
+        {
             player.getInventory().addItem(ItemFactory.booster);
-
-        this.capacityInFetches --;
+            player.playSound(player, Sound.ENTITY_ITEM_PICKUP, SoundCategory.MASTER, 1.0f, 1.0f);
+        }
+        // update capacity
+        this.remainingCapacity--;
     }
 
     public void remove()

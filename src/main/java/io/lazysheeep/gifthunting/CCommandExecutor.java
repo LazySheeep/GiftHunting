@@ -1,7 +1,7 @@
 package io.lazysheeep.gifthunting;
 
-import io.lazysheeep.uimanager.Message;
-import io.lazysheeep.uimanager.UIManager;
+import io.lazysheeep.lazuliui.Message;
+import io.lazysheeep.lazuliui.LazuliUI;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -52,68 +52,60 @@ public class CCommandExecutor implements CommandExecutor
                     {
                         int counter = Gift.clearGifts();
                         if(sender instanceof Player player)
-                            UIManager.sendMessage(player, new Message(Message.Type.CHAT, MessageFactory.getClearAllGiftLog(counter), Message.LoadMode.IMMEDIATE, 1));
+                            LazuliUI.sendMessage(player, new Message(Message.Type.CHAT, MessageFactory.getClearAllGiftLog(counter), Message.LoadMode.IMMEDIATE, 1));
                     }
                     case "untracked" ->
                     {
                         int counter = Gift.clearUnTracked();
                         if(sender instanceof Player player)
-                            UIManager.sendMessage(player, new Message(Message.Type.CHAT, MessageFactory.getClearUntrackedGiftLog(counter), Message.LoadMode.IMMEDIATE, 1));
+                            LazuliUI.sendMessage(player, new Message(Message.Type.CHAT, MessageFactory.getClearUntrackedGiftLog(counter), Message.LoadMode.IMMEDIATE, 1));
                     }
                     default -> { return false; }
                 }
                 else return false;
             }
 
-            case "game" ->  // manage game state
+            case "start" -> // start the game
             {
-                if(args.length >= 2) switch (args[1])
-                {
-                    case "start" -> // start the game
-                    {
-                        if (!GiftHunting.gameManager.switchState(GameManager.State.READYING))
-                            sender.sendMessage(MessageFactory.getEventCantStartMsg());
-                    }
-                    case "end" -> // end the game
-                    {
-                        if (!GiftHunting.gameManager.switchState(GameManager.State.IDLE))
-                            sender.sendMessage(MessageFactory.getEventCantEndMsg());
-                    }
-                    case "pause" ->
-                    {
-                        if(!GiftHunting.gameManager.switchState(GameManager.State.PAUSED))
-                            sender.sendMessage(MessageFactory.getEventCantPauseMsg());
-                    }
-                    case "unpause" ->
-                    {
-                        if(!GiftHunting.gameManager.switchState(GameManager.State.UNPAUSE))
-                            sender.sendMessage(MessageFactory.getEventCantUnpauseMsg());
-                    }
-                    case "stats" -> // print event stats
-                    {
-                        sender.sendMessage(MessageFactory.getGameStatsMsg());
-                    }
-                    default -> { return false; }
-                }
-                else return false;
+                if (!GiftHunting.gameManager.switchState(GameManager.State.READYING))
+                    sender.sendMessage(MessageFactory.getEventCantStartText());
+            }
+            case "end" -> // end the game
+            {
+                if (!GiftHunting.gameManager.switchState(GameManager.State.IDLE))
+                    sender.sendMessage(MessageFactory.getEventCantEndText());
+            }
+            case "pause" ->
+            {
+                if(!GiftHunting.gameManager.switchState(GameManager.State.PAUSED))
+                    sender.sendMessage(MessageFactory.getEventCantPauseText());
+            }
+            case "unpause" ->
+            {
+                if(!GiftHunting.gameManager.switchState(GameManager.State.UNPAUSE))
+                    sender.sendMessage(MessageFactory.getEventCantUnpauseText());
+            }
+            case "stats" -> // print event stats
+            {
+                sender.sendMessage(MessageFactory.getGameStatsText());
             }
 
             case "test" ->
             {
                 if(sender instanceof Player player)
                 {
-                    UIManager.sendMessage(player, new Message(Message.Type.CHAT, Component.text("test chat message 0"), Message.LoadMode.REPLACE, 20));
-                    UIManager.sendMessage(player, new Message(Message.Type.CHAT, Component.text("test chat message 1"), Message.LoadMode.WAIT, 20));
-                    UIManager.sendMessage(player, new Message(Message.Type.CHAT, Component.text("test chat message 2"), Message.LoadMode.WAIT, 20));
+                    LazuliUI.sendMessage(player, new Message(Message.Type.CHAT, Component.text("test chat message 0"), Message.LoadMode.REPLACE, 20));
+                    LazuliUI.sendMessage(player, new Message(Message.Type.CHAT, Component.text("test chat message 1"), Message.LoadMode.WAIT, 20));
+                    LazuliUI.sendMessage(player, new Message(Message.Type.CHAT, Component.text("test chat message 2"), Message.LoadMode.WAIT, 20));
 
-                    UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_PREFIX, Component.text("actionbar_prefix "), Message.LoadMode.REPLACE, -1));
-                    UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_INFIX, Component.text("actionbar_infix "), Message.LoadMode.REPLACE, 100));
+                    LazuliUI.sendMessage(player, new Message(Message.Type.ACTIONBAR_PREFIX, Component.text("actionbar_prefix "), Message.LoadMode.REPLACE, -1));
+                    LazuliUI.sendMessage(player, new Message(Message.Type.ACTIONBAR_INFIX, Component.text("actionbar_infix "), Message.LoadMode.REPLACE, 100));
 
-                    UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 1"), Message.LoadMode.REPLACE, 20));
-                    UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 2"), Message.LoadMode.WAIT, 20));
-                    UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 3"), Message.LoadMode.WAIT, 20));
-                    UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 4"), Message.LoadMode.WAIT, 20));
-                    UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 5"), Message.LoadMode.WAIT,20));
+                    LazuliUI.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 1"), Message.LoadMode.REPLACE, 20));
+                    LazuliUI.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 2"), Message.LoadMode.WAIT, 20));
+                    LazuliUI.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 3"), Message.LoadMode.WAIT, 20));
+                    LazuliUI.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 4"), Message.LoadMode.WAIT, 20));
+                    LazuliUI.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 5"), Message.LoadMode.WAIT,20));
                 }
             }
 

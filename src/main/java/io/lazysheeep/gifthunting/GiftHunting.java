@@ -1,6 +1,6 @@
 package io.lazysheeep.gifthunting;
 
-import io.lazysheeep.uimanager.UIManager;
+import io.lazysheeep.lazuliui.LazuliUI;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -62,7 +62,7 @@ public final class GiftHunting extends JavaPlugin
         }
 
         // set UI width
-        UIManager.setActionbarInfixWidth(32);
+        LazuliUI.setActionbarInfixWidth(32);
 
         logger.log(Level.INFO, "Enabled");
     }

@@ -1,10 +1,11 @@
 package io.lazysheeep.gifthunting;
 
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
-import io.lazysheeep.uimanager.Message;
-import io.lazysheeep.uimanager.UIManager;
+import io.lazysheeep.lazuliui.LazuliUI;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -54,16 +55,30 @@ public class GameManager implements Listener
                     // the game terminated by op
                     case READYING, PROGRESSING, PAUSED ->
                     {
-                        // flush player UI
+                        // clear gifts
+                        Gift.clearGifts();
+                        // clear player item
                         for(Player player : GiftHunting.plugin.getServer().getOnlinePlayers())
-                            UIManager.flush(player);
+                        {
+                            player.getInventory().remove(ItemFactory.club);
+                        }
+                        // flush player UI
+                        LazuliUI.flush(Permission.PLAYER.name);
                         // broadcast message
-                        UIManager.broadcast(Permission.PLAYER.name, MessageFactory.getGameTerminatedMsg());
+                        LazuliUI.broadcast(Permission.PLAYER.name, MessageFactory.getGameTerminatedMsg());
                     }
                     // game complete, go back to IDLE
                     case FINISHED ->
                     {
-                        // TODO
+                        // clear gifts
+                        Gift.clearGifts();
+                        // clear player item
+                        for(Player player : GiftHunting.plugin.getServer().getOnlinePlayers())
+                        {
+                            player.getInventory().remove(ItemFactory.club);
+                        }
+                        // flush player UI
+                        LazuliUI.flush(Permission.PLAYER.name);
                     }
                     default -> success = false;
                 }
@@ -77,13 +92,9 @@ public class GameManager implements Listener
                     case IDLE ->
                     {
                         // flush player UI
-                        for(Player player : GiftHunting.plugin.getServer().getOnlinePlayers())
-                        {
-                            // flush player UI
-                            UIManager.flush(player);
-                            // send message
-                            UIManager.sendMessage(player, MessageFactory.getGameReadyingMsg());
-                        }
+                        LazuliUI.flush(Permission.PLAYER.name);
+                        // send message
+                        LazuliUI.broadcast(Permission.PLAYER.name, MessageFactory.getGameReadyingMsg());
                         // clear all gifts
                         Gift.clearGifts();
                         Gift.clearUnTracked();
@@ -106,12 +117,13 @@ public class GameManager implements Listener
                             // give club
                             player.getInventory().remove(ItemFactory.club);
                             player.getInventory().addItem(ItemFactory.club);
+                            player.playSound(player, Sound.ENTITY_ITEM_PICKUP, SoundCategory.MASTER, 1.0f, 1.0f);
                             // init actionbar suffix: score
-                            UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, MessageFactory.getProgressingActionbarSuffix(0), Message.LoadMode.REPLACE, -1));
+                            LazuliUI.sendMessage(player, MessageFactory.getProgressingActionbarSuffix(player));
                             // init actionbar infix
-                            UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_INFIX, MessageFactory.getGameStartActionbar(), Message.LoadMode.REPLACE, 20));
+                            LazuliUI.sendMessage(player, MessageFactory.getGameStartActionbar());
                             // send message
-                            UIManager.broadcast(Permission.PLAYER.name, MessageFactory.getGameStartMsg());
+                            LazuliUI.broadcast(Permission.PLAYER.name, MessageFactory.getGameStartMsg());
                         }
                     }
                     default -> success = false;
@@ -127,9 +139,13 @@ public class GameManager implements Listener
                     case PROGRESSING ->
                     {
                         // send message
-                        UIManager.broadcast(Permission.PLAYER.name, MessageFactory.getGameFinishedMsg());
-                        // TODO
+                        LazuliUI.broadcast(Permission.PLAYER.name, MessageFactory.getGameFinishedMsg());
                         // set actionbar
+                        LazuliUI.broadcast(Permission.PLAYER.name, MessageFactory.getGameFinishedActionbarInfix());
+                        for(Player player : GiftHunting.plugin.world.getPlayers())
+                        {
+                            LazuliUI.sendMessage(player, MessageFactory.getGameFinishedActionbarSuffix(player));
+                        }
                     }
                     default -> success = false;
                 }
@@ -142,8 +158,8 @@ public class GameManager implements Listener
                     // op paused the game
                     case READYING, PROGRESSING ->
                     {
-                        UIManager.broadcast(Permission.PLAYER.name, MessageFactory.getGamePausedMsg());
-                        UIManager.broadcast(Permission.PLAYER.name, new Message(Message.Type.ACTIONBAR_INFIX, MessageFactory.getGamePausedActionbar(), Message.LoadMode.REPLACE, -1));
+                        LazuliUI.broadcast(Permission.PLAYER.name, MessageFactory.getGamePausedMsg());
+                        LazuliUI.broadcast(Permission.PLAYER.name, MessageFactory.getGamePausedActionbar());
                     }
                     default -> success = false;
                 }
@@ -154,8 +170,8 @@ public class GameManager implements Listener
                 if(state == State.PAUSED)
                 {
                     newState = lastState;
-                    UIManager.broadcast(Permission.PLAYER.name, MessageFactory.getGameUnpauseMsg());
-                    UIManager.broadcast(Permission.PLAYER.name, new Message(Message.Type.ACTIONBAR_INFIX, MessageFactory.getGameUnpauseMsg(), Message.LoadMode.REPLACE, 20));
+                    LazuliUI.broadcast(Permission.PLAYER.name, MessageFactory.getGameUnpauseMsg());
+                    LazuliUI.broadcast(Permission.PLAYER.name, MessageFactory.getGameUnPauseActionbar());
                 }
                 else success = false;
             }
@@ -194,14 +210,12 @@ public class GameManager implements Listener
 
             case READYING ->
             {
-                // timer ++
-                timer ++;
                 // draw actionbar: timer
                 if(timer%20 == 0)
                 {
                     for(Player player : GiftHunting.plugin.getServer().getOnlinePlayers())
                     {
-                        UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_INFIX, MessageFactory.getGameReadyingActionbar(), Message.LoadMode.REPLACE, 20));
+                        LazuliUI.sendMessage(player, MessageFactory.getGameReadyingActionbar());
                     }
                 }
                 // go PROGRESSING
@@ -209,16 +223,16 @@ public class GameManager implements Listener
                 {
                     switchState(State.PROGRESSING);
                 }
+                // timer ++
+                timer ++;
             }
 
             case PROGRESSING ->
             {
-                // timer ++
-                timer ++;
                 // draw actionbar prefix: timer
                 for(Player player : GiftHunting.plugin.getServer().getOnlinePlayers())
                 {
-                    UIManager.sendMessage(player, new Message(Message.Type.ACTIONBAR_PREFIX, MessageFactory.getProgressingActionbarPrefix(), Message.LoadMode.REPLACE, 1));
+                    LazuliUI.sendMessage(player, MessageFactory.getProgressingActionbarPrefix());
                 }
                 // deliver gifts
                 for(Map<String, Object> giftBatch : GiftHunting.config.giftBatches)
@@ -233,17 +247,19 @@ public class GameManager implements Listener
                 {
                     switchState(State.FINISHED);
                 }
+                // timer ++
+                timer ++;
             }
 
             case FINISHED ->
             {
-                // timer ++
-                timer ++;
                 // go IDLE
                 if(timer >= GiftHunting.config.finishedStateDuration)
                 {
                     switchState(State.IDLE);
                 }
+                // timer ++
+                timer ++;
             }
         }
     }

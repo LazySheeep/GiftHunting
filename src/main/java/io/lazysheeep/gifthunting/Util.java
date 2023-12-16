@@ -1,5 +1,7 @@
 package io.lazysheeep.gifthunting;
 
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 import java.util.*;
@@ -76,6 +78,17 @@ public class Util
                 newMap.put(clazzK.cast(entry.getKey()), clazzV.cast(entry.getValue()));
             }
             result.add(newMap);
+        }
+        return result;
+    }
+
+    public static List<Player> getPlayersWithPermission(String permission)
+    {
+        List<Player> result = new ArrayList<>();
+        for(Player player : Bukkit.getServer().getOnlinePlayers())
+        {
+            if(player.hasPermission(permission))
+                result.add(player);
         }
         return result;
     }

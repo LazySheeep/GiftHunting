@@ -2,6 +2,7 @@ package io.lazysheeep.gifthunting;
 
 import io.lazysheeep.lazuliui.LazuliUI;
 import org.bukkit.Location;
+import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.block.Block;
@@ -30,7 +31,6 @@ public class PlayerEventListener implements Listener
 
         if(item != null)
         {
-            // switch between different items
             if(item.isSimilar(ItemFactory.giftSpawnerSetter))  // use giftSpawnerSetter to set or remove a spawner
             {
                 if(clickedBlock != null && player.hasPermission(Permission.OP.name))
@@ -52,11 +52,12 @@ public class PlayerEventListener implements Listener
             }
             else if(item.isSimilar(ItemFactory.booster))       // use booster to take off
             {
-                if(action.isRightClick() && GiftHunting.gameManager.getState() == GameManager.State.PROGRESSING)
+                if(action.isRightClick() && GiftHunting.gameManager.getState() == GameManager.State.PROGRESSING && player.hasPermission(Permission.PLAYER.name))
                 {
-                    player.setVelocity(player.getVelocity().setY(1.0f));
+                    player.setVelocity(player.getVelocity().add(player.getLocation().getDirection().multiply(1.5f)));
                     item.setAmount(item.getAmount() - 1);
                     player.getWorld().playSound(player, Sound.ITEM_FIRECHARGE_USE, SoundCategory.MASTER, 1.0f, 1.0f);
+                    player.spawnParticle(Particle.EXPLOSION_NORMAL, player.getLocation(), 20, 0.1f, 0.0f, 0.1f);
                 }
             }
         }
@@ -83,7 +84,7 @@ public class PlayerEventListener implements Listener
     {
         if(event.getEntity() instanceof Player player)
         {
-            if(event.getCause() == EntityDamageEvent.DamageCause.FALL && player.getWorld() == GiftHunting.plugin.world)
+            if(event.getCause() == EntityDamageEvent.DamageCause.FALL && player.hasPermission(Permission.PLAYER.name))
             {
                 event.setCancelled(true);
             }

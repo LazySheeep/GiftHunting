@@ -52,13 +52,13 @@ public class CCommandExecutor implements CommandExecutor
                     {
                         int counter = Gift.clearGifts();
                         if(sender instanceof Player player)
-                            LazuliUI.sendMessage(player, new Message(Message.Type.CHAT, MessageFactory.getClearAllGiftLog(counter), Message.LoadMode.IMMEDIATE, 1));
+                            LazuliUI.sendMessage(player, new Message(Message.Type.CHAT, MessageFactory.getClearAllGiftMsg(counter), Message.LoadMode.IMMEDIATE, 1));
                     }
                     case "untracked" ->
                     {
                         int counter = Gift.clearUnTracked();
                         if(sender instanceof Player player)
-                            LazuliUI.sendMessage(player, new Message(Message.Type.CHAT, MessageFactory.getClearUntrackedGiftLog(counter), Message.LoadMode.IMMEDIATE, 1));
+                            LazuliUI.sendMessage(player, new Message(Message.Type.CHAT, MessageFactory.getClearUntrackedGiftMsg(counter), Message.LoadMode.IMMEDIATE, 1));
                     }
                     default -> { return false; }
                 }

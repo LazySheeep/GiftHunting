@@ -18,9 +18,9 @@ public final class GiftHunting extends JavaPlugin
     public static GiftHunting plugin;
     static GameManager gameManager;
     static Config config;
-    public Logger logger;
-    public World world;
-    public Objective scoreboardObj;
+    Logger logger;
+    World world;
+    Objective scoreboardObj;
 
 
     @Override

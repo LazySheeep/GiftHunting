@@ -13,13 +13,12 @@ repositories {
     }
     maven {
         url "https://jitpack.io"
-        credentials { username authToken }
     }
 }
 
 dependencies {
     compileOnly "io.papermc.paper:paper-api:1.19.2-R0.1-SNAPSHOT"
-    implementation 'com.github.LazySheeep:LazuliUI:0.4.1'
+    implementation 'com.github.LazySheeep:LazuliUI:0.5.3'
 }
 
 def targetJavaVersion = 17

@@ -64,7 +64,7 @@ class Gift
             gift.giftEntity.remove();
             gift.giftEntity = null;
         }
-        GiftHunting.plugin.logger.log(Level.INFO, MessageFactory.getClearAllGiftLog(giftPool.size()));
+        GiftHunting.plugin.logger.log(Level.INFO, "Cleared" + giftPool.size() + " gifts!");
         giftPool.clear();
         return counter;
     }
@@ -80,7 +80,7 @@ class Gift
                 counter ++;
             }
         }
-        GiftHunting.plugin.logger.log(Level.INFO, MessageFactory.getClearUntrackedGiftLog(counter));
+        GiftHunting.plugin.logger.log(Level.INFO, "Cleared" + counter + " untracked gifts!");
         return counter;
     }
 
@@ -152,10 +152,9 @@ class Gift
         // play sound
         player.getWorld().playSound(player, Sound.BLOCK_NOTE_BLOCK_CHIME, SoundCategory.MASTER, 1.0f, 1.0f);
         // score increase
-        Score score = GiftHunting.plugin.scoreboardObj.getScore(player);
-        score.setScore(score.getScore() + this.scorePerFetch);
+        GiftHunting.gameManager.addScore(player, this.scorePerFetch);
         // randomly give item
-        if(Util.getRandomBool(0.2f))
+        if(Util.getRandomBool(0.5f))
         {
             player.getInventory().addItem(ItemFactory.booster);
             player.playSound(player, Sound.ENTITY_ITEM_PICKUP, SoundCategory.MASTER, 1.0f, 1.0f);

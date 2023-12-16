@@ -11,13 +11,15 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 class MessageFactory
 {
-    private static final TextColor COLOR_VARIABLE = TextColor.color(125, 200, 255);
+    private static final TextColor COLOR_VARIABLE = NamedTextColor.AQUA;
     private static final TextColor COLOR_VALUE = NamedTextColor.GREEN;
-    private static final TextColor COLOR_TEXT = TextColor.color(100, 250, 200);
+    private static final TextColor COLOR_TEXT = TextColor.color(205,144,105);
     private static final TextColor COLOR_CAUTION = NamedTextColor.YELLOW;
     private static final TextColor COLOR_SPECIAL = NamedTextColor.LIGHT_PURPLE;
     private static final TextColor COLOR_VITAL = NamedTextColor.RED;
@@ -26,16 +28,6 @@ class MessageFactory
     private static final TextColor COLOR_BAD = NamedTextColor.RED;
 
     private MessageFactory() {}
-
-    public static String getClearAllGiftLog(int count)
-    {
-        return "Cleared " + count + " gifts!";
-    }
-
-    public static String getClearUntrackedGiftLog(int count)
-    {
-        return "Cleared " + count + " untracked gifts!";
-    }
 
     public static String getSpawnGiftLog(int amount, Gift.GiftType type)
     {
@@ -107,7 +99,7 @@ class MessageFactory
         return new Message(
                 Message.Type.ACTIONBAR_SUFFIX,
                 Component.text("得分: ", COLOR_VARIABLE)
-                        .append(Component.text(GiftHunting.plugin.scoreboardObj.getScore(player).getScore(), COLOR_VALUE)),
+                        .append(Component.text(GiftHunting.gameManager.getScore(player), COLOR_VALUE)),
                 Message.LoadMode.REPLACE,
                 -1
         );
@@ -115,23 +107,43 @@ class MessageFactory
 
     public static List<Message> getProgressingActionbarSuffixWhenScoreIncreased(@NotNull Player player, int increment)
     {
-        List<Message> result = new ArrayList<>();
-        result.add(new Message(
+        List<Message> messages = new ArrayList<>();
+        messages.add(new Message(
                 Message.Type.ACTIONBAR_SUFFIX,
                 Component.text("得分: ", COLOR_VARIABLE)
-                        .append(Component.text(GiftHunting.plugin.scoreboardObj.getScore(player).getScore(), COLOR_VALUE))
+                        .append(Component.text(GiftHunting.gameManager.getScore(player), COLOR_VALUE))
                         .append(Component.text("+" + increment, COLOR_CAUTION)),
                 Message.LoadMode.REPLACE,
                 20)
         );
-        result.add(new Message(
+        messages.add(new Message(
                 Message.Type.ACTIONBAR_SUFFIX,
                 Component.text("得分: ", COLOR_VARIABLE)
-                        .append(Component.text(GiftHunting.plugin.scoreboardObj.getScore(player).getScore() + increment, COLOR_VALUE)),
+                        .append(Component.text(GiftHunting.gameManager.getScore(player) + increment, COLOR_VALUE)),
                 Message.LoadMode.WAIT,
                 -1)
         );
-        return result;
+        return messages;
+    }
+
+    public static Message getDeliverGiftMsg(Gift.GiftType type)
+    {
+        if(type == Gift.GiftType.NORMAL)
+            return new Message(
+                    Message.Type.CHAT,
+                    Component.text("一波礼物已送达！", COLOR_GOOD),
+                    Sound.ENTITY_FIREWORK_ROCKET_LAUNCH,
+                    Message.LoadMode.IMMEDIATE,
+                    1
+            );
+        else
+            return new Message(
+                    Message.Type.CHAT,
+                    Component.text("出现了特殊礼物！", COLOR_SPECIAL),
+                    Sound.ENTITY_FIREWORK_ROCKET_LAUNCH,
+                    Message.LoadMode.IMMEDIATE,
+                    1
+            );
     }
 
     public static Message getGiftClickedActionbar(Gift gift)
@@ -171,14 +183,46 @@ class MessageFactory
         );
     }
 
-    public static Message getGameFinishedMsg()
+    public static List<Message> getGameFinishedMsg(Player player)
     {
-        return new Message(
+        List<Message> messages = new ArrayList<>();
+        messages.add(new Message(
                 Message.Type.CHAT,
                 Component.text("游戏结束！", COLOR_SPECIAL),
                 Sound.ENTITY_ENDER_DRAGON_DEATH,
-                Message.LoadMode.IMMEDIATE,
-                1
+                Message.LoadMode.REPLACE,
+                100
+        ));
+        messages.add(getRankingMsg(player));
+        return messages;
+    }
+
+    public static Message getRankingMsg(Player player)
+    {
+        TextComponent component = Component.text("得分排名:\n", COLOR_SPECIAL);
+        List<Player> players = Util.getPlayersWithPermission(Permission.PLAYER.name);
+        players.sort(new Comparator<Player>()
+        {
+            @Override
+            public int compare(Player p1, Player p2)
+            {
+                return GiftHunting.gameManager.getScore(p2) - GiftHunting.gameManager.getScore(p1);
+            }
+        });
+
+        int ranking = 1;
+        for(Player p : players)
+        {
+            component = component.append(Component.text(ranking + " - " + p.getName() + " - " + GiftHunting.gameManager.getScore(p) + "\n", p == player ? COLOR_GOOD : COLOR_CAUTION));
+            ranking ++;
+        }
+
+        return new Message(
+                Message.Type.CHAT,
+                component,
+                Sound.BLOCK_NOTE_BLOCK_PLING,
+                Message.LoadMode.WAIT,
+                100
         );
     }
 
@@ -197,9 +241,20 @@ class MessageFactory
         return new Message(
                 Message.Type.ACTIONBAR_SUFFIX,
                 Component.text("最终得分: ", COLOR_SPECIAL)
-                        .append(Component.text(GiftHunting.plugin.scoreboardObj.getScore(player).getScore(), COLOR_VALUE)),
+                        .append(Component.text(GiftHunting.gameManager.getScore(player), COLOR_VALUE)),
                 Message.LoadMode.REPLACE,
                 GiftHunting.config.finishedStateDuration
+        );
+    }
+
+    public static Message getGameBackToIdleMsg()
+    {
+        return new Message(
+                Message.Type.CHAT,
+                Component.text("感谢大家的参与，圣诞快乐！", COLOR_SPECIAL),
+                Sound.ENTITY_FIREWORK_ROCKET_TWINKLE,
+                Message.LoadMode.IMMEDIATE,
+                1
         );
     }
 
@@ -306,6 +361,16 @@ class MessageFactory
     public static TextComponent getEventCantUnpauseText()
     {
         return Component.text("The game is not in pause!", COLOR_VITAL);
+    }
+
+    public static TextComponent getClearAllGiftMsg(int count)
+    {
+        return Component.text("Cleared " + count + " gifts!", COLOR_CAUTION);
+    }
+
+    public static TextComponent getClearUntrackedGiftMsg(int count)
+    {
+        return Component.text("Cleared " + count + " untracked gifts!", COLOR_CAUTION);
     }
 
     private static TextComponent getFormattedTime(int time)

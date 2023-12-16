@@ -30,10 +30,10 @@ class ItemFactory
     static public final ItemStack booster;
     static
     {
-        booster = new ItemStack(Material.SLIME_BALL, 1);
-        Component displayName = Component.text("弹力球", NamedTextColor.LIGHT_PURPLE);
+        booster = new ItemStack(Material.FIREWORK_STAR, 1);
+        Component displayName = Component.text("弹射器", NamedTextColor.LIGHT_PURPLE);
         List<Component> lore = new ArrayList<>();
-        lore.add(Component.text("芜湖，起飞！", NamedTextColor.AQUA));
+        lore.add(Component.text("将自己向所指的方向弹射", NamedTextColor.AQUA));
         lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
         booster.editMeta(itemMeta ->
         {

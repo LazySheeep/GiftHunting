@@ -17,12 +17,16 @@ class Config
     public int progressStateDuration;
     public int finishedStateDuration;
     public List<Map<String, Object>> giftBatches;
+    public float bonusPercentage;
+    public List<Integer> bonusEvents;
     public int clicksPerFetch_normal;
     public int scorePerFetch_normal;
     public int capacityInFetches_normal;
     public int clicksPerFetch_special;
     public int scorePerFetch_special;
     public int capacityInFetches_special;
+    public int promptInterval_special;
+    public int stealerScore;
     private List<Location> giftSpawnerLocations;
 
     public List<Location> getGiftSpawnerLocations()
@@ -80,6 +84,9 @@ class Config
 
         this.giftBatches = Util.castMapList(fileConfig.getMapList("giftBatches"), String.class, Object.class);
 
+        this.bonusPercentage = (float) fileConfig.getDouble("bonusPercentage");
+        this.bonusEvents = Util.castList(fileConfig.getList("bonusEvents"), Integer.class);
+
         this.clicksPerFetch_normal = fileConfig.getInt("clicksPerFetch_normal");
         this.scorePerFetch_normal = fileConfig.getInt("scorePerFetch_normal");
         this.capacityInFetches_normal = fileConfig.getInt("capacityInFetches_normal");
@@ -87,6 +94,9 @@ class Config
         this.clicksPerFetch_special = fileConfig.getInt("clicksPerFetch_special");
         this.scorePerFetch_special = fileConfig.getInt("scorePerFetch_special");
         this.capacityInFetches_special = fileConfig.getInt("capacityInFetches_special");
+        this.promptInterval_special = fileConfig.getInt("promptInterval_special");
+
+        this.stealerScore = fileConfig.getInt("stealerScore");
 
         this.giftSpawnerLocations = Util.castList(fileConfig.getList("giftSpawnerLocations"), Location.class);
 

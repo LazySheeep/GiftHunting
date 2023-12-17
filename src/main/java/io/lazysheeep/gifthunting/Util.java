@@ -2,6 +2,8 @@ package io.lazysheeep.gifthunting;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.util.Vector;
 
 import java.util.*;
@@ -91,5 +93,27 @@ public class Util
                 result.add(player);
         }
         return result;
+    }
+
+    public static void removePlayerItem(Player player, ItemStack itemToRemove)
+    {
+        PlayerInventory inventory = player.getInventory();
+        for(ItemStack item : inventory)
+        {
+            if(item != null && item.isSimilar(itemToRemove))
+                inventory.remove(item);
+        }
+    }
+
+    public static int getFirstEmptyAndNotHeldSlot(PlayerInventory inventory)
+    {
+        for(int i = 0; i < inventory.getSize(); i ++)
+        {
+            if(inventory.getItem(i) == null && i != inventory.getHeldItemSlot())
+            {
+                return i;
+            }
+        }
+        return -1;
     }
 }

@@ -2,6 +2,7 @@ package io.lazysheeep.gifthunting;
 
 
 import io.lazysheeep.lazuliui.LazuliUI;
+import io.lazysheeep.lazuliui.Message;
 import net.kyori.adventure.text.Component;
 import org.bukkit.*;
 import org.bukkit.entity.ArmorStand;
@@ -10,8 +11,9 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.scoreboard.Score;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +58,11 @@ class Gift
         return null;
     }
 
+    public static List<Gift> getGifts()
+    {
+        return giftPool;
+    }
+
     public static int clearGifts()
     {
         int counter = giftPool.size();
@@ -86,6 +93,7 @@ class Gift
 
 
     public ArmorStand giftEntity;
+    public GiftType type;
     public final int clicksPerFetch;
     public final int scorePerFetch;
     public final int capacityInFetches;
@@ -94,6 +102,7 @@ class Gift
 
     public Gift(Location location, GiftType type)
     {
+        this.type = type;
         this.clicksPerFetch = type.clicksPerFetch;
         this.scorePerFetch = type.scorePerFetch;
         this.capacityInFetches = type.capacityInFetches;
@@ -123,11 +132,16 @@ class Gift
         giftPool.add(this);
     }
 
+    public Location getLocation()
+    {
+        return this.giftEntity.getLocation().add(new Vector(0.0f, 1.95f, 0.0f));
+    }
+
     public void clicked(Player player)
     {
         this.clicksToNextFetch --;
         LazuliUI.sendMessage(player, MessageFactory.getGiftClickedActionbar(this));
-        giftEntity.getWorld().playSound(giftEntity, Sound.BLOCK_WOOL_HIT, SoundCategory.MASTER, 1.0f, 1.0f);
+        GiftHunting.plugin.world.playSound(giftEntity, Sound.BLOCK_WOOL_HIT, SoundCategory.MASTER, 1.0f, 1.0f);
 
         if(this.clicksToNextFetch <= 0)
         {
@@ -148,15 +162,32 @@ class Gift
         LazuliUI.sendMessage(player, MessageFactory.getGiftFetchedActionbar(this));
         // send actionbar suffix list:
         // score: value +increment
-        LazuliUI.sendMessage(player, MessageFactory.getProgressingActionbarSuffixWhenScoreIncreased(player, this.scorePerFetch));
+        LazuliUI.flush(player, Message.Type.ACTIONBAR_SUFFIX);
+        LazuliUI.sendMessage(player, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(player, this.scorePerFetch));
         // play sound
-        player.getWorld().playSound(player, Sound.BLOCK_NOTE_BLOCK_CHIME, SoundCategory.MASTER, 1.0f, 1.0f);
+        player.playSound(player, Sound.BLOCK_NOTE_BLOCK_CHIME, SoundCategory.MASTER, 1.0f, 1.0f);
+        // display particle
+        switch(this.type)
+        {
+            case NORMAL ->
+            {
+                GiftHunting.plugin.world.spawnParticle(Particle.WAX_OFF, this.getLocation(), 8, 0.4f, 0.4f, 0.4f);
+            }
+            case SPECIAL ->
+            {
+                GiftHunting.plugin.world.spawnParticle(Particle.WAX_ON, this.getLocation(), 8, 0.4f, 0.4f, 0.4f);
+            }
+        }
         // score increase
         GiftHunting.gameManager.addScore(player, this.scorePerFetch);
         // randomly give item
         if(Util.getRandomBool(0.5f))
         {
-            player.getInventory().addItem(ItemFactory.booster);
+            PlayerInventory inventory = player.getInventory();
+            inventory.addItem(ItemFactory.booster);
+            if(inventory.first(ItemFactory.booster) == inventory.getHeldItemSlot())
+                inventory.setHeldItemSlot(inventory.firstEmpty());
+
             player.playSound(player, Sound.ENTITY_ITEM_PICKUP, SoundCategory.MASTER, 1.0f, 1.0f);
         }
         // update capacity

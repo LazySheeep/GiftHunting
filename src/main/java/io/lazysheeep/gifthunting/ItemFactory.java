@@ -34,6 +34,7 @@ class ItemFactory
         Component displayName = Component.text("弹射器", NamedTextColor.LIGHT_PURPLE);
         List<Component> lore = new ArrayList<>();
         lore.add(Component.text("将自己向所指的方向弹射", NamedTextColor.AQUA));
+        lore.add(Component.text("在助跑起跳时弹射效果最佳", NamedTextColor.AQUA));
         lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
         booster.editMeta(itemMeta ->
         {
@@ -55,6 +56,23 @@ class ItemFactory
             itemMeta.displayName(displayName);
             itemMeta.lore(lore);
             itemMeta.addEnchant(Enchantment.KNOCKBACK, 3, true);
+        });
+    }
+
+    static public final ItemStack stealer;
+    static
+    {
+        stealer = new ItemStack(Material.WARPED_FUNGUS_ON_A_STICK, 1);
+        Component displayName = Component.text("钓礼物竿", NamedTextColor.LIGHT_PURPLE);
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text("可以偷取其他玩家的礼物", NamedTextColor.AQUA));
+        lore.add(Component.text("Ste---al!", NamedTextColor.AQUA));
+        lore.add(Component.text("对其他玩家右键使用", NamedTextColor.YELLOW));
+        stealer.editMeta(itemMeta ->
+        {
+            itemMeta.displayName(displayName);
+            itemMeta.lore(lore);
+            itemMeta.addEnchant(Enchantment.DURABILITY, 1, true);
         });
     }
 

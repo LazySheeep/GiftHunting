@@ -2,15 +2,24 @@ package io.lazysheeep.gifthunting;
 
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
 import io.lazysheeep.lazuliui.LazuliUI;
+import io.lazysheeep.lazuliui.Message;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.*;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.FireworkMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.util.Vector;
 
 import javax.swing.*;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -88,8 +97,8 @@ public class GameManager implements Listener
 
                         for(Player player : Util.getPlayersWithPermission(Permission.PLAYER.name))
                         {
-                            // clear player item
-                            player.getInventory().remove(ItemFactory.club);
+                            // clear item
+                            player.getInventory().clear();
                             // flush player UI
                             LazuliUI.flush(player);
                             // send message
@@ -104,10 +113,12 @@ public class GameManager implements Listener
 
                         for(Player player : Util.getPlayersWithPermission(Permission.PLAYER.name))
                         {
-                            // clear player item
-                            player.getInventory().remove(ItemFactory.club);
+                            // clear item
+                            player.getInventory().clear();
                             // flush player UI
                             LazuliUI.flush(player);
+                            // send message
+                            LazuliUI.sendMessage(player, MessageFactory.getGameBackToIdleMsg());
                         }
                     }
                     default -> success = false;
@@ -143,8 +154,9 @@ public class GameManager implements Listener
 
                         for(Player player : Util.getPlayersWithPermission(Permission.PLAYER.name))
                         {
-                            // give club
-                            player.getInventory().remove(ItemFactory.club);
+                            // clear item
+                            player.getInventory().clear();
+                            // give item
                             player.getInventory().addItem(ItemFactory.club);
                             player.playSound(player, Sound.ENTITY_ITEM_PICKUP, SoundCategory.MASTER, 1.0f, 1.0f);
                             // send message
@@ -212,6 +224,8 @@ public class GameManager implements Listener
             lastState = state;
             state = newState;
             if(state != State.PAUSED && lastState != State.PAUSED) timer = 0;
+            // log
+            GiftHunting.plugin.logger.log(Level.INFO, "Game state changed: " + lastState.toString() + " -> " + state.toString());
         }
 
         return success;
@@ -221,19 +235,29 @@ public class GameManager implements Listener
     @EventHandler(priority = EventPriority.LOWEST)
     public void onServerTickStartEvent(ServerTickStartEvent event)
     {
+        // always
+        for(Player player : Util.getPlayersWithPermission(Permission.PLAYER.name))
+        {
+            player.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 20, 1, false, false, false));
+        }
+
         // game state machine
         switch(state)
         {
             case IDLE, PAUSED ->
             {
-                // show gift spawner location
                 for(Player player : Util.getPlayersWithPermission(Permission.OP.name))
                 {
                     if(player.getInventory().getItemInMainHand().isSimilar(ItemFactory.giftSpawnerSetter))
+                    {
+                        // show gift spawner location
                         for(Location spawnerLocation : GiftHunting.config.getGiftSpawnerLocations())
                         {
                             player.spawnParticle(Particle.COMPOSTER, spawnerLocation.add(new Vector(0.0f, 1.95f, 0.0f)), 1, 0.0f, 0.0f, 0.0f);
                         }
+                        // show gift spawner count
+                        LazuliUI.sendMessage(player, MessageFactory.getSpawnerCountActionbar());
+                    }
                 }
             }
 
@@ -242,6 +266,9 @@ public class GameManager implements Listener
                 // draw actionbar: timer
                 if(timer%20 == 0)
                     LazuliUI.broadcast(MessageFactory.getGameReadyingActionbar());
+                if(timer == GiftHunting.config.readyStateDuration - 600)
+                    LazuliUI.broadcast(Permission.PLAYER.name, MessageFactory.getGameIntroMsg());
+
                 // go PROGRESSING
                 if(getTimer() >= GiftHunting.config.readyStateDuration)
                 {
@@ -262,9 +289,20 @@ public class GameManager implements Listener
                 for(Map<String, Object> giftBatch : GiftHunting.config.giftBatches)
                 {
                     if((Integer) giftBatch.get("time") == timer)
-                    {
                         deliverGiftBatch(giftBatch);
-                    }
+                }
+                // bonus events
+                for(Integer bonusEventTime : GiftHunting.config.bonusEvents)
+                {
+                    if(bonusEventTime == timer)
+                        launchBonusEvent();
+                }
+                // display particles
+
+                // gift location prompts
+                if(timer % GiftHunting.config.promptInterval_special == 0)
+                {
+                    sendGiftLocationPrompt();
                 }
                 // go FINISHED
                 if(timer >= GiftHunting.config.progressStateDuration)
@@ -288,6 +326,20 @@ public class GameManager implements Listener
         }
     }
 
+    public List<Player> getRankedPlayerList()
+    {
+        List<Player> players = Util.getPlayersWithPermission(Permission.PLAYER.name);
+        players.sort(new Comparator<Player>()
+        {
+            @Override
+            public int compare(Player p1, Player p2)
+            {
+                return GiftHunting.gameManager.getScore(p2) - GiftHunting.gameManager.getScore(p1);
+            }
+        });
+        return players;
+    }
+
     private void deliverGiftBatch(Map<String, Object> giftBatch)
     {
         String type = (String)giftBatch.get("type");
@@ -299,7 +351,8 @@ public class GameManager implements Listener
                 List<Location> spawnLocations = Util.randomPick(GiftHunting.config.getGiftSpawnerLocations(), amount);
                 for (Location loc : spawnLocations)
                 {
-                    new Gift(loc, Gift.GiftType.NORMAL);
+                    Gift newGift = new Gift(loc, Gift.GiftType.NORMAL);
+                    GiftHunting.plugin.world.spawnParticle(Particle.VILLAGER_HAPPY, newGift.getLocation(), 8, 0.4f, 0.4f, 0.4f);
                 }
                 GiftHunting.plugin.logger.log(Level.INFO, MessageFactory.getSpawnGiftLog(amount, Gift.GiftType.NORMAL));
                 LazuliUI.broadcast(Permission.PLAYER.name, MessageFactory.getDeliverGiftMsg(Gift.GiftType.NORMAL));
@@ -307,11 +360,54 @@ public class GameManager implements Listener
             case "SPECIAL" ->
             {
                 Location spawnLocation = Util.randomPickOne(GiftHunting.config.getGiftSpawnerLocations());
-                new Gift(spawnLocation, Gift.GiftType.SPECIAL);
+                Gift newGift = new Gift(spawnLocation, Gift.GiftType.SPECIAL);
+                GiftHunting.plugin.world.spawnParticle(Particle.VILLAGER_HAPPY, newGift.getLocation(), 32, 0.5f, 0.5f, 0.5f);
                 GiftHunting.plugin.logger.log(Level.INFO, MessageFactory.getSpawnGiftLog(1, Gift.GiftType.SPECIAL));
                 LazuliUI.broadcast(Permission.PLAYER.name, MessageFactory.getDeliverGiftMsg(Gift.GiftType.SPECIAL));
             }
             default -> {}
         }
+    }
+
+    private void launchBonusEvent()
+    {
+        LazuliUI.broadcast(Permission.PLAYER.name, MessageFactory.getBonusEventMsg());
+        List<Player> players = getRankedPlayerList();
+        for(int i = (int)(players.size()*(1.0f-GiftHunting.config.bonusPercentage)); i < players.size(); i ++)
+        {
+            Player player = players.get(i);
+            player.getInventory().addItem(ItemFactory.stealer);
+            player.playSound(player, Sound.ENTITY_ITEM_PICKUP, SoundCategory.MASTER, 1.0f, 1.0f);
+        }
+    }
+
+    private void sendGiftLocationPrompt()
+    {
+        for(Gift gift : Gift.getGifts())
+        {
+            if(gift.type == Gift.GiftType.SPECIAL)
+            {
+                spawnFirework(gift.getLocation().add(0.0f, 0.5f, 0.0f), 2);
+                spawnFirework(gift.getLocation().add(0.0f, 0.5f, 0.0f), 3);
+            }
+        }
+    }
+
+    private void spawnFirework(Location location, int power)
+    {
+        Firework firework = (Firework) GiftHunting.plugin.world.spawnEntity(location, EntityType.FIREWORK);
+        FireworkMeta meta = firework.getFireworkMeta();
+        meta.setPower(power);
+        meta.addEffect(
+                FireworkEffect.builder()
+                        .with(FireworkEffect.Type.STAR)
+                        .withColor(Color.RED)
+                        .withColor(Color.LIME)
+                        .withColor(Color.WHITE)
+                        .trail(true)
+                        .flicker(true)
+                        .build()
+        );
+        firework.setFireworkMeta(meta);
     }
 }

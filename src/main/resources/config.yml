@@ -19,7 +19,13 @@ giftBatches:
     time: 24000
     amount: 50
   - type: SPECIAL
-    time: 32000
+    time: 30000
+
+bonusPercentage: 0.5
+bonusEvents:
+  - 10000
+  - 22000
+  - 34000
 
 clicksPerFetch_normal: 5
 scorePerFetch_normal: 10
@@ -28,5 +34,8 @@ capacityInFetches_normal: 1
 clicksPerFetch_special: 15
 scorePerFetch_special: 10
 capacityInFetches_special: 10
+promptInterval_special: 1200
+
+stealerScore: 50
 
 giftSpawnerLocations: []

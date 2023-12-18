@@ -1,6 +1,7 @@
 package io.lazysheeep.gifthunting;
 
 import io.lazysheeep.lazuliui.LazuliUI;
+import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -42,13 +43,13 @@ public class PlayerEventListener implements Listener
                     {
                         Location newLocation = clickedBlock.getLocation().toCenterLocation().add(0.0f, -0.95f, 0.0f);
                         GiftHunting.config.addGiftSpawner(newLocation);
-                        LazuliUI.sendMessage(player, MessageFactory.getAddGiftSpawnerActionbar(newLocation));
+                        LazuliUI.sendMessage(player, MessageFactory.getAddGiftSpawnerActionbar());
                     }
                     else if(action == Action.LEFT_CLICK_BLOCK)
                     {
                         Location location = clickedBlock.getLocation().toCenterLocation().add(0.0f, -0.95f, 0.0f);
                         if(GiftHunting.config.removeGiftSpawner(location))
-                            LazuliUI.sendMessage(player, MessageFactory.getRemoveGiftSpawnerActionbar(location));
+                            LazuliUI.sendMessage(player, MessageFactory.getRemoveGiftSpawnerActionbar());
                         event.setCancelled(true);
                     }
                 }
@@ -69,7 +70,7 @@ public class PlayerEventListener implements Listener
 
     // player click entity
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onPlayerInteractEntityEvent(PlayerInteractEntityEvent event)
+    public void onPlayerInteractEntity(PlayerInteractEntityEvent event)
     {
         Player player = event.getPlayer();
         Entity clickedEntity = event.getRightClicked();
@@ -94,6 +95,21 @@ public class PlayerEventListener implements Listener
                     GiftHunting.gameManager.addScore(clickedPlayer, -scoreStolen);
                 }
             }
+        }
+    }
+
+    // player attack entity
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onPrePlayerAttackEntity(PrePlayerAttackEntityEvent event)
+    {
+        Player player = event.getPlayer();
+        Entity attackedEntity = event.getAttacked();
+        ItemStack item = player.getInventory().getItemInMainHand();
+        if(player.hasPermission(Permission.PLAYER.name) && item.isSimilar(ItemFactory.club))
+        {
+            item.setAmount(item.getAmount() - 1);
+            player.playSound(player, Sound.ENTITY_ITEM_BREAK, SoundCategory.MASTER, 1.0f, 1.0f);
+            attackedEntity.setVelocity(attackedEntity.getVelocity().add(new Vector(0.0f, 0.5f, 0.0f)));
         }
     }
 

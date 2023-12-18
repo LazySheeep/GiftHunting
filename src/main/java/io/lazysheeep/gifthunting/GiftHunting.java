@@ -38,7 +38,16 @@ public final class GiftHunting extends JavaPlugin
         // get world
         world = Bukkit.getServer().getWorld(config.worldName);
         if(world == null)
-            logger.log(Level.WARNING, "World \"" + config.worldName + "\" not found!");
+        {
+            StringBuilder log = new StringBuilder("World \"" + config.worldName + "\" not found, please check!\nWorld list:\n");
+            for(World world : Bukkit.getServer().getWorlds())
+            {
+                log.append(world.getName()).append(" ");
+            }
+            logger.log(Level.SEVERE, log.toString());
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
 
         // register event listener
         Bukkit.getPluginManager().registerEvents(new PlayerEventListener(), this);

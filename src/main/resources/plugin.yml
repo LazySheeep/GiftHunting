@@ -26,8 +26,11 @@ commands:
                     clear spawner   --- clear all the spawner
                           gift      --- clear all the gifts
                           untracked --- clear all untracked gifts
-                    game  start   --- start the game
-                          end     --- end the game
-                          stats   --- print game stats
+                    stats   --- print game stats
+                    start   --- start the game
+                    end     --- end the game
+                    pause   --- pause the game
+                    unpause --- unpause the game
+                    setspawn  --- set game spawn
     aliases: [gh, gifthunting]
     permission: gifthunting.op

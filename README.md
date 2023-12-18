@@ -1,0 +1,1 @@
+# GiftHunting - A Minecraft minigame

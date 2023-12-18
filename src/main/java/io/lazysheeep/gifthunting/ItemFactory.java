@@ -50,12 +50,14 @@ class ItemFactory
         club = new ItemStack(Material.STICK, 1);
         Component displayName = Component.text("木棍", NamedTextColor.LIGHT_PURPLE);
         List<Component> lore = new ArrayList<>();
-        lore.add(Component.text("可以击退别人", NamedTextColor.AQUA));
+        lore.add(Component.text("虽然看起来只是普通的木棍", NamedTextColor.AQUA));
+        lore.add(Component.text("但是能够把人打飞", NamedTextColor.AQUA));
+        lore.add(Component.text("那么代价是什么呢", NamedTextColor.GRAY));
         club.editMeta(itemMeta ->
         {
             itemMeta.displayName(displayName);
             itemMeta.lore(lore);
-            itemMeta.addEnchant(Enchantment.KNOCKBACK, 3, true);
+            itemMeta.addEnchant(Enchantment.KNOCKBACK, 5, true);
         });
     }
 

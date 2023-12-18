@@ -1,41 +1,65 @@
-worldName: world
+worldName: christmas
+gameSpawn:
 
-readyStateDuration: 6000
-progressStateDuration: 36000
-finishedStateDuration: 200
+readyStateDuration: 2400
+progressStateDuration: 42000
+finishedStateDuration: 240
 
 giftBatches:
   - type: NORMAL
-    time: 20
+    time: 60
     amount: 100
+  - type: NORMAL
+    time: 120
+    amount: 100
+  - type: SPECIAL
+    time: 3600
   - type: SPECIAL
     time: 6000
   - type: NORMAL
     time: 12000
-    amount: 75
+    amount: 100
+  - type: NORMAL
+    time: 12060
+    amount: 100
+  - type: SPECIAL
+    time: 15600
   - type: SPECIAL
     time: 18000
   - type: NORMAL
     time: 24000
-    amount: 50
+    amount: 100
+  - type: NORMAL
+    time: 24060
+    amount: 100
+  - type: SPECIAL
+    time: 27600
   - type: SPECIAL
     time: 30000
+  - type: SPECIAL
+    time: 36000
+  - type: SPECIAL
+    time: 36100
 
-bonusPercentage: 0.5
+bonusPercentage: 0.3
 bonusEvents:
   - 10000
   - 22000
   - 34000
+  - 40000
 
 clicksPerFetch_normal: 5
 scorePerFetch_normal: 10
 capacityInFetches_normal: 1
 
-clicksPerFetch_special: 15
-scorePerFetch_special: 10
-capacityInFetches_special: 10
+clicksPerFetch_special: 50
+scorePerFetch_special: 100
+capacityInFetches_special: 5
 promptInterval_special: 1200
 
-stealerScore: 50
+lootProbability_club: 0.25
+lootProbability_booster: 0.3
+
+stealerScore: 80
 
 giftSpawnerLocations: []

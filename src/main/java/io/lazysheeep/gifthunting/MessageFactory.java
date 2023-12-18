@@ -12,12 +12,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 class MessageFactory
 {
-    private static final TextColor COLOR_VARIABLE = NamedTextColor.AQUA;
+    private static final TextColor COLOR_VARIABLE = NamedTextColor.GOLD;
     private static final TextColor COLOR_VALUE = NamedTextColor.GREEN;
-    private static final TextColor COLOR_TEXT = TextColor.color(205,144,105);
+    private static final TextColor COLOR_TEXT = NamedTextColor.AQUA;
     private static final TextColor COLOR_CAUTION = NamedTextColor.YELLOW;
     private static final TextColor COLOR_SPECIAL = NamedTextColor.LIGHT_PURPLE;
     private static final TextColor COLOR_VITAL = NamedTextColor.RED;
@@ -65,35 +66,61 @@ class MessageFactory
         List<Message> messages = new ArrayList<>();
         messages.add(new Message(
                 Message.Type.CHAT,
-                Component.text("欢迎！", COLOR_TEXT),
+                Component.text("欢迎大家！\n又到了一年一度的圣诞老人发礼物的时间...", COLOR_TEXT),
                 Sound.BLOCK_NOTE_BLOCK_PLING,
                 Message.LoadMode.REPLACE,
                 60
         ));
         messages.add(new Message(
                 Message.Type.CHAT,
-                Component.text("游戏规则介绍", COLOR_TEXT),
+                Component.text("\n【游戏介绍】\n", COLOR_SPECIAL)
+                        .append(Component.text("在场景中会随机生成礼物，找到并开启礼物可以得到分数。\n礼物分为", COLOR_TEXT))
+                        .append(Component.text("普通礼物", COLOR_CAUTION))
+                        .append(Component.text("和", COLOR_TEXT))
+                        .append(Component.text("特殊礼物", COLOR_SPECIAL))
+                        .append(Component.text("两种。\n普通礼物遍布场景各处，而特殊礼物则较为稀少，开启特殊礼物可以获得大量分数，但需要较长时间才能开启，可能需要与其他玩家抢夺\n游戏总时长", COLOR_TEXT))
+                        .append(getFormattedTime(GiftHunting.config.progressStateDuration)),
                 Sound.BLOCK_NOTE_BLOCK_PLING,
                 Message.LoadMode.WAIT,
-                100
+                160
+        ));
+        TextComponent giftBatchTimes = Component.text("");
+        for(Map<String, Object> giftBatch : GiftHunting.config.giftBatches)
+        {
+            if(((String)giftBatch.get("type")).equals("NORMAL"))
+            {
+                int time = (Integer) giftBatch.get("time");
+                giftBatchTimes = giftBatchTimes.append(getFormattedTime(time))
+                        .append(Component.text("\n"));
+            }
+        }
+        messages.add(new Message(
+                Message.Type.CHAT,
+                Component.text("\n【礼物生成】\n", COLOR_SPECIAL)
+                        .append(Component.text("普通礼物会成批次的生成。具体的生成时间如下：\n", COLOR_TEXT))
+                        .append(giftBatchTimes)
+                        .append(Component.text("特殊礼物则会时不时地少量生成。同时，每隔", COLOR_TEXT))
+                        .append(getFormattedTime(GiftHunting.config.promptInterval_special))
+                        .append(Component.text("就会有烟花从特殊礼物的所在处发射，以指示它们的位置", COLOR_TEXT)),
+                Sound.BLOCK_NOTE_BLOCK_PLING,
+                Message.LoadMode.WAIT,
+                160
         ));
         messages.add(new Message(
                 Message.Type.CHAT,
-                Component.text("礼物生成详情", COLOR_TEXT),
+                Component.text("\n【道具介绍】\n", COLOR_SPECIAL)
+                        .append(Component.text("每次开启", COLOR_TEXT))
+                        .append(Component.text("普通礼物", COLOR_CAUTION))
+                        .append(Component.text("时都有概率获得一些小道具，利用这些道具可以到达一些难以到达的地方，或者在礼物的争抢中取得优势\n此外，有时还会出现特殊的", COLOR_TEXT))
+                        .append(Component.text("奖励事件，", COLOR_SPECIAL))
+                        .append(Component.text("此时分数暂时落后的玩家会得到特殊的道具，利用道具将局势逆转吧！", COLOR_TEXT)),
                 Sound.BLOCK_NOTE_BLOCK_PLING,
                 Message.LoadMode.WAIT,
-                100
+                160
         ));
         messages.add(new Message(
                 Message.Type.CHAT,
-                Component.text("道具介绍", COLOR_TEXT),
-                Sound.BLOCK_NOTE_BLOCK_PLING,
-                Message.LoadMode.WAIT,
-                100
-        ));
-        messages.add(new Message(
-                Message.Type.CHAT,
-                Component.text("游戏即将开始", COLOR_TEXT),
+                Component.text("\n游戏即将开始...", COLOR_TEXT),
                 Sound.BLOCK_NOTE_BLOCK_PLING,
                 Message.LoadMode.WAIT,
                 1
@@ -222,15 +249,28 @@ class MessageFactory
         );
     }
 
-    public static Message getBonusEventMsg()
+    public static List<Message> getBonusEventMsg()
     {
-        return new Message(
+        List<Message> messages = new ArrayList<>();
+        messages.add(new Message(
                 Message.Type.CHAT,
                 Component.text("奖励事件！得分暂时落后的玩家得到了道具奖励！", COLOR_SPECIAL),
                 Sound.BLOCK_NOTE_BLOCK_PLING,
-                Message.LoadMode.IMMEDIATE,
+                Message.LoadMode.REPLACE,
+                60
+        ));
+        Player bestPlayer = GiftHunting.gameManager.getRankedPlayerList().get(0);
+        messages.add(new Message(
+                Message.Type.CHAT,
+                Component.text("顺带一提，当前得分最高的玩家为", COLOR_CAUTION)
+                        .append(Component.text(bestPlayer.getName(), COLOR_VALUE))
+                        .append(Component.text("，得分为", COLOR_CAUTION))
+                        .append(Component.text(GiftHunting.gameManager.getScore(bestPlayer), COLOR_VALUE)),
+                Sound.BLOCK_NOTE_BLOCK_PLING,
+                Message.LoadMode.WAIT,
                 1
-        );
+        ));
+        return messages;
     }
 
     public static Message getStealMsg(Player victim)
@@ -293,7 +333,7 @@ class MessageFactory
 
     public static Message getRankingMsg(Player player)
     {
-        TextComponent component = Component.text("得分排名:\n", COLOR_SPECIAL);
+        TextComponent component = Component.text("\n【得分排名】\n", COLOR_SPECIAL);
 
         int ranking = 1;
         for(Player p : GiftHunting.gameManager.getRankedPlayerList())
@@ -396,24 +436,22 @@ class MessageFactory
         );
     }
 
-    public static Message getAddGiftSpawnerActionbar(Location location)
+    public static Message getAddGiftSpawnerActionbar()
     {
         return new Message(
                 Message.Type.ACTIONBAR_INFIX,
-                Component.text("New Gift Spawner Added: ", COLOR_TEXT)
-                        .append(Component.text(location.toVector().toString(), COLOR_VALUE)),
+                Component.text("New Gift Spawner Added!", COLOR_TEXT),
                 Sound.BLOCK_BEACON_ACTIVATE,
                 Message.LoadMode.REPLACE,
                 30
         );
     }
 
-    public static Message getRemoveGiftSpawnerActionbar(Location location)
+    public static Message getRemoveGiftSpawnerActionbar()
     {
         return new Message(
                 Message.Type.ACTIONBAR_INFIX,
-                Component.text("Gift Spawner Removed: ", COLOR_TEXT)
-                        .append(Component.text(location.toVector().toString(), COLOR_VALUE)),
+                Component.text("Gift Spawner Removed!", COLOR_TEXT),
                 Sound.BLOCK_BEACON_DEACTIVATE,
                 Message.LoadMode.REPLACE,
                 30
@@ -428,7 +466,18 @@ class MessageFactory
                     .append(Component.text(GiftHunting.config.getGiftSpawnerCount(), COLOR_VALUE)),
             Message.LoadMode.REPLACE,
             30
-    );
+        );
+    }
+
+    public static Message getSetGameSpawnMsg()
+    {
+        return new Message(
+                Message.Type.CHAT,
+                Component.text("游戏出生点已设置！", COLOR_CAUTION),
+                Sound.BLOCK_NOTE_BLOCK_PLING,
+                Message.LoadMode.IMMEDIATE,
+                1
+        );
     }
 
     public static TextComponent getGameStatsText()
@@ -441,7 +490,7 @@ class MessageFactory
 
     public static TextComponent getEventCantStartText()
     {
-        return Component.text("The game has already begun!", COLOR_VITAL);
+        return Component.text("Can't start the game! Please check if the game has already begun or the game spawn has not been set!", COLOR_VITAL);
     }
 
     public static TextComponent getEventCantEndText()

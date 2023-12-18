@@ -164,32 +164,38 @@ class Gift
         // score: value +increment
         LazuliUI.flush(player, Message.Type.ACTIONBAR_SUFFIX);
         LazuliUI.sendMessage(player, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(player, this.scorePerFetch));
-        // play sound
+        // play sound to the player
         player.playSound(player, Sound.BLOCK_NOTE_BLOCK_CHIME, SoundCategory.MASTER, 1.0f, 1.0f);
-        // display particle
+
         switch(this.type)
         {
             case NORMAL ->
             {
+                // display particle
                 GiftHunting.plugin.world.spawnParticle(Particle.WAX_OFF, this.getLocation(), 8, 0.4f, 0.4f, 0.4f);
+                // randomly give item
+                if(Util.getRandomBool(GiftHunting.config.lootProbability_club))
+                {
+                    player.getInventory().addItem(ItemFactory.club);
+                    player.playSound(player, Sound.ENTITY_ITEM_PICKUP, SoundCategory.MASTER, 1.0f, 1.0f);
+                }
+                if(Util.getRandomBool(GiftHunting.config.lootProbability_booster))
+                {
+                    PlayerInventory inventory = player.getInventory();
+                    inventory.addItem(ItemFactory.booster);
+                    if(inventory.first(ItemFactory.booster) == inventory.getHeldItemSlot())
+                        inventory.setHeldItemSlot(inventory.firstEmpty());
+                    player.playSound(player, Sound.ENTITY_ITEM_PICKUP, SoundCategory.MASTER, 1.0f, 1.0f);
+                }
             }
             case SPECIAL ->
             {
+                // display particle
                 GiftHunting.plugin.world.spawnParticle(Particle.WAX_ON, this.getLocation(), 8, 0.4f, 0.4f, 0.4f);
             }
         }
         // score increase
         GiftHunting.gameManager.addScore(player, this.scorePerFetch);
-        // randomly give item
-        if(Util.getRandomBool(0.5f))
-        {
-            PlayerInventory inventory = player.getInventory();
-            inventory.addItem(ItemFactory.booster);
-            if(inventory.first(ItemFactory.booster) == inventory.getHeldItemSlot())
-                inventory.setHeldItemSlot(inventory.firstEmpty());
-
-            player.playSound(player, Sound.ENTITY_ITEM_PICKUP, SoundCategory.MASTER, 1.0f, 1.0f);
-        }
         // update capacity
         this.remainingCapacity--;
     }

@@ -13,6 +13,7 @@ import java.util.logging.Level;
 class Config
 {
     public String worldName;
+    public Location gameSpawn;
     public int readyStateDuration;
     public int progressStateDuration;
     public int finishedStateDuration;
@@ -26,6 +27,8 @@ class Config
     public int scorePerFetch_special;
     public int capacityInFetches_special;
     public int promptInterval_special;
+    public float lootProbability_club;
+    public float lootProbability_booster;
     public int stealerScore;
     private List<Location> giftSpawnerLocations;
 
@@ -77,6 +80,7 @@ class Config
     public void load()
     {
         this.worldName = fileConfig.getString("worldName");
+        this.gameSpawn = fileConfig.getLocation("gameSpawn");
 
         this.readyStateDuration = fileConfig.getInt("readyStateDuration");
         this.progressStateDuration = fileConfig.getInt("progressStateDuration");
@@ -96,6 +100,9 @@ class Config
         this.capacityInFetches_special = fileConfig.getInt("capacityInFetches_special");
         this.promptInterval_special = fileConfig.getInt("promptInterval_special");
 
+        this.lootProbability_club = (float) fileConfig.getDouble("lootProbability_club");
+        this.lootProbability_booster = (float) fileConfig.getDouble("lootProbability_booster");
+
         this.stealerScore = fileConfig.getInt("stealerScore");
 
         this.giftSpawnerLocations = Util.castList(fileConfig.getList("giftSpawnerLocations"), Location.class);
@@ -106,7 +113,10 @@ class Config
     // save cfg to file
     public void save()
     {
-        fileConfig.set("giftSpawnerLocations", this.giftSpawnerLocations);
+        if(this.gameSpawn != null)
+            fileConfig.set("gameSpawn", this.gameSpawn);
+        if(this.giftSpawnerLocations != null)
+            fileConfig.set("giftSpawnerLocations", this.giftSpawnerLocations);
 
         try {
             File file = new File(plugin.getDataFolder(), "config.yml");

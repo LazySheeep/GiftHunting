@@ -2,7 +2,6 @@ package io.lazysheeep.gifthunting;
 
 import io.lazysheeep.lazuliui.Message;
 import io.lazysheeep.lazuliui.LazuliUI;
-import net.kyori.adventure.text.Component;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -16,7 +15,8 @@ public class CCommandExecutor implements CommandExecutor
     {
         if(args.length >= 1) switch (args[0])
         {
-            case "get" ->   // get item
+            // get items...
+            case "get" ->
             {
                 if(args.length >= 2) switch (args[1])
                 {
@@ -39,7 +39,7 @@ public class CCommandExecutor implements CommandExecutor
                 }
                 else return false;
             }
-
+            // clear things...
             case "clear" ->
             {
                 if(args.length >= 2) switch (args[1])
@@ -64,51 +64,44 @@ public class CCommandExecutor implements CommandExecutor
                 }
                 else return false;
             }
-
-            case "start" -> // start the game
+            // start the game
+            case "start" ->
             {
                 if (!GiftHunting.gameManager.switchState(GameManager.State.READYING))
                     sender.sendMessage(MessageFactory.getEventCantStartText());
             }
-            case "end" -> // end the game
+            // terminate the game
+            case "end" ->
             {
                 if (!GiftHunting.gameManager.switchState(GameManager.State.IDLE))
                     sender.sendMessage(MessageFactory.getEventCantEndText());
             }
+            // pause the game
             case "pause" ->
             {
                 if(!GiftHunting.gameManager.switchState(GameManager.State.PAUSED))
                     sender.sendMessage(MessageFactory.getEventCantPauseText());
             }
+            // unpause the game
             case "unpause" ->
             {
                 if(!GiftHunting.gameManager.switchState(GameManager.State.UNPAUSE))
                     sender.sendMessage(MessageFactory.getEventCantUnpauseText());
             }
-            case "stats" -> // print event stats
+            // print event stats
+            case "stats" ->
             {
                 sender.sendMessage(MessageFactory.getGameStatsText());
             }
-
-            case "test" ->
+            // set game spawn
+            case "setspawn" ->
             {
-                if(sender instanceof Player player)
+                if(sender instanceof Player player && GiftHunting.gameManager.getState() == GameManager.State.IDLE)
                 {
-                    LazuliUI.sendMessage(player, new Message(Message.Type.CHAT, Component.text("test chat message 0"), Message.LoadMode.REPLACE, 20));
-                    LazuliUI.sendMessage(player, new Message(Message.Type.CHAT, Component.text("test chat message 1"), Message.LoadMode.WAIT, 20));
-                    LazuliUI.sendMessage(player, new Message(Message.Type.CHAT, Component.text("test chat message 2"), Message.LoadMode.WAIT, 20));
-
-                    LazuliUI.sendMessage(player, new Message(Message.Type.ACTIONBAR_PREFIX, Component.text("actionbar_prefix "), Message.LoadMode.REPLACE, -1));
-                    LazuliUI.sendMessage(player, new Message(Message.Type.ACTIONBAR_INFIX, Component.text("actionbar_infix "), Message.LoadMode.REPLACE, 100));
-
-                    LazuliUI.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 1"), Message.LoadMode.REPLACE, 20));
-                    LazuliUI.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 2"), Message.LoadMode.WAIT, 20));
-                    LazuliUI.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 3"), Message.LoadMode.WAIT, 20));
-                    LazuliUI.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 4"), Message.LoadMode.WAIT, 20));
-                    LazuliUI.sendMessage(player, new Message(Message.Type.ACTIONBAR_SUFFIX, Component.text("actionbar_suffix 5"), Message.LoadMode.WAIT,20));
+                    GiftHunting.config.gameSpawn = player.getLocation();
+                    LazuliUI.sendMessage(player, MessageFactory.getSetGameSpawnMsg());
                 }
             }
-
             default -> { return false; }
         }
         else return false;

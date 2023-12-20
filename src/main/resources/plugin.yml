@@ -1,5 +1,5 @@
 name: GiftHunting
-version: 1.0.0
+version: 1.1.0
 main: io.lazysheeep.gifthunting.GiftHunting
 description: Plugin for the gift-hunting game
 author: LazySheeep
@@ -8,10 +8,13 @@ api-version: '1.19'
 depend:
   - LazuliUI
 
+softdepend:
+  - Multiverse-Core
+
 permissions:
   gifthunting.player:
     description: the player of gifthunting game
-    default: true
+    default: false
   gifthunting.op:
     description: give access to gifthunting commands and receive debug messages
     default: op

@@ -71,7 +71,7 @@ class Gift
             gift.giftEntity.remove();
             gift.giftEntity = null;
         }
-        GiftHunting.plugin.logger.log(Level.INFO, "Cleared" + giftPool.size() + " gifts!");
+        GiftHunting.plugin.logger.log(Level.INFO, "Cleared " + giftPool.size() + " gifts!");
         giftPool.clear();
         return counter;
     }
@@ -87,7 +87,7 @@ class Gift
                 counter ++;
             }
         }
-        GiftHunting.plugin.logger.log(Level.INFO, "Cleared" + counter + " untracked gifts!");
+        GiftHunting.plugin.logger.log(Level.INFO, "Cleared " + counter + " untracked gifts!");
         return counter;
     }
 

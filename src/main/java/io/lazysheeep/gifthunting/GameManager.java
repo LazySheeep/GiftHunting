@@ -2,13 +2,18 @@ package io.lazysheeep.gifthunting;
 
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
 import io.lazysheeep.lazuliui.LazuliUI;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.*;
+import org.bukkit.Color;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -94,7 +99,7 @@ public class GameManager implements Listener
                         for(Player player : Util.getPlayersWithPermission(Permission.PLAYER.name))
                         {
                             // clear item
-                            player.getInventory().clear();
+                            clearInventory(player);
                             // flush player UI
                             LazuliUI.flush(player);
                             // send message
@@ -110,13 +115,20 @@ public class GameManager implements Listener
                         for(Player player : Util.getPlayersWithPermission(Permission.PLAYER.name))
                         {
                             // clear item
-                            player.getInventory().clear();
+                            clearInventory(player);
                             // flush player UI
                             LazuliUI.flush(player);
                             // send message
                             LazuliUI.sendMessage(player, MessageFactory.getGameBackToIdleMsg());
                             // go back to spawn
                             player.teleport(GiftHunting.config.gameSpawn);
+                        }
+
+                        // update souvenir
+                        List<Player> players = this.getRankedPlayerList();
+                        for(int i = 0; i < players.size(); i ++)
+                        {
+                            ItemFactory.updateSouvenir(players.get(i), i + 1, players.size(), this.getScore(players.get(i)));
                         }
                     }
                     default -> success = false;
@@ -158,7 +170,7 @@ public class GameManager implements Listener
                         for(Player player : Util.getPlayersWithPermission(Permission.PLAYER.name))
                         {
                             // clear item
-                            player.getInventory().clear();
+                            clearInventory(player);
                             // send message
                             LazuliUI.sendMessage(player, MessageFactory.getGameStartMsg());
                             // init actionbar suffix: score
@@ -310,6 +322,15 @@ public class GameManager implements Listener
                 {
                     sendGiftLocationPrompt();
                 }
+                // particle
+                if(timer % 10 == 0)
+                {
+                    for(Gift gift : Gift.getGifts())
+                    {
+                        if(gift.type == Gift.GiftType.SPECIAL)
+                            GiftHunting.plugin.world.spawnParticle(Particle.VILLAGER_HAPPY, gift.getLocation(), 4, 0.5f, 0.5f, 0.5f);
+                    }
+                }
                 // go FINISHED
                 if(timer >= GiftHunting.config.progressStateDuration)
                 {
@@ -415,5 +436,17 @@ public class GameManager implements Listener
                         .build()
         );
         firework.setFireworkMeta(meta);
+    }
+
+    private void clearInventory(Player player)
+    {
+        PlayerInventory inventory = player.getInventory();
+        for(ItemStack item : inventory)
+        {
+            if(item!= null && item.getType() != ItemFactory.souvenir.getType())
+            {
+                inventory.remove(item);
+            }
+        }
     }
 }

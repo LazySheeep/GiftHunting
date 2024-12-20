@@ -1,4 +1,4 @@
-package io.lazysheeep.gifthunting;
+package io.lazysheeep.gifthunting.factory;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -13,21 +13,37 @@ import org.bukkit.inventory.meta.SkullMeta;
 import java.util.ArrayList;
 import java.util.List;
 
-class ItemFactory
+public class ItemFactory
 {
-    static public final ItemStack giftSpawnerSetter;
+    static public final ItemStack normalGiftSpawnerSetter;
     static
     {
-        giftSpawnerSetter = new ItemStack(Material.BLAZE_ROD, 1);
+        normalGiftSpawnerSetter = new ItemStack(Material.BLAZE_ROD, 1);
         Component displayName = Component.text("礼物生成点设定器", NamedTextColor.LIGHT_PURPLE);
         List<Component> lore = new ArrayList<>();
         lore.add(Component.text("用于设定礼物生成点", NamedTextColor.AQUA));
         lore.add(Component.text("对方块右键使用", NamedTextColor.YELLOW));
-        giftSpawnerSetter.editMeta(itemMeta ->
+        normalGiftSpawnerSetter.editMeta(itemMeta ->
         {
             itemMeta.displayName(displayName);
             itemMeta.lore(lore);
-            itemMeta.addEnchant(Enchantment.DURABILITY, 1, true);
+            itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
+        });
+    }
+
+    static public final ItemStack specialGiftSpawnerSetter;
+    static
+    {
+        specialGiftSpawnerSetter = new ItemStack(Material.BLAZE_ROD, 1);
+        Component displayName = Component.text("特殊礼物生成点设定器", NamedTextColor.LIGHT_PURPLE);
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text("用于设定特殊礼物生成点", NamedTextColor.AQUA));
+        lore.add(Component.text("对方块右键使用", NamedTextColor.YELLOW));
+        specialGiftSpawnerSetter.editMeta(itemMeta ->
+        {
+            itemMeta.displayName(displayName);
+            itemMeta.lore(lore);
+            itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
         });
     }
 
@@ -44,7 +60,7 @@ class ItemFactory
         {
             itemMeta.displayName(displayName);
             itemMeta.lore(lore);
-            itemMeta.addEnchant(Enchantment.DURABILITY, 1, true);
+            itemMeta.addEnchant(Enchantment.EFFICIENCY, 1, true);
         });
     }
 
@@ -78,7 +94,7 @@ class ItemFactory
         {
             itemMeta.displayName(displayName);
             itemMeta.lore(lore);
-            itemMeta.addEnchant(Enchantment.DURABILITY, 1, true);
+            itemMeta.addEnchant(Enchantment.FORTUNE, 1, true);
         });
     }
 
@@ -86,9 +102,9 @@ class ItemFactory
     static
     {
         souvenir = new ItemStack(Material.PLAYER_HEAD, 1);
-        Component displayName = Component.text("2023圣诞纪念", NamedTextColor.LIGHT_PURPLE);
+        Component displayName = Component.text("2024圣诞纪念", NamedTextColor.LIGHT_PURPLE);
         List<Component> lore = new ArrayList<>();
-        lore.add(Component.text("MCZJU2023年圣诞活动纪念品", NamedTextColor.AQUA));
+        lore.add(Component.text("MCZJU2024年圣诞活动纪念品", NamedTextColor.AQUA));
         lore.add(Component.text("小心别放到地上了！", NamedTextColor.GRAY));
         lore.add(Component.text("游戏记录:", NamedTextColor.AQUA));
         souvenir.editMeta(itemMeta ->
@@ -98,12 +114,12 @@ class ItemFactory
                 skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer("MHF_Present2"));
                 itemMeta.displayName(displayName);
                 itemMeta.lore(lore);
-                itemMeta.addEnchant(Enchantment.LOOT_BONUS_BLOCKS, 1, true);
+                itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
             }
         });
     }
 
-    static void updateSouvenir(Player player, int ranking, int totalPlayer, int score)
+    public static void UpdateSouvenir(Player player, int rank, int totalPlayer, int score)
     {
         // if player don't have souvenir, give one
         PlayerInventory inventory = player.getInventory();
@@ -136,7 +152,7 @@ class ItemFactory
                 if(lore != null)
                     lore.add(Component.text(player.getName(), NamedTextColor.YELLOW)
                             .append(Component.text(" - 排名: ", NamedTextColor.GOLD))
-                            .append(Component.text(ranking + "/" + totalPlayer, NamedTextColor.GREEN))
+                            .append(Component.text(rank + "/" + totalPlayer, NamedTextColor.GREEN))
                             .append(Component.text(", 得分: ", NamedTextColor.GOLD))
                             .append(Component.text(score, NamedTextColor.GREEN))
                     );

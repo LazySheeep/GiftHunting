@@ -1,84 +1,162 @@
 package io.lazysheeep.gifthunting;
 
-import io.lazysheeep.lazuliui.LazuliUI;
-import net.kyori.adventure.text.Component;
+import co.aikar.commands.PaperCommandManager;
+import com.destroystokyo.paper.event.server.ServerTickStartEvent;
+import io.lazysheeep.gifthunting.game.GameManager;
+import io.lazysheeep.gifthunting.game.PlayerEventListener;
+import io.lazysheeep.gifthunting.gift.GiftManager;
+import io.lazysheeep.gifthunting.gift.GiftType;
+import io.lazysheeep.gifthunting.player.GHPlayerManager;
 import org.bukkit.Bukkit;
-import org.bukkit.World;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scoreboard.Criteria;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Scoreboard;
+import org.jetbrains.annotations.NotNull;
+import org.spongepowered.configurate.ConfigurateException;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
-public final class GiftHunting extends JavaPlugin
+public final class GiftHunting extends JavaPlugin implements Listener
 {
-    public static GiftHunting plugin;
-    static GameManager gameManager;
-    static Config config;
-    Logger logger;
-    World world;
-    Objective scoreboardObj;
+    private static GiftHunting _Instance;
 
+    public static GiftHunting GetPlugin()
+    {
+        return _Instance;
+    }
+
+    public static void Log(Level level, String message)
+    {
+        _Instance.getLogger().log(level, "[t" + _Instance.getServer().getCurrentTick() + "] " + message);
+    }
+
+    private GameManager _gameManager;
+
+    public @NotNull GameManager getGameManager()
+    {
+        return _gameManager;
+    }
+
+    private GHPlayerManager _playerManager;
+
+    public GHPlayerManager getPlayerManager()
+    {
+        return _playerManager;
+    }
+
+    private GiftManager _giftManager;
+
+    public @NotNull GiftManager getGiftManager()
+    {
+        return _giftManager;
+    }
 
     @Override
     public void onEnable()
     {
         // set static reference
-        plugin = this;
-        logger = this.getLogger();
-        gameManager = new GameManager();
+        _Instance = this;
 
-        // load cfg
-        config = new Config(this);
-        config.load();
-
-        // get world
-        world = Bukkit.getServer().getWorld(config.worldName);
-        if(world == null)
-        {
-            StringBuilder log = new StringBuilder("World \"" + config.worldName + "\" not found, please check!\nWorld list:\n");
-            for(World world : Bukkit.getServer().getWorlds())
-            {
-                log.append(world.getName()).append(" ");
-            }
-            logger.log(Level.SEVERE, log.toString());
-            Bukkit.getPluginManager().disablePlugin(this);
-            return;
-        }
+        // create managers
+        _gameManager = new GameManager();
+        _playerManager = new GHPlayerManager();
+        _giftManager = new GiftManager();
 
         // register event listener
+        Bukkit.getPluginManager().registerEvents(this, this);
         Bukkit.getPluginManager().registerEvents(new PlayerEventListener(), this);
-        Bukkit.getPluginManager().registerEvents(gameManager, this);
 
         // register commands
-        PluginCommand command = this.getCommand("gifthunting");
-        if(command != null)
-            command.setExecutor(new CCommandExecutor());
-        else
-            logger.log(Level.SEVERE, "Can't get command! There must be something wrong!");
+        PaperCommandManager commandManager = new PaperCommandManager(this);
+        commandManager.registerCommand(new GiftHuntingCommand());
 
-        // get scoreboard
-        String scoreboardName = "GiftHunting";
-        Scoreboard scoreboard = Bukkit.getServer().getScoreboardManager().getMainScoreboard();
-        this.scoreboardObj = scoreboard.getObjective(scoreboardName);
-        if(scoreboardObj == null)
+        // if config folder does not exist, create it and copy the default config
+        if(!getDataFolder().exists())
         {
-            this.scoreboardObj = scoreboard.registerNewObjective(scoreboardName, Criteria.DUMMY, Component.text(scoreboardName));
-            logger.log(Level.INFO, "Scoreboard \"" + scoreboardName + "\" not found, created one");
+            getDataFolder().mkdir();
+            saveResource("gifthunting.conf", false);
         }
 
-        // set UI width
-        LazuliUI.setActionbarInfixWidth(32);
+        // load configurations
+        reloadConfig();
 
-        logger.log(Level.INFO, "Enabled");
+        Log(Level.INFO, "Enabled");
     }
 
     @Override
     public void onDisable()
     {
-        config.save();
+        saveConfig();
+        _giftManager.removeAllGifts();
+    }
+
+    public void reloadConfig()
+    {
+        loadConfig();
+        _gameManager.loadConfig();
+        GiftType.LoadConfig();
+        _giftManager.loadConfig();
+    }
+
+    private HoconConfigurationLoader _configLoader;
+    private ConfigurationNode _configRootNode;
+
+    public @NotNull ConfigurationNode getConfigRootNode()
+    {
+        if(_configRootNode == null)
+        {
+            loadConfig();
+        }
+        return _configRootNode;
+    }
+
+    private void loadConfig()
+    {
+        if(_configLoader == null)
+        {
+            _configLoader = HoconConfigurationLoader.builder().path(Path.of(getDataFolder().getPath(), "gifthunting.conf")).build();
+        }
+        try
+        {
+            _configRootNode = _configLoader.load();
+            if(_configRootNode.empty())
+            {
+                Log(Level.SEVERE, "Empty configuration");
+            }
+        }
+        catch (ConfigurateException e)
+        {
+            Log(Level.SEVERE, "An error occurred while loading configuration at " + e.getMessage());
+        }
+    }
+
+    public void saveConfig()
+    {
+        if(_configLoader != null && _configRootNode != null)
+        {
+            try
+            {
+                _giftManager.saveConfig();
+                _configLoader.save(_configRootNode);
+                Log(Level.INFO, "Configuration saved");
+            }
+            catch (ConfigurateException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    private void onServerTickStart(ServerTickStartEvent event)
+    {
+        _gameManager.tick();
+        _playerManager.tick();
     }
 }

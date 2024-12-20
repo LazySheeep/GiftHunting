@@ -1,42 +1,48 @@
 plugins {
+    id 'com.gradleup.shadow' version '8.3.5'
     id 'java'
 }
 
 group = 'io.lazysheeep'
-version = '1.1.0'
+version = '1.2.0'
+
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+}
 
 repositories {
     mavenCentral()
-    maven {
-        name = "papermc-repo"
-        url = "https://repo.papermc.io/repository/maven-public/"
-    }
-    maven {
-        url "https://jitpack.io"
-    }
+    maven { url = "https://repo.papermc.io/repository/maven-public/" }
+    maven { url = "https://www.jitpack.io" }
+    maven { url = "https://oss.sonatype.org/content/groups/public/" }
+    maven { url = "https://repo.aikar.co/content/groups/aikar/" }
+}
+
+compileJava {
+    options.compilerArgs += ["-parameters"]
+    options.fork = true
 }
 
 dependencies {
-    compileOnly "io.papermc.paper:paper-api:1.19.2-R0.1-SNAPSHOT"
-    implementation 'com.github.LazySheeep:LazuliUI:0.5.3'
+    compileOnly "io.papermc.paper:paper-api:1.21-R0.1-SNAPSHOT"
+    implementation "org.spongepowered:configurate-hocon:4.1.2"
+    implementation 'com.github.LazySheeep:LazuliUI:0.6.2'
+    implementation "co.aikar:acf-paper:0.5.1-SNAPSHOT"
 }
 
-def targetJavaVersion = 17
-java {
-    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
-    if (JavaVersion.current() < javaVersion) {
-        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+shadowJar {
+    relocate 'co.aikar.commands', 'io.lazysheeep.lazydirector.acf'
+    relocate 'co.aikar.locales', 'io.lazysheeep.lazydirector.locales'
+    dependencies {
+        exclude(dependency('com.github.LazySheeep:LazuliUI'))
     }
+    mergeServiceFiles()
 }
+
+build.dependsOn shadowJar
 
 tasks.withType(JavaCompile).configureEach {
-    options.encoding = "UTF-8"
-    options.compilerArgs << "-Xlint:unchecked"
-    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
-        options.release = targetJavaVersion
-    }
+    options.encoding = 'UTF-8'
 }
 
 processResources {
@@ -47,3 +53,10 @@ processResources {
         expand props
     }
 }
+
+task copyJar(type: Copy) {
+    from shadowJar.archiveFile
+    into file("$rootDir/test/paper server 1.21/plugins")
+}
+
+jar.finalizedBy(copyJar)

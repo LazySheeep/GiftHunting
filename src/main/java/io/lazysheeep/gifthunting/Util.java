@@ -1,5 +1,6 @@
 package io.lazysheeep.gifthunting;
 
+import io.lazysheeep.gifthunting.factory.ItemFactory;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -84,7 +85,7 @@ public class Util
         return result;
     }
 
-    public static List<Player> getPlayersWithPermission(String permission)
+    public static List<Player> GetPlayersWithPermission(String permission)
     {
         List<Player> result = new ArrayList<>();
         for(Player player : Bukkit.getServer().getOnlinePlayers())
@@ -95,7 +96,7 @@ public class Util
         return result;
     }
 
-    public static void removePlayerItem(Player player, ItemStack itemToRemove)
+    public static void RemovePlayerItem(Player player, ItemStack itemToRemove)
     {
         PlayerInventory inventory = player.getInventory();
         for(ItemStack item : inventory)
@@ -105,7 +106,7 @@ public class Util
         }
     }
 
-    public static int getFirstEmptyAndNotHeldSlot(PlayerInventory inventory)
+    public static int GetFirstEmptyAndNotHeldSlot(PlayerInventory inventory)
     {
         for(int i = 0; i < inventory.getSize(); i ++)
         {
@@ -115,5 +116,17 @@ public class Util
             }
         }
         return -1;
+    }
+
+    public static void ClearInventory(Player player)
+    {
+        PlayerInventory inventory = player.getInventory();
+        for(ItemStack item : inventory)
+        {
+            if(item!= null && item.getType() != ItemFactory.souvenir.getType())
+            {
+                inventory.remove(item);
+            }
+        }
     }
 }

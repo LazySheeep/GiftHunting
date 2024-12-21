@@ -1,11 +1,14 @@
 package io.lazysheeep.gifthunting.player;
 
+import io.lazysheeep.gifthunting.GiftHunting;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class GHPlayer
 {
     private Player _hostPlayer;
+    private int _score = 0;
+    public int clickGiftCooldown = 0;
 
     public @NotNull Player getPlayer()
     {
@@ -21,8 +24,6 @@ public class GHPlayer
     {
         return _hostPlayer != null;
     }
-
-    private int _score = 0;
 
     public int getScore()
     {
@@ -46,6 +47,10 @@ public class GHPlayer
 
     void tick()
     {
-
+        if(clickGiftCooldown > 0)
+        {
+            clickGiftCooldown--;
+        }
+        GiftHunting.GetPlugin().getScoreObjective().getScore(_hostPlayer).setScore(_score);
     }
 }

@@ -5,8 +5,6 @@ import co.aikar.commands.annotation.*;
 import io.lazysheeep.gifthunting.factory.ItemFactory;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
 import io.lazysheeep.gifthunting.game.GameState;
-import io.lazysheeep.lazuliui.LazuliUI;
-import io.lazysheeep.lazuliui.Message;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -101,6 +99,13 @@ public class GiftHuntingCommand extends BaseCommand
         public void onClub(Player senderPlayer)
         {
             senderPlayer.getInventory().addItem(ItemFactory.club);
+        }
+
+        @Subcommand("stealer")
+        @Description("Get stealer")
+        public void onStealer(Player senderPlayer)
+        {
+            senderPlayer.getInventory().addItem(ItemFactory.stealer);
         }
     }
 

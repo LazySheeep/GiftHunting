@@ -1,9 +1,27 @@
 package io.lazysheeep.gifthunting.gift;
 
 import io.lazysheeep.gifthunting.GiftHunting;
+import io.lazysheeep.gifthunting.factory.ItemFactory;
+import io.lazysheeep.gifthunting.factory.MessageFactory;
+import io.lazysheeep.gifthunting.game.GameState;
+import io.lazysheeep.gifthunting.player.GHPlayer;
+import io.lazysheeep.gifthunting.utils.RandUtil;
+import io.lazysheeep.lazuliui.LazuliUI;
 import org.bukkit.Location;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
+import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;
 
@@ -14,7 +32,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 
-public class GiftManager
+public class GiftManager implements Listener
 {
     private final List<Location> _normalSpawners = new ArrayList<>();
 
@@ -124,16 +142,27 @@ public class GiftManager
         }
     }
 
-    private final List<Gift> _gifts = new LinkedList<>();
+    private final List<Gift> _normalGifts = new LinkedList<>();
+    private Gift _specialGift = null;
 
-    public List<Gift> getGifts()
+    public List<Gift> getNormalGifts()
     {
-        return _gifts;
+        return _normalGifts;
     }
 
-    public int getGiftCount()
+    public int getNormalGiftCount()
     {
-        return _gifts.size();
+        return _normalGifts.size();
+    }
+
+    public Gift getSpecialGift()
+    {
+        return _specialGift;
+    }
+
+    public boolean hasSpecialGift()
+    {
+        return _specialGift != null;
     }
 
     public @Nullable Gift getGift(Entity entity)
@@ -148,28 +177,54 @@ public class GiftManager
         return null;
     }
 
-    public Gift createGift(GiftType type, Location location)
+    private Gift createNormalGift(Location location)
     {
-        Gift gift = new Gift(type, location);
-        _gifts.add(gift);
+        Gift gift = new Gift(GiftType.NORMAL, location);
+        _normalGifts.add(gift);
         return gift;
+    }
+
+    private Gift createSpecialGift(Location location)
+    {
+        if(_specialGift == null)
+        {
+            _specialGift = new Gift(GiftType.SPECIAL, location);
+        }
+        else
+        {
+            GiftHunting.Log(Level.WARNING, "Special gift already exists");
+        }
+        return _specialGift;
     }
 
     public void removeGift(Gift gift)
     {
-        _gifts.remove(gift);
+        if(gift.getType() == GiftType.NORMAL)
+        {
+            _normalGifts.remove(gift);
+        }
+        else if(gift.getType() == GiftType.SPECIAL)
+        {
+            _specialGift = null;
+        }
         gift.destroy();
     }
 
     public int removeAllGifts()
     {
-        int counter = _gifts.size();
-        GiftHunting.Log(Level.INFO, "Cleared " + _gifts.size() + " gifts");
-        for(Gift gift : _gifts)
+        int counter = _normalGifts.size();
+        for(Gift gift : _normalGifts)
         {
             gift.destroy();
         }
-        _gifts.clear();
+        _normalGifts.clear();
+        if(_specialGift != null)
+        {
+            _specialGift.destroy();
+            _specialGift = null;
+            counter ++;
+        }
+        GiftHunting.Log(Level.INFO, "Cleared " + counter + " gifts");
         return counter;
     }
 
@@ -186,5 +241,89 @@ public class GiftManager
         }
         GiftHunting.Log(Level.INFO, "Cleared " + counter + " untracked gifts!");
         return counter;
+    }
+
+    public void spawnNormalGifts(int count)
+    {
+        for(Location location : RandUtil.pick(_normalSpawners, count))
+        {
+            createNormalGift(location);
+            location.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, location, 8, 0.4f, 0.4f, 0.4f);
+            location.getWorld().playSound(location, Sound.BLOCK_WOOL_PLACE, SoundCategory.MASTER, 1.0f, 1.0f);
+        }
+        GiftHunting.Log(Level.INFO, "Spawned " + count + " normal gifts");
+    }
+
+    public void spawnSpecialGift()
+    {
+        Location location = RandUtil.pick(_specialSpawners);
+        createSpecialGift(location);
+        location.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, location, 16, 0.6f, 0.6f, 0.6f);
+        location.getWorld().playSound(location, Sound.BLOCK_WOOL_PLACE, SoundCategory.MASTER, 1.0f, 1.0f);
+        GiftHunting.Log(Level.INFO, "Spawned special gift");
+    }
+
+    // spawn setter
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerInteract(PlayerInteractEvent event)
+    {
+        // get event attributes
+        Player player = event.getPlayer();
+        Action action = event.getAction();
+        ItemStack item = event.getItem();
+        Block clickedBlock = event.getClickedBlock();
+
+        if (item != null && clickedBlock != null && player.hasPermission("op") && GiftHunting.GetPlugin().getGameManager().getState() == GameState.IDLE)
+        {
+            // use giftSpawnerSetter to set or remove a spawner
+            if (item.isSimilar(ItemFactory.normalGiftSpawnerSetter))
+            {
+                if (action == Action.RIGHT_CLICK_BLOCK)
+                {
+                    Location newLocation = clickedBlock.getLocation().toCenterLocation().add(0.0f, -0.95f, 0.0f);
+                    GiftHunting.GetPlugin().getGiftManager().addNormalSpawner(newLocation);
+                    LazuliUI.sendMessage(player, MessageFactory.getAddGiftSpawnerActionbar());
+                }
+                else if (action == Action.LEFT_CLICK_BLOCK)
+                {
+                    Location location = clickedBlock.getLocation().toCenterLocation().add(0.0f, -0.95f, 0.0f);
+                    if (GiftHunting.GetPlugin().getGiftManager().removeNormalSpawner(location))
+                        LazuliUI.sendMessage(player, MessageFactory.getRemoveGiftSpawnerActionbar());
+                    event.setCancelled(true);
+                }
+            }
+            else if (item.isSimilar(ItemFactory.specialGiftSpawnerSetter))
+            {
+                if (action == Action.RIGHT_CLICK_BLOCK)
+                {
+                    Location newLocation = clickedBlock.getLocation().toCenterLocation().add(0.0f, -0.95f, 0.0f);
+                    GiftHunting.GetPlugin().getGiftManager().addSpecialSpawner(newLocation);
+                    LazuliUI.sendMessage(player, MessageFactory.getAddGiftSpawnerActionbar());
+                }
+                else if (action == Action.LEFT_CLICK_BLOCK)
+                {
+                    Location location = clickedBlock.getLocation().toCenterLocation().add(0.0f, -0.95f, 0.0f);
+                    if (GiftHunting.GetPlugin().getGiftManager().removeSpecialSpawner(location))
+                        LazuliUI.sendMessage(player, MessageFactory.getRemoveGiftSpawnerActionbar());
+                    event.setCancelled(true);
+                }
+            }
+        }
+    }
+
+    // player click gift
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerArmorStandManipulate(PlayerArmorStandManipulateEvent event)
+    {
+        Gift gift = getGift(event.getRightClicked());
+        GHPlayer ghPlayer = GiftHunting.GetPlugin().getPlayerManager().getGHPlayer(event.getPlayer());
+        if(gift != null && ghPlayer != null)
+        {
+            if(GiftHunting.GetPlugin().getGameManager().getState() == GameState.PROGRESSING && ghPlayer.clickGiftCooldown == 0)
+            {
+                gift.clicked(ghPlayer);
+            }
+            event.setCancelled(true);
+        }
     }
 }

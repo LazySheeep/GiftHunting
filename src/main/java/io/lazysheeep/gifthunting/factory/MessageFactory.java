@@ -30,11 +30,6 @@ public class MessageFactory
 
     private MessageFactory() {}
 
-    public static String getSpawnGiftLog(int amount, GiftType type)
-    {
-        return "Spawned " + amount + " " + type.toString() + " gifts!";
-    }
-
     public static Message getGameReadyingMsg()
     {
         return new Message(
@@ -67,7 +62,7 @@ public class MessageFactory
     {
         return new Message(
             Message.Type.CHAT,
-            Component.text("\n游戏即将开始...", COLOR_TEXT),
+            Component.text("游戏即将开始...", COLOR_TEXT),
             Sound.BLOCK_NOTE_BLOCK_PLING,
             Message.LoadMode.WAIT,
             1);
@@ -139,10 +134,10 @@ public class MessageFactory
 
     public static Message getGiftClickedActionbar(Gift gift)
     {
-        int progressBarToFetchL = (int)(20*((float)gift.getClicksToNextFetch()/gift.getClicksPerFetch()));
+        int progressBarToFetchL = (int)(20*((float)gift.getClicksToNextFetch()/gift.clicksPerFetch));
         int progressBarToFetchR = 20 - progressBarToFetchL;
         int progressBarTotalL = gift.getRemainingCapacity() - 1;
-        int progressBarTotalR = gift.getCapacityInFetches() - gift.getRemainingCapacity();
+        int progressBarTotalR = gift.capacityInFetches - gift.getRemainingCapacity();
         return new Message(
                 Message.Type.ACTIONBAR_INFIX,
                 Component.text("开启中 ", COLOR_TEXT)
@@ -160,7 +155,7 @@ public class MessageFactory
     public static Message getGiftFetchedActionbar(Gift gift)
     {
         int progressBarTotalL = gift.getRemainingCapacity() - 1;
-        int progressBarTotalR = gift.getCapacityInFetches() - gift.getRemainingCapacity();
+        int progressBarTotalR = gift.capacityInFetches - gift.getRemainingCapacity();
         return new Message(
                 Message.Type.ACTIONBAR_INFIX,
                 Component.text("已开启 ", COLOR_CAUTION)
@@ -171,6 +166,28 @@ public class MessageFactory
                         .append(Component.text("*".repeat(progressBarTotalR), COLOR_GRAY)),
                 Message.LoadMode.REPLACE,
                 20
+        );
+    }
+
+    public static Message getDeliverNormalGiftMsg()
+    {
+        return new Message(
+                Message.Type.CHAT,
+                Component.text("场景中生成了新的礼物！", COLOR_GOOD),
+                Sound.BLOCK_NOTE_BLOCK_PLING,
+                Message.LoadMode.WAIT,
+                60
+        );
+    }
+
+    public static Message getDeliverSpecialGiftMsg()
+    {
+        return new Message(
+                Message.Type.CHAT,
+                Component.text("特殊礼物已生成！", COLOR_SPECIAL),
+                Sound.BLOCK_NOTE_BLOCK_PLING,
+                Message.LoadMode.WAIT,
+                60
         );
     }
 
@@ -187,7 +204,7 @@ public class MessageFactory
         List<GHPlayer> ghPlayerList = GiftHunting.GetPlugin().getPlayerManager().getSortedGHPlayers();
         if(!ghPlayerList.isEmpty())
         {
-            GHPlayer bestGHPlayer = ghPlayerList.get(0);
+            GHPlayer bestGHPlayer = ghPlayerList.getFirst();
             messages.add(new Message(
                     Message.Type.CHAT,
                     Component.text("当前得分最高的玩家为", COLOR_CAUTION)
@@ -196,7 +213,7 @@ public class MessageFactory
                             .append(Component.text(bestGHPlayer.getScore(), COLOR_VALUE)),
                     Sound.BLOCK_NOTE_BLOCK_PLING,
                     Message.LoadMode.WAIT,
-                    1
+                    60
             ));
         }
         return messages;
@@ -371,9 +388,12 @@ public class MessageFactory
     {
         return Component.text("state: ", COLOR_VARIABLE).append(Component.text(GiftHunting.GetPlugin().getGameManager().getState().toString(), COLOR_VALUE))
                 .append(Component.text("\ntimer: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getGameManager().getTimer(), COLOR_VALUE))
+                .append(Component.text("\nplayers: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getPlayerManager().getGHPlayerCount(), COLOR_VALUE))
                 .append(Component.text("\nnormalGiftSpawners: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getGiftManager().getNormalSpawnerCount(), COLOR_VALUE))
                 .append(Component.text("\nspecialGiftSpawners: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getGiftManager().getSpecialSpawnerCount(), COLOR_VALUE))
-                .append(Component.text("\ntrackedGifts: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getGiftManager().getGiftCount(), COLOR_VALUE));
+                .append(Component.text("\nnormalGifts: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getGiftManager().getNormalGiftCount(), COLOR_VALUE))
+                .append(Component.text("\nspecialGift: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getGiftManager().hasSpecialGift(), COLOR_VALUE));
+
     }
 
     public static TextComponent getEventStartText()

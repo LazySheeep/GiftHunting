@@ -3,23 +3,29 @@ package io.lazysheeep.gifthunting;
 import co.aikar.commands.PaperCommandManager;
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
 import io.lazysheeep.gifthunting.game.GameManager;
-import io.lazysheeep.gifthunting.game.PlayerEventListener;
+import io.lazysheeep.gifthunting.game.SkillManager;
+import io.lazysheeep.gifthunting.gift.Gift;
 import io.lazysheeep.gifthunting.gift.GiftManager;
 import io.lazysheeep.gifthunting.gift.GiftType;
 import io.lazysheeep.gifthunting.player.GHPlayerManager;
+import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
-import org.bukkit.command.PluginCommand;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scoreboard.Criteria;
+import org.bukkit.scoreboard.Objective;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.logging.Level;
 
 public final class GiftHunting extends JavaPlugin implements Listener
@@ -57,6 +63,14 @@ public final class GiftHunting extends JavaPlugin implements Listener
         return _giftManager;
     }
 
+    private SkillManager _skillManager;
+
+    private Objective _scoreObjective;
+    public Objective getScoreObjective()
+    {
+        return _scoreObjective;
+    }
+
     @Override
     public void onEnable()
     {
@@ -67,10 +81,12 @@ public final class GiftHunting extends JavaPlugin implements Listener
         _gameManager = new GameManager();
         _playerManager = new GHPlayerManager();
         _giftManager = new GiftManager();
+        _skillManager = new SkillManager();
 
         // register event listener
         Bukkit.getPluginManager().registerEvents(this, this);
-        Bukkit.getPluginManager().registerEvents(new PlayerEventListener(), this);
+        Bukkit.getPluginManager().registerEvents(_giftManager, this);
+        Bukkit.getPluginManager().registerEvents(_skillManager, this);
 
         // register commands
         PaperCommandManager commandManager = new PaperCommandManager(this);
@@ -81,6 +97,16 @@ public final class GiftHunting extends JavaPlugin implements Listener
         {
             getDataFolder().mkdir();
             saveResource("gifthunting.conf", false);
+        }
+
+        // init scoreboard
+        _scoreObjective = Bukkit.getScoreboardManager().getMainScoreboard().getObjective("GiftHuntingScore");
+        if(_scoreObjective == null)
+        {
+            _scoreObjective = Bukkit.getScoreboardManager()
+                                    .getMainScoreboard()
+                                    .registerNewObjective("GiftHuntingScore", Criteria.DUMMY, Component.text("🎁").color(NamedTextColor.GOLD));
+            _scoreObjective.setDisplaySlot(null);
         }
 
         // load configurations
@@ -101,7 +127,9 @@ public final class GiftHunting extends JavaPlugin implements Listener
         loadConfig();
         _gameManager.loadConfig();
         GiftType.LoadConfig();
+        Gift.LoadConfig();
         _giftManager.loadConfig();
+        _skillManager.loadConfig();
     }
 
     private HoconConfigurationLoader _configLoader;
@@ -158,5 +186,29 @@ public final class GiftHunting extends JavaPlugin implements Listener
     {
         _gameManager.tick();
         _playerManager.tick();
+    }
+
+    // player fall damage
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onEntityDamage(EntityDamageEvent event)
+    {
+        if(event.getEntity() instanceof Player player)
+        {
+            if(event.getCause() == EntityDamageEvent.DamageCause.FALL && GiftHunting.GetPlugin().getPlayerManager().isGHPlayer(player))
+            {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    // protect itemFrame
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerItemFrameChange(PlayerItemFrameChangeEvent event)
+    {
+        Player player = event.getPlayer();
+        if(!player.hasPermission("op"))
+        {
+            event.setCancelled(true);
+        }
     }
 }

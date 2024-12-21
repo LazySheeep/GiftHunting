@@ -1,6 +1,7 @@
 package io.lazysheeep.gifthunting.player;
 
 import io.lazysheeep.gifthunting.GiftHunting;
+import io.lazysheeep.gifthunting.game.GameState;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.jetbrains.annotations.NotNull;
@@ -13,6 +14,11 @@ import java.util.List;
 public class GHPlayerManager
 {
     private final List<GHPlayer> _ghPlayers = new LinkedList<>();
+
+    public int getGHPlayerCount()
+    {
+        return _ghPlayers.size();
+    }
 
     public @NotNull List<GHPlayer> getAllGHPlayers()
     {
@@ -89,9 +95,12 @@ public class GHPlayerManager
         // Remove invalid GHPlayers
         _ghPlayers.removeIf(ghPlayer -> !ghPlayer.isValid());
         // Tick GHPlayers
-        for(GHPlayer ghPlayer : _ghPlayers)
+        if(GiftHunting.GetPlugin().getGameManager().getState() != GameState.IDLE)
         {
-            ghPlayer.tick();
+            for(GHPlayer ghPlayer : _ghPlayers)
+            {
+                ghPlayer.tick();
+            }
         }
     }
 }

@@ -2,7 +2,6 @@ package io.lazysheeep.gifthunting.factory;
 
 import io.lazysheeep.gifthunting.GiftHunting;
 import io.lazysheeep.gifthunting.gift.Gift;
-import io.lazysheeep.gifthunting.gift.GiftType;
 import io.lazysheeep.gifthunting.player.GHPlayer;
 import io.lazysheeep.lazuliui.Message;
 import net.kyori.adventure.text.Component;
@@ -45,7 +44,7 @@ public class MessageFactory
 
     public static Message getGameReadyingActionbar()
     {
-        int countDown = GiftHunting.GetPlugin().getGameManager().getReadyStateDuration() - GiftHunting.GetPlugin().getGameManager().getTimer();
+        int countDown = GiftHunting.GetPlugin().getGameManager().getReadyStateDuration() - GiftHunting.GetPlugin().getGameManager().getMainTimer();
         Sound tone = countDown <= 200 ? Sound.BLOCK_NOTE_BLOCK_HAT : null;
         return new Message(
                 Message.Type.ACTIONBAR_INFIX,
@@ -58,21 +57,31 @@ public class MessageFactory
         );
     }
 
-    public static Message getGameIntroMsg()
+    public static List<Message> getGameIntroMsg(int victoryScore)
     {
-        return new Message(
+        List<Message> messages = new ArrayList<>();
+        messages.add(new Message(
             Message.Type.CHAT,
             Component.text("游戏即将开始...", COLOR_TEXT),
             Sound.BLOCK_NOTE_BLOCK_PLING,
-            Message.LoadMode.WAIT,
-            1);
+            Message.LoadMode.REPLACE,
+            60));
+        messages.add(new Message(
+                Message.Type.CHAT,
+                Component.text("取得 ", COLOR_TEXT)
+                         .append(Component.text(victoryScore, COLOR_VALUE))
+                         .append(Component.text(" 分即可获胜", COLOR_TEXT)),
+                Sound.BLOCK_NOTE_BLOCK_PLING,
+                Message.LoadMode.WAIT,
+                1));
+        return messages;
     }
 
     public static Message getGameStartMsg()
     {
         return new Message(
                 Message.Type.CHAT,
-                Component.text("游戏正式开始！", COLOR_SPECIAL),
+                Component.text("游戏开始！", COLOR_SPECIAL),
                 Sound.ENTITY_PLAYER_LEVELUP,
                 Message.LoadMode.IMMEDIATE,
                 1
@@ -94,9 +103,9 @@ public class MessageFactory
         return new Message(
                 Message.Type.ACTIONBAR_PREFIX,
                 Component.text("时间: ", COLOR_VARIABLE)
-                        .append(getFormattedTime(GiftHunting.GetPlugin().getGameManager().getTimer())),
+                        .append(getFormattedTime(GiftHunting.GetPlugin().getGameManager().getMainTimer())),
                 Message.LoadMode.REPLACE,
-                1
+                20
         );
     }
 
@@ -141,12 +150,12 @@ public class MessageFactory
         return new Message(
                 Message.Type.ACTIONBAR_INFIX,
                 Component.text("开启中 ", COLOR_TEXT)
-                        .append(Component.text("*".repeat(progressBarTotalL), COLOR_SPECIAL))
+                        .append(Component.text("[]".repeat(progressBarTotalL), COLOR_SPECIAL))
                         .append(Component.text("[", COLOR_SPECIAL))
                         .append(Component.text("|".repeat(progressBarToFetchL), COLOR_VALUE))
                         .append(Component.text("|".repeat(progressBarToFetchR), COLOR_GRAY))
                         .append(Component.text("]", COLOR_SPECIAL))
-                        .append(Component.text("*".repeat(progressBarTotalR), COLOR_GRAY)),
+                        .append(Component.text("[]".repeat(progressBarTotalR), COLOR_GRAY)),
                 Message.LoadMode.REPLACE,
                 10
         );
@@ -159,11 +168,11 @@ public class MessageFactory
         return new Message(
                 Message.Type.ACTIONBAR_INFIX,
                 Component.text("已开启 ", COLOR_CAUTION)
-                        .append(Component.text("*".repeat(progressBarTotalL), COLOR_SPECIAL))
+                        .append(Component.text("[]".repeat(progressBarTotalL), COLOR_SPECIAL))
                         .append(Component.text("[", COLOR_GRAY))
                         .append(Component.text("|".repeat(20), COLOR_GRAY))
                         .append(Component.text("]", COLOR_GRAY))
-                        .append(Component.text("*".repeat(progressBarTotalR), COLOR_GRAY)),
+                        .append(Component.text("[]".repeat(progressBarTotalR), COLOR_GRAY)),
                 Message.LoadMode.REPLACE,
                 20
         );
@@ -174,7 +183,7 @@ public class MessageFactory
         return new Message(
                 Message.Type.CHAT,
                 Component.text("场景中生成了新的礼物！", COLOR_GOOD),
-                Sound.BLOCK_NOTE_BLOCK_PLING,
+                Sound.ENTITY_PLAYER_LEVELUP,
                 Message.LoadMode.WAIT,
                 60
         );
@@ -185,38 +194,47 @@ public class MessageFactory
         return new Message(
                 Message.Type.CHAT,
                 Component.text("特殊礼物已生成！", COLOR_SPECIAL),
+                Sound.ENTITY_PLAYER_LEVELUP,
+                Message.LoadMode.WAIT,
+                60
+        );
+    }
+
+    public static Message getDiscipleBirthMsg(GHPlayer disciple)
+    {
+        return new Message(
+                Message.Type.CHAT,
+                Component.text(disciple.getPlayer().getName(), COLOR_VALUE)
+                .append(Component.text(" 成为了信徒，跟随其指引即可找到特殊礼物之所在！", COLOR_SPECIAL)),
                 Sound.BLOCK_NOTE_BLOCK_PLING,
                 Message.LoadMode.WAIT,
                 60
         );
     }
 
-    public static List<Message> getBonusEventMsg()
+    public static Message getGiveStealerMsg(int stealerGiveScore)
     {
-        List<Message> messages = new ArrayList<>();
-        messages.add(new Message(
+        return new Message(
                 Message.Type.CHAT,
-                Component.text("奖励事件！得分暂时落后的玩家得到了道具奖励！", COLOR_SPECIAL),
+                Component.text("所有分数低于 ", COLOR_SPECIAL)
+                         .append(Component.text(stealerGiveScore, COLOR_VALUE))
+                         .append(Component.text(" 的玩家都获得了道具奖励！", COLOR_SPECIAL)),
                 Sound.BLOCK_NOTE_BLOCK_PLING,
-                Message.LoadMode.REPLACE,
+                Message.LoadMode.WAIT,
                 60
-        ));
-        List<GHPlayer> ghPlayerList = GiftHunting.GetPlugin().getPlayerManager().getSortedGHPlayers();
-        if(!ghPlayerList.isEmpty())
-        {
-            GHPlayer bestGHPlayer = ghPlayerList.getFirst();
-            messages.add(new Message(
-                    Message.Type.CHAT,
-                    Component.text("当前得分最高的玩家为", COLOR_CAUTION)
-                            .append(Component.text(bestGHPlayer.getPlayer().getName(), COLOR_VALUE))
-                            .append(Component.text("，得分为", COLOR_CAUTION))
-                            .append(Component.text(bestGHPlayer.getScore(), COLOR_VALUE)),
-                    Sound.BLOCK_NOTE_BLOCK_PLING,
-                    Message.LoadMode.WAIT,
-                    60
-            ));
-        }
-        return messages;
+        );
+    }
+
+    public static Message getSilencedActionbarInfix(GHPlayer badGuy, int duration)
+    {
+        return new Message(
+                Message.Type.ACTIONBAR_INFIX,
+                Component.text("被 ", COLOR_BAD)
+                         .append(Component.text(badGuy.getPlayer().getName(), COLOR_VALUE))
+                         .append(Component.text(" 沉默了！", COLOR_BAD)),
+                Message.LoadMode.REPLACE,
+                duration
+        );
     }
 
     public static Message getStealMsg(Player victim, int score)
@@ -249,14 +267,32 @@ public class MessageFactory
         );
     }
 
-    public static Message getStealBroadcastMsg(Player thief, Player victim)
+    public static Message getStealBroadcastMsg(Player thief, Player victim, int score)
     {
         return new Message(
                 Message.Type.CHAT,
-                Component.text(victim.getName(), COLOR_VALUE)
-                        .append(Component.text(" 发现自己的背包变轻了，原来是礼物被 ", COLOR_TEXT))
-                        .append(Component.text(thief.getName(), COLOR_VALUE))
-                        .append(Component.text(" 偷走了！", COLOR_TEXT)),
+                Component.text(thief.getName(), COLOR_VALUE)
+                         .append(Component.text(" 从 ", COLOR_TEXT))
+                         .append(Component.text(victim.getName(), COLOR_VALUE))
+                         .append(Component.text(" 身上窃取了 ", COLOR_TEXT))
+                         .append(Component.text(score, COLOR_VALUE))
+                         .append(Component.text(" 点数!", COLOR_TEXT)),
+                Sound.ENTITY_VILLAGER_CELEBRATE,
+                Message.LoadMode.IMMEDIATE,
+                1
+        );
+    }
+
+    public static Message getStealReflectedMsg(Player thief, Player victim, int score)
+    {
+        return new Message(
+                Message.Type.CHAT,
+                Component.text(thief.getName(), COLOR_VALUE)
+                         .append(Component.text(" 试图从 ", COLOR_TEXT))
+                         .append(Component.text(victim.getName(), COLOR_VALUE))
+                         .append(Component.text(" 身上窃取礼物，但是被识破了！反而送上 ", COLOR_TEXT))
+                         .append(Component.text(score, COLOR_VALUE))
+                         .append(Component.text(" 点数!", COLOR_TEXT)),
                 Sound.ENTITY_VILLAGER_CELEBRATE,
                 Message.LoadMode.IMMEDIATE,
                 1
@@ -268,7 +304,7 @@ public class MessageFactory
         List<Message> messages = new ArrayList<>();
         messages.add(new Message(
                 Message.Type.CHAT,
-                Component.text("游戏结束！", COLOR_SPECIAL),
+                Component.text("有玩家达到了获胜分数，游戏结束！", COLOR_SPECIAL),
                 Sound.ENTITY_ENDER_DRAGON_DEATH,
                 Message.LoadMode.REPLACE,
                 100
@@ -387,7 +423,7 @@ public class MessageFactory
     public static TextComponent getGameStatsText()
     {
         return Component.text("state: ", COLOR_VARIABLE).append(Component.text(GiftHunting.GetPlugin().getGameManager().getState().toString(), COLOR_VALUE))
-                .append(Component.text("\ntimer: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getGameManager().getTimer(), COLOR_VALUE))
+                .append(Component.text("\ntimer: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getGameManager().getMainTimer(), COLOR_VALUE))
                 .append(Component.text("\nplayers: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getPlayerManager().getGHPlayerCount(), COLOR_VALUE))
                 .append(Component.text("\nnormalGiftSpawners: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getGiftManager().getNormalSpawnerCount(), COLOR_VALUE))
                 .append(Component.text("\nspecialGiftSpawners: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getGiftManager().getSpecialSpawnerCount(), COLOR_VALUE))

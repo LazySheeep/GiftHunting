@@ -1,5 +1,7 @@
 package io.lazysheeep.gifthunting.factory;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
+import com.destroystokyo.paper.profile.ProfileProperty;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -12,18 +14,19 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class ItemFactory
 {
-    static public final ItemStack normalGiftSpawnerSetter;
+    static public final ItemStack NormalGiftSpawnerSetter;
     static
     {
-        normalGiftSpawnerSetter = new ItemStack(Material.BLAZE_ROD, 1);
+        NormalGiftSpawnerSetter = new ItemStack(Material.BLAZE_ROD, 1);
         Component displayName = Component.text("礼物生成点设定器", NamedTextColor.LIGHT_PURPLE);
         List<Component> lore = new ArrayList<>();
         lore.add(Component.text("用于设定礼物生成点", NamedTextColor.AQUA));
         lore.add(Component.text("对方块右键使用", NamedTextColor.YELLOW));
-        normalGiftSpawnerSetter.editMeta(itemMeta ->
+        NormalGiftSpawnerSetter.editMeta(itemMeta ->
         {
             itemMeta.displayName(displayName);
             itemMeta.lore(lore);
@@ -31,15 +34,15 @@ public class ItemFactory
         });
     }
 
-    static public final ItemStack specialGiftSpawnerSetter;
+    static public final ItemStack SpecialGiftSpawnerSetter;
     static
     {
-        specialGiftSpawnerSetter = new ItemStack(Material.BLAZE_ROD, 1);
+        SpecialGiftSpawnerSetter = new ItemStack(Material.BLAZE_ROD, 1);
         Component displayName = Component.text("特殊礼物生成点设定器", NamedTextColor.LIGHT_PURPLE);
         List<Component> lore = new ArrayList<>();
         lore.add(Component.text("用于设定特殊礼物生成点", NamedTextColor.AQUA));
         lore.add(Component.text("对方块右键使用", NamedTextColor.YELLOW));
-        specialGiftSpawnerSetter.editMeta(itemMeta ->
+        SpecialGiftSpawnerSetter.editMeta(itemMeta ->
         {
             itemMeta.displayName(displayName);
             itemMeta.lore(lore);
@@ -47,50 +50,50 @@ public class ItemFactory
         });
     }
 
-    static public final ItemStack booster;
+    static public final ItemStack Booster;
     static
     {
-        booster = new ItemStack(Material.FIREWORK_STAR, 1);
-        Component displayName = Component.text("弹射器", NamedTextColor.LIGHT_PURPLE);
+        Booster = new ItemStack(Material.FIREWORK_STAR, 1);
+        Component displayName = Component.text("弹射", NamedTextColor.LIGHT_PURPLE);
         List<Component> lore = new ArrayList<>();
         lore.add(Component.text("将自己向所指的方向弹射", NamedTextColor.AQUA));
         lore.add(Component.text("在助跑起跳时弹射效果最佳", NamedTextColor.AQUA));
         lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
-        booster.editMeta(itemMeta ->
+        Booster.editMeta(itemMeta ->
         {
             itemMeta.displayName(displayName);
             itemMeta.lore(lore);
-            itemMeta.addEnchant(Enchantment.EFFICIENCY, 1, true);
+            itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
         });
     }
 
-    static public final ItemStack club;
+    static public final ItemStack Club;
     static
     {
-        club = new ItemStack(Material.STICK, 1);
+        Club = new ItemStack(Material.STICK, 1);
         Component displayName = Component.text("木棍", NamedTextColor.LIGHT_PURPLE);
         List<Component> lore = new ArrayList<>();
         lore.add(Component.text("虽然看起来只是普通的木棍", NamedTextColor.AQUA));
         lore.add(Component.text("但是能够把人打飞", NamedTextColor.AQUA));
         lore.add(Component.text("那么代价是什么呢", NamedTextColor.GRAY));
-        club.editMeta(itemMeta ->
+        Club.editMeta(itemMeta ->
         {
             itemMeta.displayName(displayName);
             itemMeta.lore(lore);
-            itemMeta.addEnchant(Enchantment.KNOCKBACK, 5, true);
+            itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
         });
     }
 
-    static public final ItemStack stealer;
+    static public final ItemStack Stealer;
     static
     {
-        stealer = new ItemStack(Material.WARPED_FUNGUS_ON_A_STICK, 1);
+        Stealer = new ItemStack(Material.WARPED_FUNGUS_ON_A_STICK, 1);
         Component displayName = Component.text("钓礼物竿", NamedTextColor.LIGHT_PURPLE);
         List<Component> lore = new ArrayList<>();
         lore.add(Component.text("可以偷取其他玩家的礼物", NamedTextColor.AQUA));
         lore.add(Component.text("Ste---al!", NamedTextColor.AQUA));
         lore.add(Component.text("对其他玩家右键使用", NamedTextColor.YELLOW));
-        stealer.editMeta(itemMeta ->
+        Stealer.editMeta(itemMeta ->
         {
             itemMeta.displayName(displayName);
             itemMeta.lore(lore);
@@ -98,23 +101,57 @@ public class ItemFactory
         });
     }
 
-    static public final ItemStack souvenir;
+    static public final ItemStack Silencer;
     static
     {
-        souvenir = new ItemStack(Material.PLAYER_HEAD, 1);
+        Silencer = new ItemStack(Material.STRING, 1);
+        Component displayName = Component.text("沉默", NamedTextColor.LIGHT_PURPLE);
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text("使周围玩家无法开启礼物和使用道具", NamedTextColor.AQUA));
+        lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
+        Silencer.editMeta(itemMeta ->
+        {
+            itemMeta.displayName(displayName);
+            itemMeta.lore(lore);
+            itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
+        });
+    }
+
+    static public final ItemStack Reflector;
+    static
+    {
+        Reflector = new ItemStack(Material.ENDER_EYE, 1);
+        Component displayName = Component.text("识破", NamedTextColor.LIGHT_PURPLE);
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text("使用后，能够在一小段时间内", NamedTextColor.AQUA));
+        lore.add(Component.text("反弹一次他人对你使用的技能", NamedTextColor.AQUA));
+        lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
+        Reflector.editMeta(itemMeta ->
+                          {
+                              itemMeta.displayName(displayName);
+                              itemMeta.lore(lore);
+                              itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
+                          });
+    }
+
+    static public final ItemStack Souvenir;
+    static
+    {
+        Souvenir = new ItemStack(Material.PLAYER_HEAD, 1);
         Component displayName = Component.text("2024圣诞纪念", NamedTextColor.LIGHT_PURPLE);
         List<Component> lore = new ArrayList<>();
         lore.add(Component.text("MCZJU2024年圣诞活动纪念品", NamedTextColor.AQUA));
-        lore.add(Component.text("小心别放到地上了！", NamedTextColor.GRAY));
         lore.add(Component.text("游戏记录:", NamedTextColor.AQUA));
-        souvenir.editMeta(itemMeta ->
+        Souvenir.editMeta(itemMeta ->
         {
             if(itemMeta instanceof SkullMeta skullMeta)
             {
-                skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer("MHF_Present2"));
-                itemMeta.displayName(displayName);
-                itemMeta.lore(lore);
-                itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
+                skullMeta.displayName(displayName);
+                skullMeta.lore(lore);
+                skullMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
+                PlayerProfile headProfile = Bukkit.createProfile(UUID.randomUUID());
+                headProfile.setProperty(new ProfileProperty("textures", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmQ3YTlmNmVkMDhkZDIxN2ZkZjA5ZjQ2NTJiZjZiN2FmNjIxZTFkNWY4OTYzNjA1MzQ5ZGE3Mzk5OGE0NDMifX19"));
+                skullMeta.setPlayerProfile(headProfile);
             }
         });
     }
@@ -126,7 +163,7 @@ public class ItemFactory
         ItemStack playerSouvenir = null;
         for(ItemStack item : inventory)
         {
-            if(item != null && item.getType() == souvenir.getType())
+            if(item != null && item.getType() == Souvenir.getType())
             {
                 playerSouvenir = item;
                 break;
@@ -134,10 +171,10 @@ public class ItemFactory
         }
         if(playerSouvenir == null)
         {
-            inventory.addItem(souvenir);
+            inventory.addItem(Souvenir);
             for(ItemStack item : inventory)
             {
-                if(item != null && item.getType() == souvenir.getType())
+                if(item != null && item.getType() == Souvenir.getType())
                 {
                     playerSouvenir = item;
                     break;
@@ -150,12 +187,15 @@ public class ItemFactory
             {
                 List<Component> lore = itemMeta.lore();
                 if(lore != null)
+                {
+                    lore.removeLast();
                     lore.add(Component.text(player.getName(), NamedTextColor.YELLOW)
-                            .append(Component.text(" - 排名: ", NamedTextColor.GOLD))
-                            .append(Component.text(rank + "/" + totalPlayer, NamedTextColor.GREEN))
-                            .append(Component.text(", 得分: ", NamedTextColor.GOLD))
-                            .append(Component.text(score, NamedTextColor.GREEN))
-                    );
+                                                      .append(Component.text(" - 排名: ", NamedTextColor.GOLD))
+                                                      .append(Component.text(rank + "/" + totalPlayer, NamedTextColor.GREEN))
+                                                      .append(Component.text(", 得分: ", NamedTextColor.GOLD))
+                                                      .append(Component.text(score, NamedTextColor.GREEN)));
+                    lore.add(Component.text("圣诞活动纪念品，不会被清除", NamedTextColor.GRAY));
+                }
                 itemMeta.lore(lore);
             });
     }

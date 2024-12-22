@@ -7,10 +7,7 @@ import io.lazysheeep.gifthunting.game.GameState;
 import io.lazysheeep.gifthunting.player.GHPlayer;
 import io.lazysheeep.gifthunting.utils.RandUtil;
 import io.lazysheeep.lazuliui.LazuliUI;
-import org.bukkit.Location;
-import org.bukkit.Particle;
-import org.bukkit.Sound;
-import org.bukkit.SoundCategory;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -155,7 +152,7 @@ public class GiftManager implements Listener
         return _normalGifts.size();
     }
 
-    public Gift getSpecialGift()
+    public @Nullable Gift getSpecialGift()
     {
         return _specialGift;
     }
@@ -179,7 +176,10 @@ public class GiftManager implements Listener
 
     private Gift createNormalGift(Location location)
     {
-        Gift gift = new Gift(GiftType.NORMAL, location);
+        Location newLocation = location.clone();
+        newLocation.add(RandUtil.nextVector(0.3f, 0.0f, 0.3f));
+        newLocation.setYaw(RandUtil.nextFloat(0.0f, 360.0f));
+        Gift gift = new Gift(GiftType.NORMAL, newLocation);
         _normalGifts.add(gift);
         return gift;
     }
@@ -245,7 +245,7 @@ public class GiftManager implements Listener
 
     public void spawnNormalGifts(int count)
     {
-        for(Location location : RandUtil.pick(_normalSpawners, count))
+        for(Location location : RandUtil.Pick(_normalSpawners, count))
         {
             createNormalGift(location);
             location.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, location, 8, 0.4f, 0.4f, 0.4f);
@@ -256,7 +256,7 @@ public class GiftManager implements Listener
 
     public void spawnSpecialGift()
     {
-        Location location = RandUtil.pick(_specialSpawners);
+        Location location = RandUtil.Pick(_specialSpawners);
         createSpecialGift(location);
         location.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, location, 16, 0.6f, 0.6f, 0.6f);
         location.getWorld().playSound(location, Sound.BLOCK_WOOL_PLACE, SoundCategory.MASTER, 1.0f, 1.0f);
@@ -276,7 +276,7 @@ public class GiftManager implements Listener
         if (item != null && clickedBlock != null && player.hasPermission("op") && GiftHunting.GetPlugin().getGameManager().getState() == GameState.IDLE)
         {
             // use giftSpawnerSetter to set or remove a spawner
-            if (item.isSimilar(ItemFactory.normalGiftSpawnerSetter))
+            if (item.isSimilar(ItemFactory.NormalGiftSpawnerSetter))
             {
                 if (action == Action.RIGHT_CLICK_BLOCK)
                 {
@@ -292,7 +292,7 @@ public class GiftManager implements Listener
                     event.setCancelled(true);
                 }
             }
-            else if (item.isSimilar(ItemFactory.specialGiftSpawnerSetter))
+            else if (item.isSimilar(ItemFactory.SpecialGiftSpawnerSetter))
             {
                 if (action == Action.RIGHT_CLICK_BLOCK)
                 {
@@ -319,9 +319,11 @@ public class GiftManager implements Listener
         GHPlayer ghPlayer = GiftHunting.GetPlugin().getPlayerManager().getGHPlayer(event.getPlayer());
         if(gift != null && ghPlayer != null)
         {
-            if(GiftHunting.GetPlugin().getGameManager().getState() == GameState.PROGRESSING && ghPlayer.clickGiftCooldown == 0)
+            int currentTick = GiftHunting.GetPlugin().getServer().getCurrentTick();
+            if(GiftHunting.GetPlugin().getGameManager().getState() == GameState.PROGRESSING && currentTick - ghPlayer.lastClickGiftTime >= 4)
             {
                 gift.clicked(ghPlayer);
+                ghPlayer.lastClickGiftTime = currentTick;
             }
             event.setCancelled(true);
         }

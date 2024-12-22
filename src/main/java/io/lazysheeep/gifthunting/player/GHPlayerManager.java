@@ -2,6 +2,9 @@ package io.lazysheeep.gifthunting.player;
 
 import io.lazysheeep.gifthunting.GiftHunting;
 import io.lazysheeep.gifthunting.game.GameState;
+import io.lazysheeep.gifthunting.utils.MCUtil;
+import io.lazysheeep.lazuliui.LazuliUI;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.jetbrains.annotations.NotNull;
@@ -42,13 +45,16 @@ public class GHPlayerManager
     {
         GHPlayer ghPlayer = new GHPlayer(player);
         player.setMetadata("GHPlayer", new FixedMetadataValue(GiftHunting.GetPlugin(), ghPlayer));
+        MCUtil.ClearInventory(player);
         _ghPlayers.add(ghPlayer);
         return ghPlayer;
     }
 
     private void destroyGHPlayer(@NotNull GHPlayer ghPlayer)
     {
+        MCUtil.ClearInventory(ghPlayer.getPlayer());
         ghPlayer.getPlayer().removeMetadata("GHPlayer", GiftHunting.GetPlugin());
+        LazuliUI.flush(ghPlayer.getPlayer());
         ghPlayer.destroy();
     }
 
@@ -71,7 +77,7 @@ public class GHPlayerManager
 
     private boolean shouldBeGHPlayer(@NotNull Player player)
     {
-        return player.isOnline() && player.getWorld() == GiftHunting.GetPlugin().getGameManager().getGameWorld();
+        return player.isOnline() && player.getWorld() == GiftHunting.GetPlugin().getGameManager().getGameWorld() && player.getGameMode() == GameMode.ADVENTURE;
     }
 
     public void tick()

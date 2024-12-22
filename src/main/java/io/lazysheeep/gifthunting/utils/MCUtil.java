@@ -1,10 +1,11 @@
 package io.lazysheeep.gifthunting.utils;
 
 import io.lazysheeep.gifthunting.factory.ItemFactory;
-import org.bukkit.Bukkit;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.util.Vector;
 
 import java.util.*;
 
@@ -48,10 +49,31 @@ public class MCUtil
         PlayerInventory inventory = player.getInventory();
         for(ItemStack item : inventory)
         {
-            if(item!= null && item.getType() != ItemFactory.souvenir.getType())
+            if(item!= null && item.getType() != ItemFactory.Souvenir.getType())
             {
                 inventory.remove(item);
             }
         }
+    }
+
+    public static void SpawnDustLineParticle(Location start, Location end, float step, Color color, float size)
+    {
+        double distance = start.distance(end);
+        Vector stepVector = end.toVector().subtract(start.toVector()).normalize().multiply(step);
+        int stepCount = (int)Math.ceil(distance / step);
+        Location particleLocation = start.clone();
+        for(int i = 0; i < stepCount; i++)
+        {
+            particleLocation.getWorld().spawnParticle(Particle.DUST, particleLocation, 1, new Particle.DustOptions(color, size));
+            particleLocation.add(stepVector);
+        }
+    }
+
+    public static void GiveItem(Player player, ItemStack itemStack)
+    {
+        PlayerInventory inventory = player.getInventory();
+        inventory.addItem(itemStack);
+        inventory.setHeldItemSlot(inventory.firstEmpty());
+        player.playSound(player, Sound.ENTITY_ITEM_PICKUP, SoundCategory.MASTER, 1.0f, 1.0f);
     }
 }

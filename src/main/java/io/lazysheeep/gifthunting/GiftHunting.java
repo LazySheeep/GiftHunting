@@ -3,6 +3,7 @@ package io.lazysheeep.gifthunting;
 import co.aikar.commands.PaperCommandManager;
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
 import io.lazysheeep.gifthunting.game.GameManager;
+import io.lazysheeep.gifthunting.game.GameState;
 import io.lazysheeep.gifthunting.game.SkillManager;
 import io.lazysheeep.gifthunting.gift.Gift;
 import io.lazysheeep.gifthunting.gift.GiftManager;
@@ -65,8 +66,13 @@ public final class GiftHunting extends JavaPlugin implements Listener
 
     private SkillManager _skillManager;
 
+    public @NotNull SkillManager getSkillManager()
+    {
+        return _skillManager;
+    }
+
     private Objective _scoreObjective;
-    public Objective getScoreObjective()
+    public @NotNull Objective getScoreObjective()
     {
         return _scoreObjective;
     }
@@ -118,8 +124,8 @@ public final class GiftHunting extends JavaPlugin implements Listener
     @Override
     public void onDisable()
     {
+        _gameManager.switchState(GameState.IDLE);
         saveConfig();
-        _giftManager.removeAllGifts();
     }
 
     public void reloadConfig()

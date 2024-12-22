@@ -8,9 +8,9 @@ import java.util.Random;
 
 public class RandUtil
 {
-    private static final Random random = new Random();
+    private static final Random random = new Random(System.currentTimeMillis());
 
-    public static <T> List<T> pick(List<T> list, int amount)
+    public static <T> List<T> Pick(List<T> list, int amount)
     {
         List<T> ret = new ArrayList<>();
         int[] array = new int[list.size()];
@@ -31,9 +31,9 @@ public class RandUtil
         return ret;
     }
 
-    public static <T> T pick(List<T> list)
+    public static <T> T Pick(List<T> list)
     {
-        return list.get(Math.abs(random.nextInt()) % list.size());
+        return list.get(nextInt(0, list.size() - 1));
     }
 
     public static float nextFloat(float min, float max)
@@ -49,9 +49,9 @@ public class RandUtil
     public static Vector nextVector(float intensityX, float intensityY, float intensityZ)
     {
         Vector vec = new Vector();
-        if(intensityX != 0.0f) vec.setX((random.nextFloat()-0.5f) * 2.0f * intensityX);
-        if(intensityY != 0.0f) vec.setY((random.nextFloat()-0.5f) * 2.0f * intensityY);
-        if(intensityZ != 0.0f) vec.setZ((random.nextFloat()-0.5f) * 2.0f * intensityZ);
+        vec.setX((random.nextFloat()-0.5f) * 2.0f * intensityX);
+        vec.setY((random.nextFloat()-0.5f) * 2.0f * intensityY);
+        vec.setZ((random.nextFloat()-0.5f) * 2.0f * intensityZ);
         return vec;
     }
 

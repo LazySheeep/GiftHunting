@@ -77,35 +77,49 @@ public class GiftHuntingCommand extends BaseCommand
         @Description("Get normal gift spawn setter")
         public void onNormalSetter(Player senderPlayer)
         {
-            senderPlayer.getInventory().addItem(ItemFactory.normalGiftSpawnerSetter);
+            senderPlayer.getInventory().addItem(ItemFactory.NormalGiftSpawnerSetter);
         }
 
         @Subcommand("specialSetter")
         @Description("Get special gift spawn setter")
         public void onSpecialSetter(Player senderPlayer)
         {
-            senderPlayer.getInventory().addItem(ItemFactory.specialGiftSpawnerSetter);
+            senderPlayer.getInventory().addItem(ItemFactory.SpecialGiftSpawnerSetter);
         }
 
         @Subcommand("booster")
         @Description("Get booster")
         public void onBooster(Player senderPlayer)
         {
-            senderPlayer.getInventory().addItem(ItemFactory.booster);
+            senderPlayer.getInventory().addItem(ItemFactory.Booster);
         }
 
         @Subcommand("club")
         @Description("Get club")
         public void onClub(Player senderPlayer)
         {
-            senderPlayer.getInventory().addItem(ItemFactory.club);
+            senderPlayer.getInventory().addItem(ItemFactory.Club);
         }
 
         @Subcommand("stealer")
         @Description("Get stealer")
         public void onStealer(Player senderPlayer)
         {
-            senderPlayer.getInventory().addItem(ItemFactory.stealer);
+            senderPlayer.getInventory().addItem(ItemFactory.Stealer);
+        }
+
+        @Subcommand("silencer")
+        @Description("Get silencer")
+        public void onSilencer(Player senderPlayer)
+        {
+            senderPlayer.getInventory().addItem(ItemFactory.Silencer);
+        }
+
+        @Subcommand("reflector")
+        @Description("Get reflector")
+        public void onReflector(Player senderPlayer)
+        {
+            senderPlayer.getInventory().addItem(ItemFactory.Reflector);
         }
     }
 

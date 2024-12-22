@@ -7,6 +7,7 @@ import io.lazysheeep.gifthunting.GiftHunting;
 import io.lazysheeep.gifthunting.factory.ItemFactory;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
 import io.lazysheeep.gifthunting.player.GHPlayer;
+import io.lazysheeep.gifthunting.utils.MCUtil;
 import io.lazysheeep.gifthunting.utils.RandUtil;
 import io.lazysheeep.lazuliui.LazuliUI;
 import io.lazysheeep.lazuliui.Message;
@@ -17,7 +18,6 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
@@ -32,6 +32,8 @@ public class Gift
 {
     private static float LootProbability_club;
     private static float LootProbability_booster;
+    private static float LootProbability_silencer;
+    private static float LootProbability_reflector;
 
     public static final String TagName = "GiftHunting:Gift";
 
@@ -40,6 +42,8 @@ public class Gift
         ConfigurationNode lootConfigNode = GiftHunting.GetPlugin().getConfigRootNode().node("loot");
         LootProbability_club = lootConfigNode.node("club").getFloat();
         LootProbability_booster = lootConfigNode.node("booster").getFloat();
+        LootProbability_silencer = lootConfigNode.node("silencer").getFloat();
+        LootProbability_reflector = lootConfigNode.node("reflector").getFloat();
     }
 
     private final ArmorStand _giftEntity;
@@ -85,8 +89,6 @@ public class Gift
         this._remainingCapacity = capacityInFetches;
         this._clicksToNextFetch = clicksPerFetch;
 
-        location.add(RandUtil.nextVector(0.3f, 0.0f, 0.3f));
-        location.setYaw(RandUtil.nextFloat(0.0f, 360.0f));
         this._giftEntity = (ArmorStand) location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
         this._giftEntity.customName(Component.text(TagName));
         this._giftEntity.addScoreboardTag(TagName);
@@ -110,6 +112,11 @@ public class Gift
 
     public void clicked(GHPlayer ghPlayer)
     {
+        if(ghPlayer.silenceTimer > 0)
+        {
+            return;
+        }
+
         this._clicksToNextFetch--;
         LazuliUI.sendMessage(ghPlayer.getPlayer(), MessageFactory.getGiftClickedActionbar(this));
         ghPlayer.getPlayer().playSound(_giftEntity, Sound.BLOCK_WOOL_HIT, SoundCategory.MASTER, 1.0f, 1.0f);
@@ -120,7 +127,6 @@ public class Gift
             this._clicksToNextFetch = clicksPerFetch;
         }
 
-        ghPlayer.clickGiftCooldown = 3;
         if(_type == GiftType.SPECIAL)
         {
             ghPlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20, 1));
@@ -144,21 +150,24 @@ public class Gift
         // play sound to the player
         player.playSound(player, Sound.BLOCK_NOTE_BLOCK_CHIME, SoundCategory.MASTER, 1.0f, 1.0f);
         // display particle
-        player.spawnParticle(Particle.WAX_OFF, this.getLocation(), 4, 0.2f, 0.2f, 0.2f);
+        player.getWorld().spawnParticle(Particle.WAX_OFF, this.getLocation(), 4, 0.2f, 0.2f, 0.2f);
 
-        // randomly give item
+        // give item
         if(RandUtil.nextBool(LootProbability_club))
         {
-            player.getInventory().addItem(ItemFactory.club);
-            player.playSound(player, Sound.ENTITY_ITEM_PICKUP, SoundCategory.MASTER, 1.0f, 1.0f);
+            MCUtil.GiveItem(player, ItemFactory.Club);
         }
         if(RandUtil.nextBool(LootProbability_booster))
         {
-            PlayerInventory inventory = player.getInventory();
-            inventory.addItem(ItemFactory.booster);
-            if(inventory.first(ItemFactory.booster) == inventory.getHeldItemSlot())
-                inventory.setHeldItemSlot(inventory.firstEmpty());
-            player.playSound(player, Sound.ENTITY_ITEM_PICKUP, SoundCategory.MASTER, 1.0f, 1.0f);
+            MCUtil.GiveItem(player, ItemFactory.Booster);
+        }
+        if(RandUtil.nextBool(LootProbability_silencer))
+        {
+            MCUtil.GiveItem(player, ItemFactory.Silencer);
+        }
+        if(RandUtil.nextBool(LootProbability_reflector))
+        {
+            MCUtil.GiveItem(player, ItemFactory.Reflector);
         }
 
         // score increase

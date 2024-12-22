@@ -26,7 +26,7 @@ compileJava {
 dependencies {
     compileOnly "io.papermc.paper:paper-api:1.21-R0.1-SNAPSHOT"
     implementation "org.spongepowered:configurate-hocon:4.1.2"
-    implementation 'com.github.LazySheeep:LazuliUI:0.6.2'
+    implementation 'com.github.LazySheeep:LazuliUI:0.6.3'
     implementation "co.aikar:acf-paper:0.5.1-SNAPSHOT"
 }
 

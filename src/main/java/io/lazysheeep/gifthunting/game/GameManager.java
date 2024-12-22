@@ -3,20 +3,16 @@ package io.lazysheeep.gifthunting.game;
 import io.lazysheeep.gifthunting.GiftHunting;
 import io.lazysheeep.gifthunting.factory.ItemFactory;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
-import io.lazysheeep.gifthunting.gift.GiftType;
 import io.lazysheeep.gifthunting.utils.MCUtil;
 import io.lazysheeep.gifthunting.gift.Gift;
 import io.lazysheeep.gifthunting.player.GHPlayer;
+import io.lazysheeep.gifthunting.utils.RandUtil;
 import io.lazysheeep.lazuliui.LazuliUI;
-import net.kyori.adventure.text.Component;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scoreboard.Criteria;
 import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.util.Vector;
 import org.spongepowered.configurate.ConfigurationNode;
 
@@ -36,6 +32,8 @@ public class GameManager
     private float _newGiftBatchThreshold;
     private int _newGiftBatchDelay;
     private int _specialGiftSpawnInterval;
+    private float _stealerGiveWhenHighestScore;
+    private int _stealerGiveInterval;
 
     public World getGameWorld()
     {
@@ -68,26 +66,30 @@ public class GameManager
                                   gameSpawnNode.node("yaw").getFloat(0.0f),
                                   gameSpawnNode.node("pitch").getFloat(0.0f));
         _readyStateDuration = configNode.node("readyStateDuration").getInt(0);
-        _progressStateMaxDuration = configNode.node("progressStateMaxDuration").getInt(0);
+        _progressStateMaxDuration = configNode.node("progressStateMaxDuration").getInt(Integer.MAX_VALUE);
         _finishedStateDuration = configNode.node("finishedStateDuration").getInt(0);
-        _victoryScore = configNode.node("victoryScore").getInt(0);
+        _victoryScore = configNode.node("victoryScore").getInt(Integer.MAX_VALUE);
         _spawnGiftCountPerPlayer = configNode.node("spawnGiftCountPerPlayer").getInt(0);
         _newGiftBatchThreshold = configNode.node("newGiftBatchThreshold").getFloat(0.0f);
-        _newGiftBatchDelay = configNode.node("newGiftBatchDelay").getInt(0);
-        _specialGiftSpawnInterval = configNode.node("specialGiftSpawnInterval").getInt(0);
+        _newGiftBatchDelay = configNode.node("newGiftBatchDelay").getInt(Integer.MAX_VALUE);
+        _specialGiftSpawnInterval = configNode.node("specialGiftSpawnInterval").getInt(Integer.MAX_VALUE);
+        _stealerGiveWhenHighestScore = configNode.node("stealerGiveWhenHighestScore").getFloat(0.0f);
+        _stealerGiveInterval = configNode.node("stealerGiveInterval").getInt(Integer.MAX_VALUE);
     }
 
     private GameState _state = GameState.IDLE;
     private int _mainTimer = 0;
-    private int _normalGiftSpawnTimer = 0;
-    private int _specialGiftSpawnTimer = 0;
+    private int _normalGiftSpawnTimer = -1;
+    private int _specialGiftSpawnTimer = -1;
+    private int _discipleBirthTimer = -1;
+    private int _stealerGiveTimer = -1;
 
     public GameState getState()
     {
         return _state;
     }
 
-    public int getTimer()
+    public int getMainTimer()
     {
         return _mainTimer;
     }
@@ -172,7 +174,10 @@ public class GameManager
                 if (Objects.requireNonNull(_state) == GameState.READYING)
                 {
                     // init timer
-                    _normalGiftSpawnTimer = _newGiftBatchDelay - 60;
+                    _normalGiftSpawnTimer = 60;
+                    _specialGiftSpawnTimer = _specialGiftSpawnInterval;
+                    _discipleBirthTimer = -1;
+                    _stealerGiveTimer = -1;
                     // init players
                     for (GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayers())
                     {
@@ -204,6 +209,8 @@ public class GameManager
                     for (GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayers())
                     {
                         Player player = ghPlayer.getPlayer();
+                        // clear inventory
+                        MCUtil.ClearInventory(player);
                         // send message
                         LazuliUI.sendMessage(player, MessageFactory.getGameFinishedMsg(ghPlayer));
                         // set actionbar
@@ -246,22 +253,22 @@ public class GameManager
             {
                 for(Player player : MCUtil.GetPlayersWithPermission("op"))
                 {
-                    if(player.getInventory().getItemInMainHand().isSimilar(ItemFactory.normalGiftSpawnerSetter))
+                    if(player.getInventory().getItemInMainHand().isSimilar(ItemFactory.NormalGiftSpawnerSetter))
                     {
                         // show gift spawner location
                         for(Location spawnerLocation : GiftHunting.GetPlugin().getGiftManager().getNormalSpawners())
                         {
-                            player.getWorld().spawnParticle(Particle.COMPOSTER, spawnerLocation.clone().add(new Vector(0.0f, 1.95f, 0.0f)), 1, 0.0f, 0.0f, 0.0f);
+                            player.spawnParticle(Particle.COMPOSTER, spawnerLocation.clone().add(new Vector(0.0f, 1.95f, 0.0f)), 1, 0.0f, 0.0f, 0.0f);
                         }
                         // show gift spawner count
                         LazuliUI.sendMessage(player, MessageFactory.getNormalSpawnerCountActionbar());
                     }
-                    else if(player.getInventory().getItemInMainHand().isSimilar(ItemFactory.specialGiftSpawnerSetter))
+                    else if(player.getInventory().getItemInMainHand().isSimilar(ItemFactory.SpecialGiftSpawnerSetter))
                     {
                         // show gift spawner location
                         for(Location spawnerLocation : GiftHunting.GetPlugin().getGiftManager().getSpecialSpawners())
                         {
-                            player.getWorld().spawnParticle(Particle.WAX_ON, spawnerLocation.clone().add(new Vector(0.0f, 1.95f, 0.0f)), 1, 0.0f, 0.0f, 0.0f);
+                            player.spawnParticle(Particle.WAX_ON, spawnerLocation.clone().add(new Vector(0.0f, 1.95f, 0.0f)), 1, 0.0f, 0.0f, 0.0f);
                         }
                         // show gift spawner count
                         LazuliUI.sendMessage(player, MessageFactory.getSpecialSpawnerCountActionbar());
@@ -278,7 +285,7 @@ public class GameManager
                 if(_mainTimer == _readyStateDuration - 200)
                 {
                     // send game intro message
-                    LazuliUI.broadcast(MessageFactory.getGameIntroMsg());
+                    LazuliUI.broadcast(MessageFactory.getGameIntroMsg(_victoryScore));
                     // teleport players to game spawn
                     for (GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayers())
                     {
@@ -286,7 +293,7 @@ public class GameManager
                     }
                 }
                 // go PROGRESSING
-                if(getTimer() >= _readyStateDuration)
+                if(getMainTimer() >= _readyStateDuration)
                 {
                     switchState(GameState.PROGRESSING);
                 }
@@ -297,9 +304,12 @@ public class GameManager
             case PROGRESSING ->
             {
                 // draw actionbar prefix: timer
-                for(GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayers())
+                if(_mainTimer % 20 == 0)
                 {
-                    LazuliUI.sendMessage(ghPlayer.getPlayer(), MessageFactory.getProgressingActionbarPrefix());
+                    for(GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayers())
+                    {
+                        LazuliUI.sendMessage(ghPlayer.getPlayer(), MessageFactory.getProgressingActionbarPrefix());
+                    }
                 }
                 // spawn normal gifts
                 if(_normalGiftSpawnTimer == -1)
@@ -307,13 +317,13 @@ public class GameManager
                     int newGiftBatchThresholdCount = (int)(_spawnGiftCountPerPlayer * GiftHunting.GetPlugin().getPlayerManager().getGHPlayerCount() * _newGiftBatchThreshold);
                     if(GiftHunting.GetPlugin().getGiftManager().getNormalGiftCount() < newGiftBatchThresholdCount)
                     {
-                        _normalGiftSpawnTimer = 0;
+                        _normalGiftSpawnTimer = _newGiftBatchDelay;
                     }
                 }
                 else
                 {
-                    _normalGiftSpawnTimer++;
-                    if(_normalGiftSpawnTimer > _newGiftBatchDelay)
+                    _normalGiftSpawnTimer--;
+                    if(_normalGiftSpawnTimer == 0)
                     {
                         int newGiftBatchCount = _spawnGiftCountPerPlayer * GiftHunting.GetPlugin().getPlayerManager().getGHPlayerCount();
                         GiftHunting.GetPlugin().getGiftManager().spawnNormalGifts(newGiftBatchCount);
@@ -326,21 +336,67 @@ public class GameManager
                 {
                     if(!GiftHunting.GetPlugin().getGiftManager().hasSpecialGift())
                     {
-                        _specialGiftSpawnTimer = 0;
+                        _specialGiftSpawnTimer = _specialGiftSpawnInterval;
                     }
                 }
                 else
                 {
-                    _specialGiftSpawnTimer ++;
-                    if(_specialGiftSpawnTimer > _specialGiftSpawnInterval)
+                    _specialGiftSpawnTimer--;
+                    if(_specialGiftSpawnTimer == 0)
                     {
                         GiftHunting.GetPlugin().getGiftManager().spawnSpecialGift();
                         LazuliUI.broadcast(MessageFactory.getDeliverSpecialGiftMsg());
                         _specialGiftSpawnTimer = -1;
+                        _discipleBirthTimer = 60;
                     }
                 }
-                // bonus events
-                // TODO
+                // pick disciple
+                if(_discipleBirthTimer != -1)
+                {
+                    _discipleBirthTimer--;
+                    if(_discipleBirthTimer == 0)
+                    {
+                        List<GHPlayer> ghPlayers = GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayers();
+                        if(!ghPlayers.isEmpty())
+                        {
+                            GHPlayer disciple = RandUtil.Pick(ghPlayers);
+                            disciple.isDisciple = true;
+                            LazuliUI.broadcast(MessageFactory.getDiscipleBirthMsg(disciple));
+                            disciple.getPlayer().getWorld().playSound(disciple.getPlayer(), Sound.ENTITY_EVOKER_PREPARE_SUMMON, SoundCategory.MASTER, 1.0f, 0.8f);
+                        }
+                        _discipleBirthTimer = -1;
+                    }
+                }
+                // give stealer
+                int stealerGiveScore = (int)(_victoryScore * _stealerGiveWhenHighestScore);
+                if(_stealerGiveTimer == -1)
+                {
+                    List<GHPlayer> ghPlayers = GiftHunting.GetPlugin().getPlayerManager().getSortedGHPlayers();
+                    if(!ghPlayers.isEmpty())
+                    {
+                        GHPlayer highestScorePlayer = ghPlayers.getFirst();
+                        if(highestScorePlayer.getScore() >= stealerGiveScore)
+                        {
+                            _stealerGiveTimer = _stealerGiveInterval;
+                        }
+                    }
+                }
+                else
+                {
+                    _stealerGiveTimer--;
+                    if(_stealerGiveTimer == 0)
+                    {
+                        for(GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayers())
+                        {
+                            if(ghPlayer.getScore() < stealerGiveScore)
+                            {
+                                MCUtil.GiveItem(ghPlayer.getPlayer(), ItemFactory.Stealer);
+                            }
+                        }
+                        LazuliUI.broadcast(MessageFactory.getGiveStealerMsg(stealerGiveScore));
+                        _stealerGiveTimer = -1;
+                    }
+                }
 
                 // gift particle
                 if(_mainTimer % 40 == 0)

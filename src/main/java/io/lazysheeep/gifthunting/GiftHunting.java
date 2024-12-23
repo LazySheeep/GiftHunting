@@ -212,7 +212,7 @@ public final class GiftHunting extends JavaPlugin implements Listener
     public void onPlayerItemFrameChange(PlayerItemFrameChangeEvent event)
     {
         Player player = event.getPlayer();
-        if(!player.hasPermission("op"))
+        if(!player.hasPermission("op") && GiftHunting.GetPlugin().getPlayerManager().isGHPlayer(player))
         {
             event.setCancelled(true);
         }

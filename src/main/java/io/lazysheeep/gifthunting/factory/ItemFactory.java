@@ -53,12 +53,13 @@ public class ItemFactory
     static public final ItemStack Booster;
     static
     {
-        Booster = new ItemStack(Material.FIREWORK_STAR, 1);
+        Booster = new ItemStack(Material.WIND_CHARGE, 1);
         Component displayName = Component.text("弹射", NamedTextColor.LIGHT_PURPLE);
         List<Component> lore = new ArrayList<>();
         lore.add(Component.text("将自己向所指的方向弹射", NamedTextColor.AQUA));
         lore.add(Component.text("在助跑起跳时弹射效果最佳", NamedTextColor.AQUA));
         lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
+        lore.add(Component.text("飞起来！", NamedTextColor.GRAY));
         Booster.editMeta(itemMeta ->
         {
             itemMeta.displayName(displayName);
@@ -73,7 +74,7 @@ public class ItemFactory
         Club = new ItemStack(Material.STICK, 1);
         Component displayName = Component.text("木棍", NamedTextColor.LIGHT_PURPLE);
         List<Component> lore = new ArrayList<>();
-        lore.add(Component.text("虽然看起来只是普通的木棍", NamedTextColor.AQUA));
+        lore.add(Component.text("看起来只是普通的木棍", NamedTextColor.AQUA));
         lore.add(Component.text("但是能够把人打飞", NamedTextColor.AQUA));
         lore.add(Component.text("那么代价是什么呢", NamedTextColor.GRAY));
         Club.editMeta(itemMeta ->
@@ -91,8 +92,8 @@ public class ItemFactory
         Component displayName = Component.text("钓礼物竿", NamedTextColor.LIGHT_PURPLE);
         List<Component> lore = new ArrayList<>();
         lore.add(Component.text("可以偷取其他玩家的礼物", NamedTextColor.AQUA));
-        lore.add(Component.text("Ste---al!", NamedTextColor.AQUA));
         lore.add(Component.text("对其他玩家右键使用", NamedTextColor.YELLOW));
+        lore.add(Component.text("这是俺拾滴", NamedTextColor.GRAY));
         Stealer.editMeta(itemMeta ->
         {
             itemMeta.displayName(displayName);
@@ -104,11 +105,12 @@ public class ItemFactory
     static public final ItemStack Silencer;
     static
     {
-        Silencer = new ItemStack(Material.STRING, 1);
+        Silencer = new ItemStack(Material.BONE_MEAL, 1);
         Component displayName = Component.text("沉默", NamedTextColor.LIGHT_PURPLE);
         List<Component> lore = new ArrayList<>();
         lore.add(Component.text("使周围玩家无法开启礼物和使用道具", NamedTextColor.AQUA));
         lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
+        lore.add(Component.text("为什么不说话，是不喜欢吗", NamedTextColor.GRAY));
         Silencer.editMeta(itemMeta ->
         {
             itemMeta.displayName(displayName);
@@ -123,15 +125,53 @@ public class ItemFactory
         Reflector = new ItemStack(Material.ENDER_EYE, 1);
         Component displayName = Component.text("识破", NamedTextColor.LIGHT_PURPLE);
         List<Component> lore = new ArrayList<>();
-        lore.add(Component.text("使用后，能够在一小段时间内", NamedTextColor.AQUA));
+        lore.add(Component.text("能够在 2 秒内", NamedTextColor.AQUA));
         lore.add(Component.text("反弹一次他人对你使用的技能", NamedTextColor.AQUA));
         lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
+        lore.add(Component.text("接下来，时机很重要", NamedTextColor.GRAY));
         Reflector.editMeta(itemMeta ->
                           {
                               itemMeta.displayName(displayName);
                               itemMeta.lore(lore);
                               itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
                           });
+    }
+
+    public static final ItemStack Revolution;
+    static
+    {
+        Revolution = new ItemStack(Material.RED_DYE, 1);
+        Component displayName = Component.text("革命", NamedTextColor.LIGHT_PURPLE);
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text("广播分数最高的玩家", NamedTextColor.AQUA));
+        lore.add(Component.text("降低其移动速度", NamedTextColor.AQUA));
+        lore.add(Component.text("并持续标记其一段时间", NamedTextColor.AQUA));
+        lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
+        lore.add(Component.text("也要做好被革命的觉悟", NamedTextColor.GRAY));
+        Revolution.editMeta(itemMeta ->
+        {
+            itemMeta.displayName(displayName);
+            itemMeta.lore(lore);
+            itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
+        });
+    }
+
+    public static final ItemStack SpeedUp;
+    static
+    {
+        SpeedUp = new ItemStack(Material.SUGAR, 1);
+        Component displayName = Component.text("迅捷", NamedTextColor.LIGHT_PURPLE);
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text("一段时间内提升移动速度", NamedTextColor.AQUA));
+        lore.add(Component.text("以及礼物开启速度", NamedTextColor.AQUA));
+        lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
+        lore.add(Component.text("是暴风吸入的时候了", NamedTextColor.GRAY));
+        SpeedUp.editMeta(itemMeta ->
+        {
+            itemMeta.displayName(displayName);
+            itemMeta.lore(lore);
+            itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
+        });
     }
 
     static public final ItemStack Souvenir;
@@ -142,6 +182,7 @@ public class ItemFactory
         List<Component> lore = new ArrayList<>();
         lore.add(Component.text("MCZJU2024年圣诞活动纪念品", NamedTextColor.AQUA));
         lore.add(Component.text("游戏记录:", NamedTextColor.AQUA));
+        lore.add(Component.text("圣诞活动纪念品，不会被清除"));
         Souvenir.editMeta(itemMeta ->
         {
             if(itemMeta instanceof SkullMeta skullMeta)
@@ -194,7 +235,7 @@ public class ItemFactory
                                                       .append(Component.text(rank + "/" + totalPlayer, NamedTextColor.GREEN))
                                                       .append(Component.text(", 得分: ", NamedTextColor.GOLD))
                                                       .append(Component.text(score, NamedTextColor.GREEN)));
-                    lore.add(Component.text("圣诞活动纪念品，不会被清除", NamedTextColor.GRAY));
+                    lore.add(Component.text("圣诞活动纪念品，不会被清除"));
                 }
                 itemMeta.lore(lore);
             });

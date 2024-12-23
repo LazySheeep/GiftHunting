@@ -104,7 +104,7 @@ public class GiftManager implements Listener
             double z = locationNode.node("z").getDouble(0);
             _specialSpawners.add(new Location(GiftHunting.GetPlugin().getGameManager().getGameWorld(), x, y, z));
         }
-        GiftHunting.Log(Level.INFO, "Loaded " + _normalSpawners.size() + " special spawners");
+        GiftHunting.Log(Level.INFO, "Loaded " + _specialSpawners.size() + " special spawners");
     }
 
     public void saveConfig()

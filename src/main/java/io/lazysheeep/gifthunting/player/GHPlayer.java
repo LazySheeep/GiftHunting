@@ -18,6 +18,9 @@ public class GHPlayer
     public boolean isDisciple = false;
     public int silenceTimer = 0;
     public int reflectTimer = 0;
+    public int revolutionTimer = 0;
+    public GHPlayer revolutionTarget = null;
+    public int speedUpTimer = 0;
 
     public @NotNull Player getPlayer()
     {
@@ -54,6 +57,18 @@ public class GHPlayer
         _hostPlayer = player;
     }
 
+    public void reset()
+    {
+        _score = 0;
+        lastClickGiftTime = 0;
+        isDisciple = false;
+        silenceTimer = 0;
+        reflectTimer = 0;
+        revolutionTimer = 0;
+        revolutionTarget = null;
+        speedUpTimer = 0;
+    }
+
     void tick()
     {
         if(GiftHunting.GetPlugin().getGameManager().getState() == GameState.IDLE)
@@ -67,13 +82,27 @@ public class GHPlayer
             Gift specialGift = GiftHunting.GetPlugin().getGiftManager().getSpecialGift();
             if(specialGift != null)
             {
-                MCUtil.SpawnDustLineParticle(_hostPlayer.getLocation().add(0.0, 1.3, 0.0), specialGift.getLocation().add(0.0, -0.3, 0.0), 0.5f, Color.ORANGE, 1.0f);
-                _hostPlayer.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 40, 1));
+                MCUtil.SpawnDustLineParticle(_hostPlayer.getLocation().add(0.0, 1.3, 0.0), specialGift.getLocation().add(0.0, -0.3, 0.0), 0.5f, Color.GREEN, 1.0f);
+                _hostPlayer.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 10, 0));
             }
             else
             {
                 isDisciple = false;
             }
+        }
+
+        // revolution effect
+        if(revolutionTarget != null && revolutionTimer > 0 && revolutionTimer % 4 == 0)
+        {
+            revolutionTarget.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 10, 0));
+            revolutionTarget.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 10, 0));
+            MCUtil.SpawnDustLineParticle(_hostPlayer.getLocation().add(0.0, 1.3, 0.0), revolutionTarget.getPlayer().getLocation().add(0.0, 1.3, 0.0), 0.5f, Color.RED, 1.0f);
+        }
+
+        // speed up effect
+        if(speedUpTimer > 0 && speedUpTimer % 4 == 0)
+        {
+            _hostPlayer.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 10, 0));
         }
 
         // update timer
@@ -84,6 +113,18 @@ public class GHPlayer
         if(reflectTimer > 0)
         {
             reflectTimer--;
+        }
+        if(revolutionTimer > 0)
+        {
+            revolutionTimer--;
+            if(revolutionTimer == 0)
+            {
+                revolutionTarget = null;
+            }
+        }
+        if(speedUpTimer > 0)
+        {
+            speedUpTimer--;
         }
 
         // set display score

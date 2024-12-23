@@ -34,6 +34,8 @@ public class Gift
     private static float LootProbability_booster;
     private static float LootProbability_silencer;
     private static float LootProbability_reflector;
+    private static float LootProbability_revolution;
+    private static float LootProbability_speedUp;
 
     public static final String TagName = "GiftHunting:Gift";
 
@@ -44,6 +46,8 @@ public class Gift
         LootProbability_booster = lootConfigNode.node("booster").getFloat();
         LootProbability_silencer = lootConfigNode.node("silencer").getFloat();
         LootProbability_reflector = lootConfigNode.node("reflector").getFloat();
+        LootProbability_revolution = lootConfigNode.node("revolution").getFloat();
+        LootProbability_speedUp = lootConfigNode.node("speedUp").getFloat();
     }
 
     private final ArmorStand _giftEntity;
@@ -117,11 +121,22 @@ public class Gift
             return;
         }
 
-        this._clicksToNextFetch--;
+        if(ghPlayer.speedUpTimer > 0)
+        {
+            this._clicksToNextFetch -= 2;
+            if(this._clicksToNextFetch < 0)
+            {
+                this._clicksToNextFetch = 0;
+            }
+        }
+        else
+        {
+            this._clicksToNextFetch--;
+        }
         LazuliUI.sendMessage(ghPlayer.getPlayer(), MessageFactory.getGiftClickedActionbar(this));
         ghPlayer.getPlayer().playSound(_giftEntity, Sound.BLOCK_WOOL_HIT, SoundCategory.MASTER, 1.0f, 1.0f);
 
-        if(this._clicksToNextFetch <= 0)
+        if(this._clicksToNextFetch == 0)
         {
             this.fetched(ghPlayer);
             this._clicksToNextFetch = clicksPerFetch;
@@ -129,7 +144,7 @@ public class Gift
 
         if(_type == GiftType.SPECIAL)
         {
-            ghPlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20, 1));
+            ghPlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 10, 0));
         }
     }
 
@@ -168,6 +183,14 @@ public class Gift
         if(RandUtil.nextBool(LootProbability_reflector))
         {
             MCUtil.GiveItem(player, ItemFactory.Reflector);
+        }
+        if(RandUtil.nextBool(LootProbability_revolution))
+        {
+            MCUtil.GiveItem(player, ItemFactory.Revolution);
+        }
+        if(RandUtil.nextBool(LootProbability_speedUp))
+        {
+            MCUtil.GiveItem(player, ItemFactory.SpeedUp);
         }
 
         // score increase

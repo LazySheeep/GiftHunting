@@ -121,6 +121,27 @@ public class GiftHuntingCommand extends BaseCommand
         {
             senderPlayer.getInventory().addItem(ItemFactory.Reflector);
         }
+
+        @Subcommand("revolution")
+        @Description("Get revolution")
+        public void onRevolution(Player senderPlayer)
+        {
+            senderPlayer.getInventory().addItem(ItemFactory.Revolution);
+        }
+
+        @Subcommand("speedup")
+        @Description("Get speedup")
+        public void onSpeedup(Player senderPlayer)
+        {
+            senderPlayer.getInventory().addItem(ItemFactory.SpeedUp);
+        }
+
+        @Subcommand("souvenir")
+        @Description("Get souvenir")
+        public void onSouvenir(Player senderPlayer)
+        {
+            senderPlayer.getInventory().addItem(ItemFactory.Souvenir);
+        }
     }
 
     @Subcommand("clear")

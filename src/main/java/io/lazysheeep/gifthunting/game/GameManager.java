@@ -182,8 +182,8 @@ public class GameManager
                     for (GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayers())
                     {
                         Player player = ghPlayer.getPlayer();
-                        // reset score
-                        ghPlayer.setScore(0);
+                        // reset player
+                        ghPlayer.reset();
                         // clear item
                         MCUtil.ClearInventory(player);
                         // send message
@@ -241,9 +241,12 @@ public class GameManager
     public void tick()
     {
         // always
-        for(GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayers())
+        if(_mainTimer % 5 == 0)
         {
-            ghPlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 20, 1, false, false, false));
+            for(GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayers())
+            {
+                ghPlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 10, 0, false, false, false));
+            }
         }
 
         // game state machine
@@ -433,77 +436,4 @@ public class GameManager
             }
         }
     }
-
-    /*
-    private void deliverGiftBatch(Map<String, Object> giftBatch)
-    {
-        String type = (String)giftBatch.get("type");
-        switch (type)
-        {
-            case "NORMAL" ->
-            {
-                int amount = (Integer)giftBatch.get("amount");
-                List<Location> spawnLocations = Util.randomPick(GiftHunting.config.getGiftSpawnerLocations(), amount);
-                for (Location loc : spawnLocations)
-                {
-                    Gift newGift = new Gift(loc, Gift.GiftType.NORMAL);
-                    GiftHunting.instance.world.spawnParticle(Particle.VILLAGER_HAPPY, newGift.getLocation(), 8, 0.4f, 0.4f, 0.4f);
-                }
-                GiftHunting.instance.logger.log(Level.INFO, MessageFactory.getSpawnGiftLog(spawnLocations.size(), Gift.GiftType.NORMAL));
-                LazuliUI.broadcast(Permission.PLAYER.name, MessageFactory.getDeliverGiftMsg(Gift.GiftType.NORMAL));
-            }
-            case "SPECIAL" ->
-            {
-                Location spawnLocation = Util.randomPickOne(GiftHunting.config.getGiftSpawnerLocations());
-                Gift newGift = new Gift(spawnLocation, Gift.GiftType.SPECIAL);
-                GiftHunting.instance.world.spawnParticle(Particle.VILLAGER_HAPPY, newGift.getLocation(), 32, 0.5f, 0.5f, 0.5f);
-                GiftHunting.instance.logger.log(Level.INFO, MessageFactory.getSpawnGiftLog(1, Gift.GiftType.SPECIAL));
-                LazuliUI.broadcast(Permission.PLAYER.name, MessageFactory.getDeliverGiftMsg(Gift.GiftType.SPECIAL));
-            }
-            default -> {}
-        }
-    }
-
-    private void launchBonusEvent()
-    {
-        LazuliUI.broadcast(Permission.PLAYER.name, MessageFactory.getBonusEventMsg());
-        List<Player> players = getRankedPlayerList();
-        for(int i = (int)(players.size()*(1.0f-GiftHunting.config.bonusPercentage)); i < players.size(); i ++)
-        {
-            Player player = players.get(i);
-            player.getInventory().addItem(ItemFactory.stealer);
-            player.playSound(player, Sound.ENTITY_ITEM_PICKUP, SoundCategory.MASTER, 1.0f, 1.0f);
-        }
-    }
-
-    private void sendGiftLocationPrompt()
-    {
-        for(Gift gift : Gift.getGifts())
-        {
-            if(gift.type == Gift.GiftType.SPECIAL)
-            {
-                spawnFirework(gift.getLocation().add(0.0f, 0.5f, 0.0f), 2);
-                spawnFirework(gift.getLocation().add(0.0f, 0.5f, 0.0f), 3);
-            }
-        }
-    }
-
-    private void spawnFirework(Location location, int power)
-    {
-        Firework firework = (Firework) GiftHunting.instance.world.spawnEntity(location, EntityType.FIREWORK);
-        FireworkMeta meta = firework.getFireworkMeta();
-        meta.setPower(power);
-        meta.addEffect(
-                FireworkEffect.builder()
-                        .with(FireworkEffect.Type.STAR)
-                        .withColor(Color.RED)
-                        .withColor(Color.LIME)
-                        .withColor(Color.WHITE)
-                        .trail(true)
-                        .flicker(true)
-                        .build()
-        );
-        firework.setFireworkMeta(meta);
-    }
-    */
 }

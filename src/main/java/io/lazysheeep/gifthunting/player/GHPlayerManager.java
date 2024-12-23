@@ -52,7 +52,6 @@ public class GHPlayerManager
 
     private void destroyGHPlayer(@NotNull GHPlayer ghPlayer)
     {
-        MCUtil.ClearInventory(ghPlayer.getPlayer());
         ghPlayer.getPlayer().removeMetadata("GHPlayer", GiftHunting.GetPlugin());
         LazuliUI.flush(ghPlayer.getPlayer());
         ghPlayer.destroy();

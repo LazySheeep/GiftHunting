@@ -3,6 +3,8 @@ package io.lazysheeep.gifthunting.utils;
 import io.lazysheeep.gifthunting.factory.ItemFactory;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.util.Vector;
@@ -47,11 +49,12 @@ public class MCUtil
     public static void ClearInventory(Player player)
     {
         PlayerInventory inventory = player.getInventory();
-        for(ItemStack item : inventory)
+        for(int i = 0; i < inventory.getSize(); i ++)
         {
+            ItemStack item = inventory.getItem(i);
             if(item!= null && item.getType() != ItemFactory.Souvenir.getType())
             {
-                inventory.remove(item);
+                inventory.clear(i);
             }
         }
     }
@@ -73,7 +76,11 @@ public class MCUtil
     {
         PlayerInventory inventory = player.getInventory();
         inventory.addItem(itemStack);
-        inventory.setHeldItemSlot(inventory.firstEmpty());
+        int firstEmpty = inventory.firstEmpty();
+        if(firstEmpty >= 0 && firstEmpty <= 8)
+        {
+            inventory.setHeldItemSlot(inventory.firstEmpty());
+        }
         player.playSound(player, Sound.ENTITY_ITEM_PICKUP, SoundCategory.MASTER, 1.0f, 1.0f);
     }
 }

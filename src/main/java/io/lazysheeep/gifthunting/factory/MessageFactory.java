@@ -185,7 +185,7 @@ public class MessageFactory
                 Component.text("场景中生成了新的礼物！", COLOR_GOOD),
                 Sound.ENTITY_PLAYER_LEVELUP,
                 Message.LoadMode.WAIT,
-                60
+                20
         );
     }
 
@@ -196,7 +196,7 @@ public class MessageFactory
                 Component.text("特殊礼物已生成！", COLOR_SPECIAL),
                 Sound.ENTITY_PLAYER_LEVELUP,
                 Message.LoadMode.WAIT,
-                60
+                20
         );
     }
 
@@ -208,7 +208,7 @@ public class MessageFactory
                 .append(Component.text(" 成为了信徒，跟随其指引即可找到特殊礼物之所在！", COLOR_SPECIAL)),
                 Sound.BLOCK_NOTE_BLOCK_PLING,
                 Message.LoadMode.WAIT,
-                60
+                20
         );
     }
 
@@ -221,7 +221,7 @@ public class MessageFactory
                          .append(Component.text(" 的玩家都获得了道具奖励！", COLOR_SPECIAL)),
                 Sound.BLOCK_NOTE_BLOCK_PLING,
                 Message.LoadMode.WAIT,
-                60
+                20
         );
     }
 
@@ -245,7 +245,7 @@ public class MessageFactory
                         .append(Component.text(victim.getName(), COLOR_VALUE))
                         .append(Component.text(" 身上偷取了礼物，获得了", COLOR_CAUTION))
                         .append(Component.text(score, COLOR_VALUE))
-                        .append(Component.text("点分数", COLOR_CAUTION)),
+                        .append(Component.text(" 点数", COLOR_CAUTION)),
                 Sound.UI_TOAST_CHALLENGE_COMPLETE,
                 Message.LoadMode.IMMEDIATE,
                 1
@@ -260,7 +260,7 @@ public class MessageFactory
                         .append(Component.text(thief.getName(), COLOR_VALUE))
                         .append(Component.text(" 偷走了！失去了", COLOR_BAD))
                         .append(Component.text(score, COLOR_VALUE))
-                        .append(Component.text("点分数", COLOR_BAD)),
+                        .append(Component.text(" 点数", COLOR_BAD)),
                 Sound.ENTITY_VILLAGER_HURT,
                 Message.LoadMode.IMMEDIATE,
                 1
@@ -283,19 +283,36 @@ public class MessageFactory
         );
     }
 
-    public static Message getStealReflectedMsg(Player thief, Player victim, int score)
+    public static Message getStealReflectedBroadcastMsg(Player thief, Player victim, int score)
     {
         return new Message(
                 Message.Type.CHAT,
-                Component.text(thief.getName(), COLOR_VALUE)
-                         .append(Component.text(" 试图从 ", COLOR_TEXT))
-                         .append(Component.text(victim.getName(), COLOR_VALUE))
-                         .append(Component.text(" 身上窃取礼物，但是被识破了！反而送上 ", COLOR_TEXT))
+                Component.text(victim.getName(), COLOR_VALUE)
+                         .append(Component.text(" 识破了 ", COLOR_TEXT))
+                         .append(Component.text(thief.getName(), COLOR_VALUE))
+                         .append(Component.text(" 的偷窃，反夺取了 ", COLOR_TEXT))
                          .append(Component.text(score, COLOR_VALUE))
                          .append(Component.text(" 点数!", COLOR_TEXT)),
                 Sound.ENTITY_VILLAGER_CELEBRATE,
                 Message.LoadMode.IMMEDIATE,
                 1
+        );
+    }
+
+    public static Message getRevolutionBroadcastMsg(GHPlayer revolutionist, GHPlayer revolutionTarget)
+    {
+        return new Message(
+                Message.Type.CHAT,
+                Component.text(revolutionist.getPlayer().getName(), COLOR_VALUE)
+                         .append(Component.text(" 发动了对 ", COLOR_TEXT))
+                         .append(Component.text(revolutionTarget.getPlayer().getName(), COLOR_VALUE))
+                         .append(Component.text(" 的革命！", COLOR_TEXT))
+                         .append(Component.text(revolutionTarget.getPlayer().getName(), COLOR_VALUE))
+                         .append(Component.text(" 目前的得分为 ", COLOR_TEXT))
+                         .append(Component.text(revolutionTarget.getScore(), COLOR_VALUE)),
+                Sound.ENTITY_ENDER_DRAGON_GROWL,
+                Message.LoadMode.WAIT,
+                20
         );
     }
 

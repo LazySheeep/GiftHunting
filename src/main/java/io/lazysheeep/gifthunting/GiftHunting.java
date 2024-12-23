@@ -190,8 +190,8 @@ public final class GiftHunting extends JavaPlugin implements Listener
     @EventHandler(priority = EventPriority.HIGHEST)
     private void onServerTickStart(ServerTickStartEvent event)
     {
-        _gameManager.tick();
         _playerManager.tick();
+        _gameManager.tick();
     }
 
     // player fall damage

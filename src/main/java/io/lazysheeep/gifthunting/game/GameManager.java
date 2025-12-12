@@ -110,7 +110,7 @@ public class GameManager
                     // the game terminated by op
                     case READYING, PROGRESSING ->
                     {
-                        for(GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayers())
+                        for(GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getOnlineGHPlayers())
                         {
                             Player player = ghPlayer.getPlayer();
                             // clear item
@@ -124,7 +124,7 @@ public class GameManager
                     // game complete
                     case FINISHED ->
                     {
-                        for(GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayers())
+                        for(GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getOnlineGHPlayers())
                         {
                             Player player = ghPlayer.getPlayer();
                             // clear item
@@ -137,7 +137,7 @@ public class GameManager
                             player.teleport(_gameSpawn);
                         }
                         // update souvenir
-                        List<GHPlayer> ghPlayers = GiftHunting.GetPlugin().getPlayerManager().getSortedGHPlayers();
+                        List<GHPlayer> ghPlayers = GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayersSorted();
                         for(int i = 0; i < ghPlayers.size(); i ++)
                         {
                             GHPlayer ghPlayer = ghPlayers.get(i);
@@ -179,7 +179,7 @@ public class GameManager
                     _discipleBirthTimer = -1;
                     _stealerGiveTimer = -1;
                     // init players
-                    for (GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayers())
+                    for (GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getOnlineGHPlayers())
                     {
                         Player player = ghPlayer.getPlayer();
                         // reset player
@@ -206,7 +206,7 @@ public class GameManager
                 // the game proceed from PROGRESSING to FINISHED
                 if (Objects.requireNonNull(_state) == GameState.PROGRESSING)
                 {
-                    for (GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayers())
+                    for (GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getOnlineGHPlayers())
                     {
                         Player player = ghPlayer.getPlayer();
                         // clear inventory
@@ -243,7 +243,7 @@ public class GameManager
         // always
         if(_mainTimer % 5 == 0)
         {
-            for(GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayers())
+            for(GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getOnlineGHPlayers())
             {
                 ghPlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 10, 0, false, false, false));
             }
@@ -290,7 +290,7 @@ public class GameManager
                     // send game intro message
                     LazuliUI.broadcast(MessageFactory.getGameIntroMsg(_victoryScore));
                     // teleport players to game spawn
-                    for (GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayers())
+                    for (GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getOnlineGHPlayers())
                     {
                         ghPlayer.getPlayer().teleport(_gameSpawn);
                     }
@@ -309,7 +309,7 @@ public class GameManager
                 // draw actionbar prefix: timer
                 if(_mainTimer % 20 == 0)
                 {
-                    for(GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayers())
+                    for(GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getOnlineGHPlayers())
                     {
                         LazuliUI.sendMessage(ghPlayer.getPlayer(), MessageFactory.getProgressingActionbarPrefix());
                     }
@@ -317,7 +317,7 @@ public class GameManager
                 // spawn normal gifts
                 if(_normalGiftSpawnTimer == -1)
                 {
-                    int newGiftBatchThresholdCount = (int)(_spawnGiftCountPerPlayer * GiftHunting.GetPlugin().getPlayerManager().getGHPlayerCount() * _newGiftBatchThreshold);
+                    int newGiftBatchThresholdCount = (int)(_spawnGiftCountPerPlayer * GiftHunting.GetPlugin().getPlayerManager().getOnlineGHPlayerCount() * _newGiftBatchThreshold);
                     if(GiftHunting.GetPlugin().getGiftManager().getNormalGiftCount() < newGiftBatchThresholdCount)
                     {
                         _normalGiftSpawnTimer = _newGiftBatchDelay;
@@ -328,7 +328,7 @@ public class GameManager
                     _normalGiftSpawnTimer--;
                     if(_normalGiftSpawnTimer == 0)
                     {
-                        int newGiftBatchCount = _spawnGiftCountPerPlayer * GiftHunting.GetPlugin().getPlayerManager().getGHPlayerCount();
+                        int newGiftBatchCount = _spawnGiftCountPerPlayer * GiftHunting.GetPlugin().getPlayerManager().getOnlineGHPlayerCount();
                         GiftHunting.GetPlugin().getGiftManager().spawnNormalGifts(newGiftBatchCount);
                         LazuliUI.broadcast(MessageFactory.getDeliverNormalGiftMsg());
                         _normalGiftSpawnTimer = -1;
@@ -359,7 +359,7 @@ public class GameManager
                     _discipleBirthTimer--;
                     if(_discipleBirthTimer == 0)
                     {
-                        List<GHPlayer> ghPlayers = GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayers();
+                        List<GHPlayer> ghPlayers = GiftHunting.GetPlugin().getPlayerManager().getOnlineGHPlayers();
                         if(!ghPlayers.isEmpty())
                         {
                             GHPlayer disciple = RandUtil.Pick(ghPlayers);
@@ -374,7 +374,7 @@ public class GameManager
                 int stealerGiveScore = (int)(_victoryScore * _stealerGiveWhenHighestScore);
                 if(_stealerGiveTimer == -1)
                 {
-                    List<GHPlayer> ghPlayers = GiftHunting.GetPlugin().getPlayerManager().getSortedGHPlayers();
+                    List<GHPlayer> ghPlayers = GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayersSorted();
                     if(!ghPlayers.isEmpty())
                     {
                         GHPlayer highestScorePlayer = ghPlayers.getFirst();
@@ -389,7 +389,7 @@ public class GameManager
                     _stealerGiveTimer--;
                     if(_stealerGiveTimer == 0)
                     {
-                        for(GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayers())
+                        for(GHPlayer ghPlayer : GiftHunting.GetPlugin().getPlayerManager().getOnlineGHPlayers())
                         {
                             if(ghPlayer.getScore() < stealerGiveScore)
                             {
@@ -415,7 +415,7 @@ public class GameManager
                     }
                 }
                 // game FINISHED
-                List<GHPlayer> ghPlayers = GiftHunting.GetPlugin().getPlayerManager().getSortedGHPlayers();
+                List<GHPlayer> ghPlayers = GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayersSorted();
                 if(!ghPlayers.isEmpty() && ghPlayers.getFirst().getScore() >= _victoryScore)
                 {
                     switchState(GameState.FINISHED);

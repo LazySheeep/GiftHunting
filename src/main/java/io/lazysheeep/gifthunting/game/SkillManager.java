@@ -72,7 +72,7 @@ public class SkillManager implements Listener
                     else if(item.isSimilar(ItemFactory.Silencer))
                     {
                         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ELDER_GUARDIAN_CURSE, SoundCategory.MASTER, 1.0f, 1.0f);
-                        for(GHPlayer otherGHPlayer : GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayers())
+                        for(GHPlayer otherGHPlayer : GiftHunting.GetPlugin().getPlayerManager().getOnlineGHPlayers())
                         {
                             if(otherGHPlayer != ghPlayer && otherGHPlayer.getPlayer().getLocation().distance(player.getLocation()) <= _silenceDistance)
                             {
@@ -113,7 +113,7 @@ public class SkillManager implements Listener
                     // revolution
                     else if(item.isSimilar(ItemFactory.Revolution))
                     {
-                        GHPlayer revolutionTarget = GiftHunting.GetPlugin().getPlayerManager().getSortedGHPlayers().getFirst();
+                        GHPlayer revolutionTarget = GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayersSorted().getFirst();
                         ghPlayer.revolutionTimer = _revolutionDuration;
                         ghPlayer.revolutionTarget = revolutionTarget;
                         LazuliUI.broadcast(MessageFactory.getRevolutionBroadcastMsg(ghPlayer, revolutionTarget));

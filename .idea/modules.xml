@@ -3,8 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/GiftHunting.main.iml" filepath="$PROJECT_DIR$/.idea/modules/GiftHunting.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/IDEAProjects.GiftHunting.main.iml" filepath="$PROJECT_DIR$/.idea/modules/IDEAProjects.GiftHunting.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/JetBrains.IDEAProjects.GiftHunting.main.iml" filepath="$PROJECT_DIR$/.idea/modules/JetBrains.IDEAProjects.GiftHunting.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/io.lazysheeep.GiftHunting.main.iml" filepath="$PROJECT_DIR$/.idea/modules/io.lazysheeep.GiftHunting.main.iml" />
     </modules>
   </component>

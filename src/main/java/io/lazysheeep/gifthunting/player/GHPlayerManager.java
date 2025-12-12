@@ -6,31 +6,47 @@ import io.lazysheeep.gifthunting.utils.MCUtil;
 import io.lazysheeep.lazuliui.LazuliUI;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class GHPlayerManager
 {
-    private final List<GHPlayer> _ghPlayers = new LinkedList<>();
+    private final Map<UUID, GHPlayer> _ghPlayers = new HashMap<>();
+    private final Map<UUID, GHPlayer> _offlineGHPlayers = new HashMap<>();
 
-    public int getGHPlayerCount()
+    public int getOnlineGHPlayerCount()
     {
         return _ghPlayers.size();
     }
 
-    public @NotNull List<GHPlayer> getAllGHPlayers()
+    public int getOfflineGHPlayerCount()
     {
-        return _ghPlayers;
+        return _offlineGHPlayers.size();
     }
 
-    public List<GHPlayer> getSortedGHPlayers()
+    public @NotNull List<GHPlayer> getOnlineGHPlayers()
     {
-        _ghPlayers.sort(new Comparator<GHPlayer>()
+        return new ArrayList<>(_ghPlayers.values());
+    }
+
+    public @NotNull List<GHPlayer> getOfflineGHPlayers()
+    {
+        return new ArrayList<>(_offlineGHPlayers.values());
+    }
+
+    public @NotNull List<GHPlayer> getAllGHPlayers()
+    {
+        List<GHPlayer> allGHPlayers = new ArrayList<>(_ghPlayers.values());
+        allGHPlayers.addAll(_offlineGHPlayers.values());
+        return allGHPlayers;
+    }
+
+    public List<GHPlayer> getAllGHPlayersSorted()
+    {
+        List<GHPlayer> allGHPlayers = getAllGHPlayers();
+        allGHPlayers.sort(new Comparator<GHPlayer>()
         {
             @Override
             public int compare(GHPlayer p1, GHPlayer p2)
@@ -38,35 +54,32 @@ public class GHPlayerManager
                 return p2.getScore() - p1.getScore();
             }
         });
-        return _ghPlayers;
+        return allGHPlayers;
     }
 
-    private @NotNull GHPlayer createGHPlayer(@NotNull Player player)
+    private void createGHPlayer(@NotNull Player player)
     {
         GHPlayer ghPlayer = new GHPlayer(player);
-        player.setMetadata("GHPlayer", new FixedMetadataValue(GiftHunting.GetPlugin(), ghPlayer));
         MCUtil.ClearInventory(player);
-        _ghPlayers.add(ghPlayer);
-        return ghPlayer;
+        _ghPlayers.put(player.getUniqueId(), ghPlayer);
+    }
+
+    private void reconnectGHPlayer(@NotNull GHPlayer offlineGHPlayer, @NotNull Player player)
+    {
+        offlineGHPlayer.reconnect(player);
+        _offlineGHPlayers.remove(player.getUniqueId());
+        _ghPlayers.put(player.getUniqueId(), offlineGHPlayer);
     }
 
     private void destroyGHPlayer(@NotNull GHPlayer ghPlayer)
     {
-        ghPlayer.getPlayer().removeMetadata("GHPlayer", GiftHunting.GetPlugin());
         LazuliUI.flush(ghPlayer.getPlayer());
         ghPlayer.destroy();
     }
 
     public @Nullable GHPlayer getGHPlayer(@NotNull Player player)
     {
-        for(var meta : player.getMetadata("GHPlayer"))
-        {
-            if(meta.getOwningPlugin() == GiftHunting.GetPlugin() && meta.value() instanceof GHPlayer ghPlayer)
-            {
-                return ghPlayer;
-            }
-        }
-        return null;
+        return _ghPlayers.get(player.getUniqueId());
     }
 
     public boolean isGHPlayer(@NotNull Player player)
@@ -76,17 +89,18 @@ public class GHPlayerManager
 
     private boolean shouldBeGHPlayer(@NotNull Player player)
     {
-        return player.isOnline() && player.getWorld() == GiftHunting.GetPlugin().getGameManager().getGameWorld() && player.getGameMode() == GameMode.ADVENTURE;
+        return player.isConnected() && player.getWorld() == GiftHunting.GetPlugin().getGameManager().getGameWorld() && player.getGameMode() == GameMode.ADVENTURE;
     }
 
     public void tick()
     {
         // Remove GHPlayers that should not be GHPlayers
-        for(GHPlayer ghPlayer : _ghPlayers)
+        for(GHPlayer ghPlayer : getOnlineGHPlayers())
         {
             if(!shouldBeGHPlayer(ghPlayer.getPlayer()))
             {
-                destroyGHPlayer(ghPlayer);
+                _ghPlayers.remove(ghPlayer.getUUID());
+                _offlineGHPlayers.put(ghPlayer.getUUID(), ghPlayer);
             }
         }
         // Create GHPlayers that should be GHPlayers
@@ -94,15 +108,26 @@ public class GHPlayerManager
         {
             if(shouldBeGHPlayer(player) && !isGHPlayer(player))
             {
-                createGHPlayer(player);
+                boolean isReconnecting = false;
+                for(GHPlayer offlineGHPlayer : getOfflineGHPlayers())
+                {
+                    if(offlineGHPlayer.getUUID().equals(player.getUniqueId()))
+                    {
+                        reconnectGHPlayer(offlineGHPlayer, player);
+                        isReconnecting = true;
+                        break;
+                    }
+                }
+                if(!isReconnecting)
+                {
+                    createGHPlayer(player);
+                }
             }
         }
-        // Remove invalid GHPlayers
-        _ghPlayers.removeIf(ghPlayer -> !ghPlayer.isValid());
         // Tick GHPlayers
         if(GiftHunting.GetPlugin().getGameManager().getState() != GameState.IDLE)
         {
-            for(GHPlayer ghPlayer : _ghPlayers)
+            for(GHPlayer ghPlayer : getOnlineGHPlayers())
             {
                 ghPlayer.tick();
             }

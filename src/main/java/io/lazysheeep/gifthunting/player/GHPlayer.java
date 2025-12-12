@@ -1,7 +1,6 @@
 package io.lazysheeep.gifthunting.player;
 
 import io.lazysheeep.gifthunting.GiftHunting;
-import io.lazysheeep.gifthunting.game.GameState;
 import io.lazysheeep.gifthunting.gift.Gift;
 import io.lazysheeep.gifthunting.utils.MCUtil;
 import org.bukkit.Color;
@@ -9,6 +8,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.UUID;
 
 public class GHPlayer
 {
@@ -19,7 +21,7 @@ public class GHPlayer
     public int silenceTimer = 0;
     public int reflectTimer = 0;
     public int revolutionTimer = 0;
-    public GHPlayer revolutionTarget = null;
+    public @Nullable GHPlayer revolutionTarget = null;
     public int speedUpTimer = 0;
 
     public @NotNull Player getPlayer()
@@ -27,14 +29,29 @@ public class GHPlayer
         return _hostPlayer;
     }
 
+    public void reconnect(@NotNull Player player)
+    {
+        _hostPlayer = player;
+    }
+
+    public UUID getUUID()
+    {
+        return _hostPlayer.getUniqueId();
+    }
+
     public void destroy()
     {
         _hostPlayer = null;
     }
 
-    public boolean isValid()
+    public boolean isConnected()
     {
-        return _hostPlayer != null;
+        return _hostPlayer != null && _hostPlayer.isConnected();
+    }
+
+    public boolean isDestroyed()
+    {
+        return _hostPlayer == null;
     }
 
     public int getScore()
@@ -71,7 +88,7 @@ public class GHPlayer
 
     void tick()
     {
-        if(GiftHunting.GetPlugin().getGameManager().getState() == GameState.IDLE)
+        if(_hostPlayer == null || !_hostPlayer.isConnected())
         {
             return;
         }

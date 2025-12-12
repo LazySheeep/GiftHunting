@@ -335,7 +335,7 @@ public class MessageFactory
         TextComponent component = Component.text("\n【得分排名】\n", COLOR_SPECIAL);
 
         int ranking = 1;
-        for(GHPlayer ghP : GiftHunting.GetPlugin().getPlayerManager().getSortedGHPlayers())
+        for(GHPlayer ghP : GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayersSorted())
         {
             component = component.append(Component.text(ranking + " - " + ghP.getPlayer().getName() + " - " + ghP.getScore() + "\n", ghP == ghPlayer ? COLOR_GOOD : COLOR_CAUTION));
             ranking ++;
@@ -441,7 +441,8 @@ public class MessageFactory
     {
         return Component.text("state: ", COLOR_VARIABLE).append(Component.text(GiftHunting.GetPlugin().getGameManager().getState().toString(), COLOR_VALUE))
                 .append(Component.text("\ntimer: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getGameManager().getMainTimer(), COLOR_VALUE))
-                .append(Component.text("\nplayers: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getPlayerManager().getGHPlayerCount(), COLOR_VALUE))
+                .append(Component.text("\nonline players: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getPlayerManager().getOnlineGHPlayerCount(), COLOR_VALUE))
+                .append(Component.text("\noffline players: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getPlayerManager().getOfflineGHPlayerCount(), COLOR_VALUE))
                 .append(Component.text("\nnormalGiftSpawners: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getGiftManager().getNormalSpawnerCount(), COLOR_VALUE))
                 .append(Component.text("\nspecialGiftSpawners: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getGiftManager().getSpecialSpawnerCount(), COLOR_VALUE))
                 .append(Component.text("\nnormalGifts: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getGiftManager().getNormalGiftCount(), COLOR_VALUE))

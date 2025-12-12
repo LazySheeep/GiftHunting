@@ -224,6 +224,7 @@ public class ItemFactory
         }
         // update souvenir lore
         if(playerSouvenir != null)
+        {
             playerSouvenir.editMeta(itemMeta ->
             {
                 List<Component> lore = itemMeta.lore();
@@ -231,14 +232,15 @@ public class ItemFactory
                 {
                     lore.removeLast();
                     lore.add(Component.text(player.getName(), NamedTextColor.YELLOW)
-                                                      .append(Component.text(" - 排名: ", NamedTextColor.GOLD))
-                                                      .append(Component.text(rank + "/" + totalPlayer, NamedTextColor.GREEN))
-                                                      .append(Component.text(", 得分: ", NamedTextColor.GOLD))
-                                                      .append(Component.text(score, NamedTextColor.GREEN)));
+                        .append(Component.text(" - 排名: ", NamedTextColor.GOLD))
+                        .append(Component.text(rank + "/" + totalPlayer, NamedTextColor.GREEN))
+                        .append(Component.text(", 得分: ", NamedTextColor.GOLD))
+                        .append(Component.text(score, NamedTextColor.GREEN)));
                     lore.add(Component.text("圣诞活动纪念品，不会被清除"));
                 }
                 itemMeta.lore(lore);
             });
+        }
     }
 
     private ItemFactory() {}

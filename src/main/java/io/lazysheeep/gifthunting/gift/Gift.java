@@ -88,7 +88,7 @@ public class Gift
         this.clicksPerFetch = type.clicksPerFetch;
         this.scorePerFetch = type.scorePerFetch;
         this.scoreVariation = type.scoreVariation;
-        this.capacityInFetches = type == GiftType.NORMAL ? 1 : (int)Math.ceil(type.capacityMultiplierPerPlayer * GiftHunting.GetPlugin().getPlayerManager().getGHPlayerCount());
+        this.capacityInFetches = type == GiftType.NORMAL ? 1 : (int)Math.ceil(type.capacityMultiplierPerPlayer * GiftHunting.GetPlugin().getPlayerManager().getOnlineGHPlayerCount());
 
         this._remainingCapacity = capacityInFetches;
         this._clicksToNextFetch = clicksPerFetch;

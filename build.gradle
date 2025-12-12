@@ -16,6 +16,7 @@ repositories {
     maven { url = "https://www.jitpack.io" }
     maven { url = "https://oss.sonatype.org/content/groups/public/" }
     maven { url = "https://repo.aikar.co/content/groups/aikar/" }
+    maven { url = "https://hub.spigotmc.org/nexus/content/groups/public/" }
 }
 
 compileJava {
@@ -24,15 +25,15 @@ compileJava {
 }
 
 dependencies {
-    compileOnly "io.papermc.paper:paper-api:1.21-R0.1-SNAPSHOT"
-    implementation "org.spongepowered:configurate-hocon:4.1.2"
+    compileOnly "io.papermc.paper:paper-api:1.21.7-R0.1-SNAPSHOT"
+    implementation "org.spongepowered:configurate-hocon:4.2.0"
     implementation 'com.github.LazySheeep:LazuliUI:0.6.3'
     implementation "co.aikar:acf-paper:0.5.1-SNAPSHOT"
 }
 
 shadowJar {
-    relocate 'co.aikar.commands', 'io.lazysheeep.lazydirector.acf'
-    relocate 'co.aikar.locales', 'io.lazysheeep.lazydirector.locales'
+    relocate 'co.aikar.commands', 'io.lazysheeep.gifthunting.acf'
+    relocate 'co.aikar.locales', 'io.lazysheeep.gifthunting.locales'
     dependencies {
         exclude(dependency('com.github.LazySheeep:LazuliUI'))
     }
@@ -54,9 +55,9 @@ processResources {
     }
 }
 
-task copyJar(type: Copy) {
+tasks.register('copyJar', Copy) {
     from shadowJar.archiveFile
-    into file("$rootDir/test/paper server 1.21/plugins")
+    into file("$rootDir/test/paper server 1.21.7/plugins")
 }
 
 jar.finalizedBy(copyJar)

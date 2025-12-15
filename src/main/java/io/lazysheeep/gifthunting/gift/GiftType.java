@@ -1,43 +1,36 @@
 package io.lazysheeep.gifthunting.gift;
 
-import io.lazysheeep.gifthunting.GiftHunting;
 import org.spongepowered.configurate.ConfigurationNode;
 
 public class GiftType
 {
-    public static GiftType NORMAL;
-    public static GiftType SPECIAL;
-
-    public static void LoadConfig()
-    {
-        ConfigurationNode giftTypeNode = GiftHunting.GetPlugin().getConfigRootNode().node("normalGift");
-        int clicksPerFetch = giftTypeNode.node("clicksPerFetch").getInt();
-        int scorePerFetch = giftTypeNode.node("scorePerFetch").getInt();
-        int scoreVariation = giftTypeNode.node("scoreVariation").getInt();
-        String texture = giftTypeNode.node("texture").getString();
-        NORMAL = new GiftType(clicksPerFetch, scorePerFetch, scoreVariation, 0.0f, texture);
-
-        giftTypeNode = GiftHunting.GetPlugin().getConfigRootNode().node("specialGift");
-        clicksPerFetch = giftTypeNode.node("clicksPerFetch").getInt();
-        scorePerFetch = giftTypeNode.node("scorePerFetch").getInt();
-        scoreVariation = giftTypeNode.node("scoreVariation").getInt();
-        float capacityMultiplierPerPlayer = giftTypeNode.node("capacityMultiplierPerPlayer").getFloat();
-        texture = giftTypeNode.node("texture").getString();
-        SPECIAL = new GiftType(clicksPerFetch, scorePerFetch, scoreVariation, capacityMultiplierPerPlayer, texture);
-    }
-
     public final int clicksPerFetch;
     public final int scorePerFetch;
     public final int scoreVariation;
-    public final float capacityMultiplierPerPlayer;
+    public final int capacityInFetches;
     public final String texture;
 
-    private GiftType(int clicksPerFetch, int scorePerFetch, int scoreVariation, float capacityMultiplierPerPlayer, String texture)
+    public final float lootProbability_club;
+    public final float lootProbability_booster;
+    public final float lootProbability_silencer;
+    public final float lootProbability_reflector;
+    public final float lootProbability_revolution;
+    public final float lootProbability_speedUp;
+
+    public GiftType(ConfigurationNode configNode)
     {
-        this.clicksPerFetch = clicksPerFetch;
-        this.scorePerFetch = scorePerFetch;
-        this.scoreVariation = scoreVariation;
-        this.capacityMultiplierPerPlayer = capacityMultiplierPerPlayer;
-        this.texture = texture;
+        this.clicksPerFetch = configNode.node("clicksPerFetch").getInt();
+        this.scorePerFetch = configNode.node("scorePerFetch").getInt();
+        this.scoreVariation = configNode.node("scoreVariation").getInt();
+        this.capacityInFetches = configNode.node("capacityInFetches").getInt();
+        this.texture = configNode.node("texture").getString();
+
+        ConfigurationNode lootConfigNode = configNode.node("loot");
+        lootProbability_club = lootConfigNode.node("club").getFloat();
+        lootProbability_booster = lootConfigNode.node("booster").getFloat();
+        lootProbability_silencer = lootConfigNode.node("silencer").getFloat();
+        lootProbability_reflector = lootConfigNode.node("reflector").getFloat();
+        lootProbability_revolution = lootConfigNode.node("revolution").getFloat();
+        lootProbability_speedUp = lootConfigNode.node("speedUp").getFloat();
     }
 }

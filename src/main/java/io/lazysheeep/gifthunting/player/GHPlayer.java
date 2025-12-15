@@ -93,10 +93,12 @@ public class GHPlayer
             return;
         }
 
+        _hostPlayer.setSaturation(20.0f);
+
         // disciple effect
-        if(isDisciple && GiftHunting.GetPlugin().getGameManager().getMainTimer() % 4 == 0)
+        if(isDisciple)
         {
-            Gift specialGift = GiftHunting.GetPlugin().getGiftManager().getSpecialGift();
+            Gift specialGift = GiftHunting.GetPlugin().getGameInstance().getGiftManager().getSpecialGift();
             if(specialGift != null)
             {
                 MCUtil.SpawnDustLineParticle(_hostPlayer.getLocation().add(0.0, 1.3, 0.0), specialGift.getLocation().add(0.0, -0.3, 0.0), 0.5f, Color.GREEN, 1.0f);

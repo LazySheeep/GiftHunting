@@ -30,9 +30,8 @@ public class SkillManager implements Listener
     private int _revolutionDuration;
     private int _speedUpDuration;
 
-    public void loadConfig()
+    public void loadConfig(ConfigurationNode configNode)
     {
-        ConfigurationNode configNode = GiftHunting.GetPlugin().getConfigRootNode();
         _stealerScorePercentage = configNode.node("stealerScorePercentage").getFloat(0.0f);
         _silenceDuration = configNode.node("silenceDuration").getInt(0);
         _silenceDistance = configNode.node("silenceDistance").getFloat(0.0f);
@@ -52,11 +51,11 @@ public class SkillManager implements Listener
 
         if(item != null && action.isRightClick())
         {
-            GHPlayer ghPlayer = GiftHunting.GetPlugin().getPlayerManager().getGHPlayer(player);
+            GHPlayer ghPlayer = GiftHunting.GetPlugin().getGameInstance().getPlayerManager().getGHPlayer(player);
             if(ghPlayer != null)
             {
                 event.setCancelled(true);
-                if(GiftHunting.GetPlugin().getGameManager().getState() == GameState.PROGRESSING && ghPlayer.silenceTimer == 0)
+                if(GiftHunting.GetPlugin().getGameInstance().getCurrentStateEnum() == GHStates.PROGRESSING && ghPlayer.silenceTimer == 0)
                 {
                     // booster
                     if(item.isSimilar(ItemFactory.Booster))
@@ -72,7 +71,7 @@ public class SkillManager implements Listener
                     else if(item.isSimilar(ItemFactory.Silencer))
                     {
                         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ELDER_GUARDIAN_CURSE, SoundCategory.MASTER, 1.0f, 1.0f);
-                        for(GHPlayer otherGHPlayer : GiftHunting.GetPlugin().getPlayerManager().getOnlineGHPlayers())
+                        for(GHPlayer otherGHPlayer : GiftHunting.GetPlugin().getGameInstance().getPlayerManager().getOnlineGHPlayers())
                         {
                             if(otherGHPlayer != ghPlayer && otherGHPlayer.getPlayer().getLocation().distance(player.getLocation()) <= _silenceDistance)
                             {
@@ -113,7 +112,7 @@ public class SkillManager implements Listener
                     // revolution
                     else if(item.isSimilar(ItemFactory.Revolution))
                     {
-                        GHPlayer revolutionTarget = GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayersSorted().getFirst();
+                        GHPlayer revolutionTarget = GiftHunting.GetPlugin().getGameInstance().getPlayerManager().getAllGHPlayersSorted().getFirst();
                         ghPlayer.revolutionTimer = _revolutionDuration;
                         ghPlayer.revolutionTarget = revolutionTarget;
                         LazuliUI.broadcast(MessageFactory.getRevolutionBroadcastMsg(ghPlayer, revolutionTarget));
@@ -138,17 +137,17 @@ public class SkillManager implements Listener
         Player player = event.getPlayer();
         Entity clickedEntity = event.getRightClicked();
         ItemStack item = player.getInventory().getItem(event.getHand());
-        GHPlayer ghPlayer = GiftHunting.GetPlugin().getPlayerManager().getGHPlayer(player);
-        if(ghPlayer != null && ghPlayer.silenceTimer == 0 && GiftHunting.GetPlugin().getGameManager().getState() == GameState.PROGRESSING)
+        GHPlayer ghPlayer = GiftHunting.GetPlugin().getGameInstance().getPlayerManager().getGHPlayer(player);
+        if(ghPlayer != null && ghPlayer.silenceTimer == 0 && GiftHunting.GetPlugin().getGameInstance().getCurrentStateEnum() == GHStates.PROGRESSING)
         {
             // entity clicked is player
             if(clickedEntity instanceof Player clickedPlayer)
             {
-                GHPlayer clickedGHPlayer = GiftHunting.GetPlugin().getPlayerManager().getGHPlayer(clickedPlayer);
+                GHPlayer clickedGHPlayer = GiftHunting.GetPlugin().getGameInstance().getPlayerManager().getGHPlayer(clickedPlayer);
                 if(clickedGHPlayer != null)
                 {
                     // steal
-                    if (GiftHunting.GetPlugin().getGameManager().getState() == GameState.PROGRESSING && item.isSimilar(ItemFactory.Stealer))
+                    if (GiftHunting.GetPlugin().getGameInstance().getCurrentStateEnum() == GHStates.PROGRESSING && item.isSimilar(ItemFactory.Stealer))
                     {
                         int stealScore;
                         if(clickedGHPlayer.reflectTimer == 0)
@@ -198,12 +197,12 @@ public class SkillManager implements Listener
         Player player = event.getPlayer();
         Entity attackedEntity = event.getAttacked();
         ItemStack item = player.getInventory().getItemInMainHand();
-        if(item.isSimilar(ItemFactory.Club) && GiftHunting.GetPlugin().getGameManager().getState() == GameState.PROGRESSING)
+        if(item.isSimilar(ItemFactory.Club) && GiftHunting.GetPlugin().getGameInstance().getCurrentStateEnum() == GHStates.PROGRESSING)
         {
-            GHPlayer ghPlayer = GiftHunting.GetPlugin().getPlayerManager().getGHPlayer(player);
+            GHPlayer ghPlayer = GiftHunting.GetPlugin().getGameInstance().getPlayerManager().getGHPlayer(player);
             if(ghPlayer != null && ghPlayer.silenceTimer == 0 && attackedEntity instanceof Player attackedPlayer)
             {
-                GHPlayer attackedGHPlayer = GiftHunting.GetPlugin().getPlayerManager().getGHPlayer(attackedPlayer);
+                GHPlayer attackedGHPlayer = GiftHunting.GetPlugin().getGameInstance().getPlayerManager().getGHPlayer(attackedPlayer);
                 if(attackedGHPlayer != null)
                 {
                     if(attackedGHPlayer.reflectTimer == 0)

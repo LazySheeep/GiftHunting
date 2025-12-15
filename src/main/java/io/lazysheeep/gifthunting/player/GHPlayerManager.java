@@ -1,17 +1,22 @@
 package io.lazysheeep.gifthunting.player;
 
 import io.lazysheeep.gifthunting.GiftHunting;
-import io.lazysheeep.gifthunting.game.GameState;
+import io.lazysheeep.gifthunting.game.GHStates;
 import io.lazysheeep.gifthunting.utils.MCUtil;
 import io.lazysheeep.lazuliui.LazuliUI;
+import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class GHPlayerManager
+public class GHPlayerManager implements Listener
 {
     private final Map<UUID, GHPlayer> _ghPlayers = new HashMap<>();
     private final Map<UUID, GHPlayer> _offlineGHPlayers = new HashMap<>();
@@ -89,7 +94,7 @@ public class GHPlayerManager
 
     private boolean shouldBeGHPlayer(@NotNull Player player)
     {
-        return player.isConnected() && player.getWorld() == GiftHunting.GetPlugin().getGameManager().getGameWorld() && player.getGameMode() == GameMode.ADVENTURE;
+        return player.isConnected() && player.getWorld() == GiftHunting.GetPlugin().getGameInstance().getGameWorld() && player.getGameMode() == GameMode.ADVENTURE;
     }
 
     public void tick()
@@ -125,12 +130,36 @@ public class GHPlayerManager
             }
         }
         // Tick GHPlayers
-        if(GiftHunting.GetPlugin().getGameManager().getState() != GameState.IDLE)
+        if(GiftHunting.GetPlugin().getGameInstance().getCurrentStateEnum() != GHStates.IDLE)
         {
             for(GHPlayer ghPlayer : getOnlineGHPlayers())
             {
                 ghPlayer.tick();
             }
+        }
+    }
+
+    // player fall damage
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onEntityDamage(EntityDamageEvent event)
+    {
+        if(event.getEntity() instanceof Player player)
+        {
+            if(event.getCause() == EntityDamageEvent.DamageCause.FALL && isGHPlayer(player))
+            {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    // protect itemFrame
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerItemFrameChange(PlayerItemFrameChangeEvent event)
+    {
+        Player player = event.getPlayer();
+        if(!player.hasPermission("op") && isGHPlayer(player))
+        {
+            event.setCancelled(true);
         }
     }
 }

@@ -20,35 +20,14 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
-import org.spongepowered.configurate.ConfigurationNode;
 
 import java.util.UUID;
 
 
 public class Gift
 {
-    private static float LootProbability_club;
-    private static float LootProbability_booster;
-    private static float LootProbability_silencer;
-    private static float LootProbability_reflector;
-    private static float LootProbability_revolution;
-    private static float LootProbability_speedUp;
-
     public static final String TagName = "GiftHunting:Gift";
-
-    public static void LoadConfig()
-    {
-        ConfigurationNode lootConfigNode = GiftHunting.GetPlugin().getConfigRootNode().node("loot");
-        LootProbability_club = lootConfigNode.node("club").getFloat();
-        LootProbability_booster = lootConfigNode.node("booster").getFloat();
-        LootProbability_silencer = lootConfigNode.node("silencer").getFloat();
-        LootProbability_reflector = lootConfigNode.node("reflector").getFloat();
-        LootProbability_revolution = lootConfigNode.node("revolution").getFloat();
-        LootProbability_speedUp = lootConfigNode.node("speedUp").getFloat();
-    }
 
     private final ArmorStand _giftEntity;
     private final GiftType _type;
@@ -81,6 +60,11 @@ public class Gift
         return _clicksToNextFetch;
     }
 
+    public boolean isEmpty()
+    {
+        return _remainingCapacity <= 0;
+    }
+
     Gift(GiftType type, Location location)
     {
         this._type = type;
@@ -88,7 +72,7 @@ public class Gift
         this.clicksPerFetch = type.clicksPerFetch;
         this.scorePerFetch = type.scorePerFetch;
         this.scoreVariation = type.scoreVariation;
-        this.capacityInFetches = type == GiftType.NORMAL ? 1 : (int)Math.ceil(type.capacityMultiplierPerPlayer * GiftHunting.GetPlugin().getPlayerManager().getOnlineGHPlayerCount());
+        this.capacityInFetches = type.capacityInFetches;
 
         this._remainingCapacity = capacityInFetches;
         this._clicksToNextFetch = clicksPerFetch;
@@ -141,15 +125,15 @@ public class Gift
             this.fetched(ghPlayer);
             this._clicksToNextFetch = clicksPerFetch;
         }
-
-        if(_type == GiftType.SPECIAL)
-        {
-            ghPlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 10, 0));
-        }
     }
 
     private void fetched(GHPlayer ghPlayer)
     {
+        if(isEmpty())
+        {
+            return;
+        }
+
         Player player = ghPlayer.getPlayer();
 
         // calculate score
@@ -168,27 +152,27 @@ public class Gift
         player.getWorld().spawnParticle(Particle.WAX_OFF, this.getLocation(), 4, 0.2f, 0.2f, 0.2f);
 
         // give item
-        if(RandUtil.nextBool(LootProbability_club))
+        if(RandUtil.nextBool(_type.lootProbability_club))
         {
             MCUtil.GiveItem(player, ItemFactory.Club);
         }
-        if(RandUtil.nextBool(LootProbability_booster))
+        if(RandUtil.nextBool(_type.lootProbability_booster))
         {
             MCUtil.GiveItem(player, ItemFactory.Booster);
         }
-        if(RandUtil.nextBool(LootProbability_silencer))
+        if(RandUtil.nextBool(_type.lootProbability_silencer))
         {
             MCUtil.GiveItem(player, ItemFactory.Silencer);
         }
-        if(RandUtil.nextBool(LootProbability_reflector))
+        if(RandUtil.nextBool(_type.lootProbability_reflector))
         {
             MCUtil.GiveItem(player, ItemFactory.Reflector);
         }
-        if(RandUtil.nextBool(LootProbability_revolution))
+        if(RandUtil.nextBool(_type.lootProbability_revolution))
         {
             MCUtil.GiveItem(player, ItemFactory.Revolution);
         }
-        if(RandUtil.nextBool(LootProbability_speedUp))
+        if(RandUtil.nextBool(_type.lootProbability_speedUp))
         {
             MCUtil.GiveItem(player, ItemFactory.SpeedUp);
         }
@@ -197,10 +181,6 @@ public class Gift
         ghPlayer.addScore(score);
         // update capacity
         this._remainingCapacity--;
-        if(this._remainingCapacity <= 0)
-        {
-            GiftHunting.GetPlugin().getGiftManager().removeGift(this);
-        }
     }
 
     void destroy()

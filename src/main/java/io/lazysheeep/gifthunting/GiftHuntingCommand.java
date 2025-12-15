@@ -4,7 +4,8 @@ import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.*;
 import io.lazysheeep.gifthunting.factory.ItemFactory;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
-import io.lazysheeep.gifthunting.game.GameState;
+import io.lazysheeep.gifthunting.game.GHStates;
+import io.lazysheeep.gifthunting.game.GameInstance;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -23,51 +24,58 @@ public class GiftHuntingCommand extends BaseCommand
     @Description("Get stats")
     public void onStats(CommandSender sender)
     {
-        sender.sendMessage(MessageFactory.getGameStatsText());
+        sender.sendMessage(MessageFactory.getGameStatsText(GiftHunting.GetPlugin().getGameInstance()));
     }
 
-    @Subcommand("start")
-    @Description("Start the game")
-    public void onStart(CommandSender sender)
+    @Subcommand("game")
+    public class GameCommand extends BaseCommand
     {
-        if (GiftHunting.GetPlugin().getGameManager().switchState(GameState.READYING))
+        @Subcommand("load")
+        @Description("Load game")
+        public void onLoad(CommandSender sender)
         {
-            sender.sendMessage(MessageFactory.getEventStartText());
+            GiftHunting.GetPlugin().loadGameInstance();
         }
-        else
-        {
-            sender.sendMessage(MessageFactory.getEventCantStartText());
-        }
-    }
 
-    @Subcommand("stop")
-    @Description("Stop the game")
-    public void onStop(CommandSender sender)
-    {
-        if (GiftHunting.GetPlugin().getGameManager().switchState(GameState.IDLE))
+        @Subcommand("start")
+        @Description("Start the game")
+        public void onStart(CommandSender sender)
         {
-            sender.sendMessage(MessageFactory.getEventStopText());
+            GameInstance gameInstance = GiftHunting.GetPlugin().getGameInstance();
+            if (gameInstance != null)
+            {
+                gameInstance.switchState(GHStates.READYING);
+                sender.sendMessage(MessageFactory.getEventStartText());
+            }
+            else
+            {
+                sender.sendMessage(MessageFactory.getEventCantStartText());
+            }
         }
-        else
+
+        @Subcommand("stop")
+        @Description("Stop the game")
+        public void onStop(CommandSender sender)
         {
-            sender.sendMessage(MessageFactory.getEventCantEndText());
+            GameInstance gameInstance = GiftHunting.GetPlugin().getGameInstance();
+            if (gameInstance != null)
+            {
+                gameInstance.switchState(GHStates.IDLE);
+                sender.sendMessage(MessageFactory.getEventStopText());
+            }
+            else
+            {
+                sender.sendMessage(MessageFactory.getEventCantEndText());
+            }
         }
-    }
 
-    @Subcommand("save")
-    @Description("Save config to file")
-    public void onSave(CommandSender sender)
-    {
-        GiftHunting.GetPlugin().saveConfig();
-        sender.sendMessage(MessageFactory.getSaveConfigText());
-    }
-
-    @Subcommand("reload")
-    @Description("Reload config from file")
-    public void onReload(CommandSender sender)
-    {
-        GiftHunting.GetPlugin().reloadConfig();
-        sender.sendMessage(MessageFactory.getReloadConfigText());
+        @Subcommand("save")
+        @Description("Save config to file")
+        public void onSave(CommandSender sender)
+        {
+            GiftHunting.GetPlugin().saveGHConfig();
+            sender.sendMessage(MessageFactory.getSaveConfigText());
+        }
     }
 
     @Subcommand("get")
@@ -151,21 +159,21 @@ public class GiftHuntingCommand extends BaseCommand
         @Description("Clear all normal spawners")
         public void onNormalSpawner(CommandSender sender)
         {
-            GiftHunting.GetPlugin().getGiftManager().clearNormalSpawners();
+            GiftHunting.GetPlugin().getGameInstance().getGiftManager().clearNormalSpawners();
         }
 
         @Subcommand("specialSpawner")
         @Description("Clear all special spawners")
         public void onSpecialSpawner(CommandSender sender)
         {
-            GiftHunting.GetPlugin().getGiftManager().clearSpecialSpawners();
+            GiftHunting.GetPlugin().getGameInstance().getGiftManager().clearSpecialSpawners();
         }
 
         @Subcommand("gift")
         @Description("Clear all gifts")
         public void onGift(CommandSender sender)
         {
-            int counter = GiftHunting.GetPlugin().getGiftManager().removeAllGifts();
+            int counter = GiftHunting.GetPlugin().getGameInstance().getGiftManager().removeAllGifts();
             sender.sendMessage(MessageFactory.getClearAllGiftMsg(counter));
         }
 
@@ -173,7 +181,7 @@ public class GiftHuntingCommand extends BaseCommand
         @Description("Clear all untracked gifts")
         public void onUntracked(CommandSender sender)
         {
-            int counter = GiftHunting.GetPlugin().getGiftManager().removeUnTracked();
+            int counter = GiftHunting.GetPlugin().getGameInstance().getGiftManager().removeUnTracked();
             sender.sendMessage(MessageFactory.getClearUntrackedGiftMsg(counter));
         }
     }

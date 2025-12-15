@@ -1,6 +1,7 @@
 package io.lazysheeep.gifthunting.factory;
 
 import io.lazysheeep.gifthunting.GiftHunting;
+import io.lazysheeep.gifthunting.game.GameInstance;
 import io.lazysheeep.gifthunting.gift.Gift;
 import io.lazysheeep.gifthunting.player.GHPlayer;
 import io.lazysheeep.lazuliui.Message;
@@ -11,6 +12,7 @@ import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,12 +31,12 @@ public class MessageFactory
 
     private MessageFactory() {}
 
-    public static Message getGameReadyingMsg()
+    public static Message getGameReadyingMsg(int readyStateDuration)
     {
         return new Message(
                 Message.Type.CHAT,
                 Component.text("游戏将在 ", COLOR_CAUTION)
-                        .append(getFormattedTime(GiftHunting.GetPlugin().getGameManager().getReadyStateDuration()))
+                        .append(getFormattedTime(readyStateDuration))
                         .append(Component.text(" 后开始！", COLOR_CAUTION)),
                 Sound.BLOCK_NOTE_BLOCK_PLING,
                 Message.LoadMode.IMMEDIATE,
@@ -42,9 +44,9 @@ public class MessageFactory
         );
     }
 
-    public static Message getGameReadyingActionbar()
+    public static Message getGameReadyingActionbar(int readyStateDuration, int currentTime)
     {
-        int countDown = GiftHunting.GetPlugin().getGameManager().getReadyStateDuration() - GiftHunting.GetPlugin().getGameManager().getMainTimer();
+        int countDown = readyStateDuration - currentTime;
         Sound tone = countDown <= 200 ? Sound.BLOCK_NOTE_BLOCK_HAT : null;
         return new Message(
                 Message.Type.ACTIONBAR_INFIX,
@@ -98,12 +100,12 @@ public class MessageFactory
         );
     }
 
-    public static Message getProgressingActionbarPrefix()
+    public static Message getProgressingActionbarPrefix(int time)
     {
         return new Message(
                 Message.Type.ACTIONBAR_PREFIX,
                 Component.text("时间: ", COLOR_VARIABLE)
-                        .append(getFormattedTime(GiftHunting.GetPlugin().getGameManager().getMainTimer())),
+                        .append(getFormattedTime(time)),
                 Message.LoadMode.REPLACE,
                 20
         );
@@ -316,7 +318,7 @@ public class MessageFactory
         );
     }
 
-    public static List<Message> getGameFinishedMsg(GHPlayer ghPlayer)
+    public static List<Message> getGameFinishedMsg(GHPlayer ghPlayer, List<GHPlayer> allGHPlayersSorted)
     {
         List<Message> messages = new ArrayList<>();
         messages.add(new Message(
@@ -326,16 +328,16 @@ public class MessageFactory
                 Message.LoadMode.REPLACE,
                 100
         ));
-        messages.add(getRankingMsg(ghPlayer));
+        messages.add(getRankingMsg(ghPlayer, allGHPlayersSorted));
         return messages;
     }
 
-    public static Message getRankingMsg(GHPlayer ghPlayer)
+    public static Message getRankingMsg(GHPlayer ghPlayer, List<GHPlayer> allGHPlayersSorted)
     {
         TextComponent component = Component.text("\n【得分排名】\n", COLOR_SPECIAL);
 
         int ranking = 1;
-        for(GHPlayer ghP : GiftHunting.GetPlugin().getPlayerManager().getAllGHPlayersSorted())
+        for(GHPlayer ghP : allGHPlayersSorted)
         {
             component = component.append(Component.text(ranking + " - " + ghP.getPlayer().getName() + " - " + ghP.getScore() + "\n", ghP == ghPlayer ? COLOR_GOOD : COLOR_CAUTION));
             ranking ++;
@@ -350,24 +352,24 @@ public class MessageFactory
         );
     }
 
-    public static Message getGameFinishedActionbarInfix()
+    public static Message getGameFinishedActionbarInfix(int duration)
     {
         return new Message(
                 Message.Type.ACTIONBAR_INFIX,
                 Component.text("游戏结束", COLOR_SPECIAL),
                 Message.LoadMode.REPLACE,
-                GiftHunting.GetPlugin().getGameManager().getFinishedStateDuration()
+                duration
         );
     }
 
-    public static Message getGameFinishedActionbarSuffix(@NotNull GHPlayer ghPlayer)
+    public static Message getGameFinishedActionbarSuffix(@NotNull GHPlayer ghPlayer, int duration)
     {
         return new Message(
                 Message.Type.ACTIONBAR_SUFFIX,
                 Component.text("最终得分: ", COLOR_SPECIAL)
                         .append(Component.text(ghPlayer.getScore(), COLOR_VALUE)),
                 Message.LoadMode.REPLACE,
-                GiftHunting.GetPlugin().getGameManager().getFinishedStateDuration()
+                duration
         );
     }
 
@@ -415,38 +417,41 @@ public class MessageFactory
         );
     }
 
-    public static Message getNormalSpawnerCountActionbar()
+    public static Message getNormalSpawnerCountActionbar(int spawnerCount)
     {
         return new Message(
             Message.Type.ACTIONBAR_PREFIX,
             Component.text("生成点数量: ", COLOR_VARIABLE)
-                    .append(Component.text(GiftHunting.GetPlugin().getGiftManager().getNormalSpawnerCount(), COLOR_VALUE)),
+                    .append(Component.text(spawnerCount, COLOR_VALUE)),
             Message.LoadMode.REPLACE,
             30
         );
     }
 
-    public static Message getSpecialSpawnerCountActionbar()
+    public static Message getSpecialSpawnerCountActionbar(int spawnerCount)
     {
         return new Message(
             Message.Type.ACTIONBAR_PREFIX,
             Component.text("生成点数量: ", COLOR_VARIABLE)
-                    .append(Component.text(GiftHunting.GetPlugin().getGiftManager().getSpecialSpawnerCount(), COLOR_VALUE)),
+                    .append(Component.text(spawnerCount, COLOR_VALUE)),
             Message.LoadMode.REPLACE,
             30
         );
     }
 
-    public static TextComponent getGameStatsText()
+    public static TextComponent getGameStatsText(@Nullable GameInstance gameInstance)
     {
-        return Component.text("state: ", COLOR_VARIABLE).append(Component.text(GiftHunting.GetPlugin().getGameManager().getState().toString(), COLOR_VALUE))
-                .append(Component.text("\ntimer: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getGameManager().getMainTimer(), COLOR_VALUE))
-                .append(Component.text("\nonline players: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getPlayerManager().getOnlineGHPlayerCount(), COLOR_VALUE))
-                .append(Component.text("\noffline players: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getPlayerManager().getOfflineGHPlayerCount(), COLOR_VALUE))
-                .append(Component.text("\nnormalGiftSpawners: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getGiftManager().getNormalSpawnerCount(), COLOR_VALUE))
-                .append(Component.text("\nspecialGiftSpawners: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getGiftManager().getSpecialSpawnerCount(), COLOR_VALUE))
-                .append(Component.text("\nnormalGifts: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getGiftManager().getNormalGiftCount(), COLOR_VALUE))
-                .append(Component.text("\nspecialGift: ", COLOR_VARIABLE)).append(Component.text(GiftHunting.GetPlugin().getGiftManager().hasSpecialGift(), COLOR_VALUE));
+        if(gameInstance == null)
+        {
+            return Component.text("No active game instance.", COLOR_VITAL);
+        }
+        return Component.text("state: ", COLOR_VARIABLE).append(Component.text(gameInstance.getCurrentStateEnum().toString(), COLOR_VALUE))
+                .append(Component.text("\nonline players: ", COLOR_VARIABLE)).append(Component.text(gameInstance.getPlayerManager().getOnlineGHPlayerCount(), COLOR_VALUE))
+                .append(Component.text("\noffline players: ", COLOR_VARIABLE)).append(Component.text(gameInstance.getPlayerManager().getOfflineGHPlayerCount(), COLOR_VALUE))
+                .append(Component.text("\nnormalGiftSpawners: ", COLOR_VARIABLE)).append(Component.text(gameInstance.getGiftManager().getNormalSpawnerCount(), COLOR_VALUE))
+                .append(Component.text("\nspecialGiftSpawners: ", COLOR_VARIABLE)).append(Component.text(gameInstance.getGiftManager().getSpecialSpawnerCount(), COLOR_VALUE))
+                .append(Component.text("\nnormalGifts: ", COLOR_VARIABLE)).append(Component.text(gameInstance.getGiftManager().getNormalGiftCount(), COLOR_VALUE))
+                .append(Component.text("\nspecialGift: ", COLOR_VARIABLE)).append(Component.text(gameInstance.getGiftManager().hasSpecialGift(), COLOR_VALUE));
 
     }
 

@@ -1,11 +1,25 @@
 package io.lazysheeep.gifthunting.gift;
 
 import io.lazysheeep.gifthunting.GiftHunting;
+import io.lazysheeep.gifthunting.factory.ItemFactory;
+import io.lazysheeep.gifthunting.factory.MessageFactory;
+import io.lazysheeep.gifthunting.game.GHStates;
+import io.lazysheeep.gifthunting.game.GameInstance;
+import io.lazysheeep.gifthunting.player.GHPlayer;
 import io.lazysheeep.gifthunting.utils.RandUtil;
+import io.lazysheeep.lazuliui.LazuliUI;
 import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;
 
@@ -75,6 +89,13 @@ public class GiftManager implements Listener
     public GiftType GIFT_NORMAL;
     public GiftType GIFT_SPECIAL;
 
+    private final GameInstance _gameInstance;
+
+    public GiftManager(GameInstance gameInstance)
+    {
+        _gameInstance = gameInstance;
+    }
+
     public void loadConfig(ConfigurationNode configNode)
     {
         GIFT_NORMAL = new GiftType(configNode.node("normalGift"));
@@ -87,7 +108,7 @@ public class GiftManager implements Listener
             double x = locationNode.node("x").getDouble(0);
             double y = locationNode.node("y").getDouble(0);
             double z = locationNode.node("z").getDouble(0);
-            _normalSpawners.add(new Location(GiftHunting.GetPlugin().getGameInstance().getGameWorld(), x, y, z));
+            _normalSpawners.add(new Location(_gameInstance.getGameWorld(), x, y, z));
         }
         GiftHunting.Log(Level.INFO, "Loaded " + _normalSpawners.size() + " normal spawners");
         for(ConfigurationNode locationNode : configNode.node("specialSpawners").childrenList())
@@ -95,7 +116,7 @@ public class GiftManager implements Listener
             double x = locationNode.node("x").getDouble(0);
             double y = locationNode.node("y").getDouble(0);
             double z = locationNode.node("z").getDouble(0);
-            _specialSpawners.add(new Location(GiftHunting.GetPlugin().getGameInstance().getGameWorld(), x, y, z));
+            _specialSpawners.add(new Location(_gameInstance.getGameWorld(), x, y, z));
         }
         GiftHunting.Log(Level.INFO, "Loaded " + _specialSpawners.size() + " special spawners");
     }
@@ -237,7 +258,7 @@ public class GiftManager implements Listener
     public int removeUnTracked()
     {
         int counter = 0;
-        for(ArmorStand e : GiftHunting.GetPlugin().getGameInstance().getGameWorld().getEntitiesByClass(ArmorStand.class))
+        for(ArmorStand e : _gameInstance.getGameWorld().getEntitiesByClass(ArmorStand.class))
         {
             if(e.getScoreboardTags().contains(Gift.TagName))
             {
@@ -267,5 +288,71 @@ public class GiftManager implements Listener
         location.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, location, 16, 0.6f, 0.6f, 0.6f);
         location.getWorld().playSound(location, Sound.BLOCK_WOOL_PLACE, SoundCategory.MASTER, 1.0f, 1.0f);
         GiftHunting.Log(Level.INFO, "Spawned special gift");
+    }
+
+    // spawn setter
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerInteract(PlayerInteractEvent event)
+    {
+        // get event attributes
+        Player player = event.getPlayer();
+        Action action = event.getAction();
+        ItemStack item = event.getItem();
+        Block clickedBlock = event.getClickedBlock();
+
+        if (item != null && clickedBlock != null && player.hasPermission("op") && _gameInstance.getCurrentStateEnum() == GHStates.IDLE)
+        {
+            // use giftSpawnerSetter to set or remove a spawner
+            if (item.isSimilar(ItemFactory.NormalGiftSpawnerSetter))
+            {
+                if (action == Action.RIGHT_CLICK_BLOCK)
+                {
+                    Location newLocation = clickedBlock.getLocation().toCenterLocation().add(0.0f, -0.95f, 0.0f);
+                    addNormalSpawner(newLocation);
+                    LazuliUI.sendMessage(player, MessageFactory.getAddGiftSpawnerActionbar());
+                }
+                else if (action == Action.LEFT_CLICK_BLOCK)
+                {
+                    Location location = clickedBlock.getLocation().toCenterLocation().add(0.0f, -0.95f, 0.0f);
+                    if (removeNormalSpawner(location))
+                        LazuliUI.sendMessage(player, MessageFactory.getRemoveGiftSpawnerActionbar());
+                    event.setCancelled(true);
+                }
+            }
+            else if (item.isSimilar(ItemFactory.SpecialGiftSpawnerSetter))
+            {
+                if (action == Action.RIGHT_CLICK_BLOCK)
+                {
+                    Location newLocation = clickedBlock.getLocation().toCenterLocation().add(0.0f, -0.95f, 0.0f);
+                    addSpecialSpawner(newLocation);
+                    LazuliUI.sendMessage(player, MessageFactory.getAddGiftSpawnerActionbar());
+                }
+                else if (action == Action.LEFT_CLICK_BLOCK)
+                {
+                    Location location = clickedBlock.getLocation().toCenterLocation().add(0.0f, -0.95f, 0.0f);
+                    if (removeSpecialSpawner(location))
+                        LazuliUI.sendMessage(player, MessageFactory.getRemoveGiftSpawnerActionbar());
+                    event.setCancelled(true);
+                }
+            }
+        }
+    }
+
+    // player click gift
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerArmorStandManipulate(PlayerArmorStandManipulateEvent event)
+    {
+        Gift gift = getGift(event.getRightClicked());
+        GHPlayer ghPlayer = _gameInstance.getPlayerManager().getGHPlayer(event.getPlayer());
+        if(gift != null && ghPlayer != null)
+        {
+            int currentTick = GiftHunting.GetPlugin().getServer().getCurrentTick();
+            if(_gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING && currentTick - ghPlayer.lastClickGiftTime >= 4)
+            {
+                gift.clicked(ghPlayer);
+                ghPlayer.lastClickGiftTime = currentTick;
+            }
+            event.setCancelled(true);
+        }
     }
 }

@@ -7,6 +7,7 @@ import io.lazysheeep.gifthunting.game.SkillManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Criteria;
 import org.bukkit.scoreboard.Objective;
@@ -34,7 +35,6 @@ public final class GiftHunting extends JavaPlugin
     }
 
     private GameInstance _gameInstance;
-    private SkillManager _skillManager;
     private Objective _scoreObjective;
 
     public @Nullable GameInstance getGameInstance()
@@ -52,11 +52,6 @@ public final class GiftHunting extends JavaPlugin
     {
         // set static reference
         _Instance = this;
-
-        // create managers
-        _skillManager = new SkillManager();
-        _skillManager.loadConfig(loadConfigRootNode());
-        Bukkit.getPluginManager().registerEvents(_skillManager, this);
 
         // register commands
         PaperCommandManager commandManager = new PaperCommandManager(this);
@@ -103,7 +98,14 @@ public final class GiftHunting extends JavaPlugin
 
     public void unloadGameInstance()
     {
-
+        if(_gameInstance == null)
+        {
+            Log(Level.WARNING, "No game instance to unload");
+            return;
+        }
+        _gameInstance.switchState(GHStates.IDLE);
+        _gameInstance = null;
+        HandlerList.unregisterAll(this);
     }
 
     public void saveGHConfig()

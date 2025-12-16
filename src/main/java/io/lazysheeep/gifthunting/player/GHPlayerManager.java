@@ -2,6 +2,7 @@ package io.lazysheeep.gifthunting.player;
 
 import io.lazysheeep.gifthunting.GiftHunting;
 import io.lazysheeep.gifthunting.game.GHStates;
+import io.lazysheeep.gifthunting.game.GameInstance;
 import io.lazysheeep.gifthunting.utils.MCUtil;
 import io.lazysheeep.lazuliui.LazuliUI;
 import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
@@ -62,6 +63,13 @@ public class GHPlayerManager implements Listener
         return allGHPlayers;
     }
 
+    private final GameInstance _gameInstance;
+
+    public GHPlayerManager(GameInstance gameInstance)
+    {
+        _gameInstance = gameInstance;
+    }
+
     private void createGHPlayer(@NotNull Player player)
     {
         GHPlayer ghPlayer = new GHPlayer(player);
@@ -94,7 +102,7 @@ public class GHPlayerManager implements Listener
 
     private boolean shouldBeGHPlayer(@NotNull Player player)
     {
-        return player.isConnected() && player.getWorld() == GiftHunting.GetPlugin().getGameInstance().getGameWorld() && player.getGameMode() == GameMode.ADVENTURE;
+        return player.isConnected() && player.getWorld() == _gameInstance.getGameWorld() && player.getGameMode() == GameMode.ADVENTURE;
     }
 
     public void tick()
@@ -130,7 +138,7 @@ public class GHPlayerManager implements Listener
             }
         }
         // Tick GHPlayers
-        if(GiftHunting.GetPlugin().getGameInstance().getCurrentStateEnum() != GHStates.IDLE)
+        if(_gameInstance.getCurrentStateEnum() != GHStates.IDLE)
         {
             for(GHPlayer ghPlayer : getOnlineGHPlayers())
             {

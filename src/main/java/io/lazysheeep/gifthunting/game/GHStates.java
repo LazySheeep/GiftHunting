@@ -272,6 +272,8 @@ class FinishedState extends State<GameInstance, GHStates>
     @Override
     public void onUpdate(GameInstance gameInstance)
     {
+        _timer ++;
+
         if(_timer >= _duration)
             gameInstance.switchState(GHStates.IDLE);
     }

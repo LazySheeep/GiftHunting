@@ -160,9 +160,9 @@ public class SkillManager implements Listener
                         {
                             stealScore = (int) (_stealerScorePercentage * clickedGHPlayer.getScore());
                             LazuliUI.sendMessage(player, MessageFactory.getStealMsg(clickedPlayer, stealScore));
-                            LazuliUI.sendMessage(player, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(ghPlayer, stealScore));
+                            LazuliUI.sendMessage(player, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(ghPlayer.getScore(), stealScore));
                             LazuliUI.sendMessage(clickedPlayer, MessageFactory.getBeenStolenMsg(player, stealScore));
-                            LazuliUI.sendMessage(clickedPlayer, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(clickedGHPlayer, -stealScore));
+                            LazuliUI.sendMessage(clickedPlayer, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(clickedGHPlayer.getScore(), -stealScore));
                             LazuliUI.broadcast(MessageFactory.getStealBroadcastMsg(player, clickedPlayer, stealScore));
                             clickedPlayer.getWorld().spawnParticle(Particle.ANGRY_VILLAGER, clickedPlayer.getLocation()
                                                                                                          .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
@@ -175,9 +175,9 @@ public class SkillManager implements Listener
                         {
                             stealScore = (int) (_stealerScorePercentage * ghPlayer.getScore() * 1.5f);
                             LazuliUI.sendMessage(clickedPlayer, MessageFactory.getStealMsg(player, stealScore));
-                            LazuliUI.sendMessage(clickedPlayer, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(clickedGHPlayer, stealScore));
+                            LazuliUI.sendMessage(clickedPlayer, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(clickedGHPlayer.getScore(), stealScore));
                             LazuliUI.sendMessage(player, MessageFactory.getBeenStolenMsg(clickedPlayer, stealScore));
-                            LazuliUI.sendMessage(player, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(ghPlayer, -stealScore));
+                            LazuliUI.sendMessage(player, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(ghPlayer.getScore(), -stealScore));
                             LazuliUI.broadcast(MessageFactory.getStealReflectedBroadcastMsg(player, clickedPlayer, stealScore));
                             player.getWorld().spawnParticle(Particle.ANGRY_VILLAGER, clickedPlayer.getLocation()
                                                                                                          .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);

@@ -72,7 +72,7 @@ public class GHPlayerManager implements Listener
 
     private void createGHPlayer(@NotNull Player player)
     {
-        GHPlayer ghPlayer = new GHPlayer(player);
+        GHPlayer ghPlayer = new GHPlayer(player, _gameInstance);
         MCUtil.ClearInventory(player);
         _ghPlayers.put(player.getUniqueId(), ghPlayer);
     }

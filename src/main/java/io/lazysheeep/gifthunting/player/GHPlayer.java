@@ -1,9 +1,11 @@
 package io.lazysheeep.gifthunting.player;
 
 import io.lazysheeep.gifthunting.GiftHunting;
+import io.lazysheeep.gifthunting.game.GameInstance;
 import io.lazysheeep.gifthunting.gift.Gift;
 import io.lazysheeep.gifthunting.utils.MCUtil;
 import org.bukkit.Color;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -15,6 +17,7 @@ import java.util.UUID;
 public class GHPlayer
 {
     private Player _hostPlayer;
+    private final GameInstance _gameInstance;
     private int _score = 0;
     public int lastClickGiftTime = 0;
     public boolean isDisciple = false;
@@ -39,6 +42,21 @@ public class GHPlayer
         return _hostPlayer.getUniqueId();
     }
 
+    public Location getLocation()
+    {
+        return _hostPlayer.getLocation();
+    }
+
+    public Location getBodyLocation()
+    {
+        return _hostPlayer.getLocation().add(_hostPlayer.getEyeLocation()).multiply(0.5f);
+    }
+
+    public GameInstance getGameInstance()
+    {
+        return _gameInstance;
+    }
+
     public void destroy()
     {
         _hostPlayer = null;
@@ -52,6 +70,11 @@ public class GHPlayer
     public boolean isDestroyed()
     {
         return _hostPlayer == null;
+    }
+
+    public boolean isValid()
+    {
+        return isConnected() && !isDestroyed();
     }
 
     public int getScore()
@@ -69,9 +92,10 @@ public class GHPlayer
         this._score = score;
     }
 
-    GHPlayer(@NotNull Player player)
+    GHPlayer(@NotNull Player player, @NotNull GameInstance gameInstance)
     {
         _hostPlayer = player;
+        _gameInstance = gameInstance;
     }
 
     public void reset()

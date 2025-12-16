@@ -122,21 +122,21 @@ public class MessageFactory
         );
     }
 
-    public static List<Message> getProgressingActionbarSuffixWhenScoreChanged(@NotNull GHPlayer ghPlayer, int score)
+    public static List<Message> getProgressingActionbarSuffixWhenScoreChanged(int currentScore, int scoreDelta)
     {
         List<Message> messages = new ArrayList<>();
         messages.add(new Message(
                 Message.Type.ACTIONBAR_SUFFIX,
                 Component.text("得分: ", COLOR_VARIABLE)
-                        .append(Component.text(ghPlayer.getScore(), COLOR_VALUE))
-                        .append(score >= 0 ? Component.text("+" + score, COLOR_CAUTION) : Component.text(score, COLOR_BAD)),
+                        .append(Component.text(currentScore, COLOR_VALUE))
+                        .append(scoreDelta >= 0 ? Component.text("+" + scoreDelta, COLOR_CAUTION) : Component.text(scoreDelta, COLOR_BAD)),
                 Message.LoadMode.REPLACE,
                 30)
         );
         messages.add(new Message(
                 Message.Type.ACTIONBAR_SUFFIX,
                 Component.text("得分: ", COLOR_VARIABLE)
-                        .append(Component.text(ghPlayer.getScore() + score, COLOR_VALUE)),
+                        .append(Component.text(currentScore + scoreDelta, COLOR_VALUE)),
                 Message.LoadMode.WAIT,
                 -1)
         );

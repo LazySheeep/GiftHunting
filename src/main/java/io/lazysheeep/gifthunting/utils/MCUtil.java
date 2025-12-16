@@ -13,6 +13,11 @@ import java.util.*;
 
 public class MCUtil
 {
+    public static float GetServerTickDeltaTime()
+    {
+        return 1.0f / Bukkit.getServer().getServerTickManager().getTickRate();
+    }
+
     public static List<Player> GetPlayersWithPermission(String permission)
     {
         List<Player> result = new ArrayList<>();

@@ -3,7 +3,6 @@ package io.lazysheeep.gifthunting;
 import co.aikar.commands.PaperCommandManager;
 import io.lazysheeep.gifthunting.game.GHStates;
 import io.lazysheeep.gifthunting.game.GameInstance;
-import io.lazysheeep.gifthunting.game.SkillManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;

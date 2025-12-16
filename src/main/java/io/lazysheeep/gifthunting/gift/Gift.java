@@ -6,12 +6,15 @@ import com.destroystokyo.paper.profile.ProfileProperty;
 import io.lazysheeep.gifthunting.GiftHunting;
 import io.lazysheeep.gifthunting.factory.ItemFactory;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
+import io.lazysheeep.gifthunting.orbs.ItemOrb;
+import io.lazysheeep.gifthunting.orbs.ScoreOrb;
 import io.lazysheeep.gifthunting.player.GHPlayer;
 import io.lazysheeep.gifthunting.utils.MCUtil;
 import io.lazysheeep.gifthunting.utils.RandUtil;
 import io.lazysheeep.lazuliui.LazuliUI;
 import io.lazysheeep.lazuliui.Message;
 import net.kyori.adventure.text.Component;
+import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.*;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
@@ -22,6 +25,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
 
+import java.util.List;
 import java.util.UUID;
 
 
@@ -138,47 +142,33 @@ public class Gift
 
         // calculate score
         int score = scorePerFetch + RandUtil.nextInt(-scoreVariation, scoreVariation);
+        ghPlayer.getGameInstance().getOrbManager().addOrb(new ScoreOrb(score, ghPlayer, this.getLocation()));
 
         // send actionbar infix:
         LazuliUI.sendMessage(player, MessageFactory.getGiftFetchedActionbar(this));
-        // send actionbar suffix list:
-        // score: value +increment
-        LazuliUI.flush(player, Message.Type.ACTIONBAR_SUFFIX);
-        LazuliUI.sendMessage(player, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(ghPlayer, score));
 
-        // play sound to the player
-        player.playSound(player, Sound.BLOCK_NOTE_BLOCK_CHIME, SoundCategory.MASTER, 1.0f, 1.0f);
         // display particle
         player.getWorld().spawnParticle(Particle.WAX_OFF, this.getLocation(), 4, 0.2f, 0.2f, 0.2f);
 
-        // give item
-        if(RandUtil.nextBool(_type.lootProbability_club))
+        // give random item based on weight
+        List<Pair<ItemStack, Float>> lootTable = _type.lootTable;
+        float totalWeight = 0.0f;
+        for(Pair<ItemStack, Float> pair : lootTable)
         {
-            MCUtil.GiveItem(player, ItemFactory.Club);
+            totalWeight += pair.getRight();
         }
-        if(RandUtil.nextBool(_type.lootProbability_booster))
+        float randomValue = RandUtil.nextFloat(0.0f, totalWeight);
+        float cumulativeWeight = 0.0f;
+        for(Pair<ItemStack, Float> pair : lootTable)
         {
-            MCUtil.GiveItem(player, ItemFactory.Booster);
-        }
-        if(RandUtil.nextBool(_type.lootProbability_silencer))
-        {
-            MCUtil.GiveItem(player, ItemFactory.Silencer);
-        }
-        if(RandUtil.nextBool(_type.lootProbability_reflector))
-        {
-            MCUtil.GiveItem(player, ItemFactory.Reflector);
-        }
-        if(RandUtil.nextBool(_type.lootProbability_revolution))
-        {
-            MCUtil.GiveItem(player, ItemFactory.Revolution);
-        }
-        if(RandUtil.nextBool(_type.lootProbability_speedUp))
-        {
-            MCUtil.GiveItem(player, ItemFactory.SpeedUp);
+            cumulativeWeight += pair.getRight();
+            if(randomValue <= cumulativeWeight)
+            {
+                ghPlayer.getGameInstance().getOrbManager().addOrb(new ItemOrb(pair.getLeft(), ghPlayer, this.getLocation()));
+                break;
+            }
         }
 
-        // score increase
-        ghPlayer.addScore(score);
         // update capacity
         this._remainingCapacity--;
     }

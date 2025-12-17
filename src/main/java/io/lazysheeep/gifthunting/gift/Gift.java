@@ -4,17 +4,13 @@ package io.lazysheeep.gifthunting.gift;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
 import io.lazysheeep.gifthunting.GiftHunting;
-import io.lazysheeep.gifthunting.factory.ItemFactory;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
 import io.lazysheeep.gifthunting.orbs.ItemOrb;
 import io.lazysheeep.gifthunting.orbs.ScoreOrb;
 import io.lazysheeep.gifthunting.player.GHPlayer;
-import io.lazysheeep.gifthunting.utils.MCUtil;
 import io.lazysheeep.gifthunting.utils.RandUtil;
 import io.lazysheeep.lazuliui.LazuliUI;
-import io.lazysheeep.lazuliui.Message;
 import net.kyori.adventure.text.Component;
-import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.*;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
@@ -126,12 +122,12 @@ public class Gift
 
         if(this._clicksToNextFetch == 0)
         {
-            this.fetched(ghPlayer);
+            this.opened(ghPlayer);
             this._clicksToNextFetch = clicksPerFetch;
         }
     }
 
-    private void fetched(GHPlayer ghPlayer)
+    private void opened(GHPlayer ghPlayer)
     {
         if(isEmpty())
         {
@@ -140,34 +136,22 @@ public class Gift
 
         Player player = ghPlayer.getPlayer();
 
-        // calculate score
+        // give score
         int score = scorePerFetch + RandUtil.nextInt(-scoreVariation, scoreVariation);
         ghPlayer.getGameInstance().getOrbManager().addOrb(new ScoreOrb(score, ghPlayer, this.getLocation()));
+
+        // give loot
+        List<ItemStack> loots = _type.lootTable.loot();
+        for(ItemStack loot : loots)
+        {
+            ghPlayer.getGameInstance().getOrbManager().addOrb(new ItemOrb(loot, ghPlayer, this.getLocation()));
+        }
 
         // send actionbar infix:
         LazuliUI.sendMessage(player, MessageFactory.getGiftFetchedActionbar(this));
 
         // display particle
         player.getWorld().spawnParticle(Particle.WAX_OFF, this.getLocation(), 4, 0.2f, 0.2f, 0.2f);
-
-        // give random item based on weight
-        List<Pair<ItemStack, Float>> lootTable = _type.lootTable;
-        float totalWeight = 0.0f;
-        for(Pair<ItemStack, Float> pair : lootTable)
-        {
-            totalWeight += pair.getRight();
-        }
-        float randomValue = RandUtil.nextFloat(0.0f, totalWeight);
-        float cumulativeWeight = 0.0f;
-        for(Pair<ItemStack, Float> pair : lootTable)
-        {
-            cumulativeWeight += pair.getRight();
-            if(randomValue <= cumulativeWeight)
-            {
-                ghPlayer.getGameInstance().getOrbManager().addOrb(new ItemOrb(pair.getLeft(), ghPlayer, this.getLocation()));
-                break;
-            }
-        }
 
         // update capacity
         this._remainingCapacity--;

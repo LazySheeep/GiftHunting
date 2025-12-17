@@ -6,8 +6,12 @@ import io.lazysheeep.gifthunting.factory.ItemFactory;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
 import io.lazysheeep.gifthunting.game.GHStates;
 import io.lazysheeep.gifthunting.game.GameInstance;
+import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import static io.lazysheeep.gifthunting.factory.MessageFactory.COLOR_GOOD;
+import static io.lazysheeep.gifthunting.factory.MessageFactory.COLOR_VITAL;
 
 @CommandAlias("gifthunting")
 @CommandPermission("op")
@@ -35,6 +39,23 @@ public class GiftHuntingCommand extends BaseCommand
         public void onLoad(CommandSender sender)
         {
             GiftHunting.GetPlugin().loadGameInstance();
+            sender.sendMessage(Component.text("Loaded game instance", COLOR_GOOD));
+        }
+
+        @Subcommand("setSpawn")
+        @Description("Set game spawn point")
+        public void onSetSpawn(Player senderPlayer)
+        {
+            GameInstance gameInstance = GiftHunting.GetPlugin().getGameInstance();
+            if (gameInstance != null)
+            {
+                gameInstance.setGameSpawn(senderPlayer.getLocation());
+                senderPlayer.sendMessage(Component.text("Game spawn set!", COLOR_GOOD));
+            }
+            else
+            {
+                senderPlayer.sendMessage(Component.text("No game instance loaded", COLOR_VITAL));
+            }
         }
 
         @Subcommand("start")
@@ -49,7 +70,7 @@ public class GiftHuntingCommand extends BaseCommand
             }
             else
             {
-                sender.sendMessage(MessageFactory.getEventCantStartText());
+                sender.sendMessage(Component.text("No game instance loaded", COLOR_VITAL));
             }
         }
 
@@ -65,7 +86,7 @@ public class GiftHuntingCommand extends BaseCommand
             }
             else
             {
-                sender.sendMessage(MessageFactory.getEventCantEndText());
+                sender.sendMessage(Component.text("No game instance loaded", COLOR_VITAL));
             }
         }
 

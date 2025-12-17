@@ -12,12 +12,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.serialize.SerializationException;
 
 import java.util.logging.Level;
 
 public class GameInstance extends StateMachine<GameInstance, GHStates> implements Listener
 {
-    private World _gameWorld;
     private Location _gameSpawn;
     private int _readyStateDuration;
     private int _progressStateMaxDuration;
@@ -52,12 +52,17 @@ public class GameInstance extends StateMachine<GameInstance, GHStates> implement
 
     public World getGameWorld()
     {
-        return _gameWorld;
+        return _gameSpawn.getWorld();
     }
 
     public Location getGameSpawn()
     {
         return _gameSpawn;
+    }
+
+    public void setGameSpawn(Location location)
+    {
+        _gameSpawn = location;
     }
 
     public int getVictoryScore()
@@ -120,13 +125,13 @@ public class GameInstance extends StateMachine<GameInstance, GHStates> implement
 
     public void loadConfig(ConfigurationNode configNode)
     {
-        _gameWorld = Bukkit.getWorld(configNode.node("gameWorld").getString("world"));
-        if (_gameWorld == null)
+        ConfigurationNode gameSpawnNode = configNode.node("gameSpawn");
+        World gameWorld = Bukkit.getWorld(gameSpawnNode.node("world").getString("world"));
+        if (gameWorld == null)
         {
             GiftHunting.Log(Level.SEVERE, "Game world not found!");
         }
-        ConfigurationNode gameSpawnNode = configNode.node("gameSpawn");
-        _gameSpawn = new Location(_gameWorld, gameSpawnNode.node("x").getDouble(0.0),
+        _gameSpawn = new Location(gameWorld, gameSpawnNode.node("x").getDouble(0.0),
                                   gameSpawnNode.node("y").getDouble(0.0),
                                   gameSpawnNode.node("z").getDouble(0.0),
                                   gameSpawnNode.node("yaw").getFloat(0.0f),
@@ -146,8 +151,16 @@ public class GameInstance extends StateMachine<GameInstance, GHStates> implement
         _skillManager.loadConfig(configNode);
     }
 
-    public void saveConfig(ConfigurationNode configNode)
+    public void saveConfig(ConfigurationNode configNode) throws SerializationException
     {
+        ConfigurationNode gameSpawnNode = configNode.node("gameSpawn");
+        gameSpawnNode.node("world").set(_gameSpawn.getWorld().getName());
+        gameSpawnNode.node("x").set(_gameSpawn.getX());
+        gameSpawnNode.node("y").set(_gameSpawn.getY());
+        gameSpawnNode.node("z").set(_gameSpawn.getZ());
+        gameSpawnNode.node("yaw").set(_gameSpawn.getYaw());
+        gameSpawnNode.node("pitch").set(_gameSpawn.getPitch());
+
         _giftManager.saveConfig(configNode);
     }
 

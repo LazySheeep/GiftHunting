@@ -19,15 +19,15 @@ import java.util.List;
 
 public class MessageFactory
 {
-    private static final TextColor COLOR_VARIABLE = NamedTextColor.GOLD;
-    private static final TextColor COLOR_VALUE = NamedTextColor.GREEN;
-    private static final TextColor COLOR_TEXT = NamedTextColor.AQUA;
-    private static final TextColor COLOR_CAUTION = NamedTextColor.YELLOW;
-    private static final TextColor COLOR_SPECIAL = NamedTextColor.LIGHT_PURPLE;
-    private static final TextColor COLOR_VITAL = NamedTextColor.RED;
-    private static final TextColor COLOR_GRAY = NamedTextColor.GRAY;
-    private static final TextColor COLOR_GOOD = NamedTextColor.GREEN;
-    private static final TextColor COLOR_BAD = NamedTextColor.RED;
+    public static final TextColor COLOR_VARIABLE = NamedTextColor.GOLD;
+    public static final TextColor COLOR_VALUE = NamedTextColor.GREEN;
+    public static final TextColor COLOR_TEXT = NamedTextColor.AQUA;
+    public static final TextColor COLOR_CAUTION = NamedTextColor.YELLOW;
+    public static final TextColor COLOR_SPECIAL = NamedTextColor.LIGHT_PURPLE;
+    public static final TextColor COLOR_VITAL = NamedTextColor.RED;
+    public static final TextColor COLOR_GRAY = NamedTextColor.GRAY;
+    public static final TextColor COLOR_GOOD = NamedTextColor.GREEN;
+    public static final TextColor COLOR_BAD = NamedTextColor.RED;
 
     private MessageFactory() {}
 
@@ -145,10 +145,10 @@ public class MessageFactory
 
     public static Message getGiftClickedActionbar(Gift gift)
     {
-        int progressBarToFetchL = (int)(20*((float)gift.getClicksToNextFetch()/gift.clicksPerFetch));
+        int progressBarToFetchL = (int)(20*((float)gift.getClicksToNextFetch()/gift.getType().clicksPerFetch));
         int progressBarToFetchR = 20 - progressBarToFetchL;
         int progressBarTotalL = gift.getRemainingCapacity() - 1;
-        int progressBarTotalR = gift.capacityInFetches - gift.getRemainingCapacity();
+        int progressBarTotalR = gift.getType().capacityInFetches - gift.getRemainingCapacity();
         return new Message(
                 Message.Type.ACTIONBAR_INFIX,
                 Component.text("开启中 ", COLOR_TEXT)
@@ -166,7 +166,7 @@ public class MessageFactory
     public static Message getGiftFetchedActionbar(Gift gift)
     {
         int progressBarTotalL = gift.getRemainingCapacity() - 1;
-        int progressBarTotalR = gift.capacityInFetches - gift.getRemainingCapacity();
+        int progressBarTotalR = gift.getType().capacityInFetches - gift.getRemainingCapacity();
         return new Message(
                 Message.Type.ACTIONBAR_INFIX,
                 Component.text("已开启 ", COLOR_CAUTION)
@@ -458,16 +458,6 @@ public class MessageFactory
     public static TextComponent getEventStartText()
     {
         return Component.text("Game started!", COLOR_GOOD);
-    }
-
-    public static TextComponent getEventCantStartText()
-    {
-        return Component.text("Can't start the game! Please check if the game has already begun or the game spawn has not been set!", COLOR_VITAL);
-    }
-
-    public static TextComponent getEventCantEndText()
-    {
-        return Component.text("The game is not in progress!", COLOR_VITAL);
     }
 
     public static TextComponent getSaveConfigText()

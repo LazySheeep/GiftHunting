@@ -22,16 +22,16 @@ public class LootTable
     }
 
     private final int _rollTimes;
-    private final int _rollChance;
+    private final float _rollChance;
     private final List<LootTableEntry> _lootEntries;
     private final float _totalWeight;
 
     public LootTable(ConfigurationNode configNode)
     {
         _rollTimes = configNode.node("rollTimes").getInt();
-        _rollChance = configNode.node("rollChance").getInt();
+        _rollChance = configNode.node("rollChance").getFloat();
 
-        ConfigurationNode entriesConfigNode = configNode.node("loot");
+        ConfigurationNode entriesConfigNode = configNode.node("loots");
         float lootWeight_club = entriesConfigNode.node("club").getFloat();
         float lootWeight_booster = entriesConfigNode.node("booster").getFloat();
         float lootWeight_silencer = entriesConfigNode.node("silencer").getFloat();
@@ -62,7 +62,7 @@ public class LootTable
         if (_rollTimes <= 0 || _rollChance <= 0.0f || _lootEntries.isEmpty())
             return loots;
 
-        for (int i = 0; i < _rollChance; i++)
+        for (int i = 0; i < _rollTimes; i++)
         {
             if (RandUtil.nextBool(_rollChance))
             {
@@ -73,7 +73,7 @@ public class LootTable
                     cumulativeWeight += entry.weight;
                     if(randomValue <= cumulativeWeight)
                     {
-
+                        loots.add(entry.item.clone());
                         break;
                     }
                 }

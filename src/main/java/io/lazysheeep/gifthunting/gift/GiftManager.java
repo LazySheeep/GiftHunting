@@ -121,36 +121,29 @@ public class GiftManager implements Listener
         GiftHunting.Log(Level.INFO, "Loaded " + _specialSpawners.size() + " special spawners");
     }
 
-    public void saveConfig(ConfigurationNode configNode)
+    public void saveConfig(ConfigurationNode configNode) throws SerializationException
     {
-        try
+        ConfigurationNode normalSpawnersNode = configNode.node("normalSpawners");
+        normalSpawnersNode.setList(ConfigurationNode.class, List.of());
+        for(Location location : _normalSpawners)
         {
-            ConfigurationNode normalSpawnersNode = configNode.node("normalSpawners");
-            normalSpawnersNode.setList(ConfigurationNode.class, List.of());
-            for(Location location : _normalSpawners)
-            {
-                ConfigurationNode locationNode = normalSpawnersNode.appendListNode();
-                locationNode.node("x").set(location.getX());
-                locationNode.node("y").set(location.getY());
-                locationNode.node("z").set(location.getZ());
-            }
-            GiftHunting.Log(Level.INFO, "Saved " + _normalSpawners.size() + " normal spawners");
+            ConfigurationNode locationNode = normalSpawnersNode.appendListNode();
+            locationNode.node("x").set(location.getX());
+            locationNode.node("y").set(location.getY());
+            locationNode.node("z").set(location.getZ());
+        }
+        GiftHunting.Log(Level.INFO, "Saved " + _normalSpawners.size() + " normal spawners");
 
-            ConfigurationNode specialSpawnersNode = configNode.node("specialSpawners");
-            specialSpawnersNode.setList(ConfigurationNode.class, List.of());
-            for(Location location : _specialSpawners)
-            {
-                ConfigurationNode locationNode = specialSpawnersNode.appendListNode();
-                locationNode.node("x").set(location.getX());
-                locationNode.node("y").set(location.getY());
-                locationNode.node("z").set(location.getZ());
-            }
-            GiftHunting.Log(Level.INFO, "Saved " + _specialSpawners.size() + " special spawners");
-        }
-        catch (SerializationException e)
+        ConfigurationNode specialSpawnersNode = configNode.node("specialSpawners");
+        specialSpawnersNode.setList(ConfigurationNode.class, List.of());
+        for(Location location : _specialSpawners)
         {
-            GiftHunting.Log(Level.SEVERE, e.getMessage());
+            ConfigurationNode locationNode = specialSpawnersNode.appendListNode();
+            locationNode.node("x").set(location.getX());
+            locationNode.node("y").set(location.getY());
+            locationNode.node("z").set(location.getZ());
         }
+        GiftHunting.Log(Level.INFO, "Saved " + _specialSpawners.size() + " special spawners");
     }
 
     private final List<Gift> _normalGifts = new LinkedList<>();

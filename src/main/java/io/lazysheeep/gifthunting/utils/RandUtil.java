@@ -4,6 +4,7 @@ import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class RandUtil
@@ -34,6 +35,28 @@ public class RandUtil
     public static <T> T Pick(List<T> list)
     {
         return list.get(nextInt(0, list.size() - 1));
+    }
+
+    public static <T> T PickWeighted(Map<T, Float> weightMap)
+    {
+        float totalWeight = 0.0f;
+        for(float weight : weightMap.values())
+        {
+            totalWeight += weight;
+        }
+
+        float roll = nextFloat(0.0f, totalWeight);
+        float cumulativeWeight = 0.0f;
+        for(Map.Entry<T, Float> entry : weightMap.entrySet())
+        {
+            cumulativeWeight += entry.getValue();
+            if(roll <= cumulativeWeight)
+            {
+                return entry.getKey();
+            }
+        }
+
+        return null;
     }
 
     public static float nextFloat(float min, float max)

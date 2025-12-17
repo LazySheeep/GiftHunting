@@ -23,6 +23,8 @@ import org.bukkit.util.Vector;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class Gift
@@ -31,11 +33,6 @@ public class Gift
 
     private final ArmorStand _giftEntity;
     private final GiftType _type;
-
-    public final int clicksPerFetch;
-    public final int scorePerFetch;
-    public final int scoreVariation;
-    public final int capacityInFetches;
 
     private int _remainingCapacity;
     private int _clicksToNextFetch;
@@ -69,13 +66,8 @@ public class Gift
     {
         this._type = type;
 
-        this.clicksPerFetch = type.clicksPerFetch;
-        this.scorePerFetch = type.scorePerFetch;
-        this.scoreVariation = type.scoreVariation;
-        this.capacityInFetches = type.capacityInFetches;
-
-        this._remainingCapacity = capacityInFetches;
-        this._clicksToNextFetch = clicksPerFetch;
+        this._remainingCapacity = type.capacityInFetches;
+        this._clicksToNextFetch = type.clicksPerFetch;
 
         this._giftEntity = (ArmorStand) location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
         this._giftEntity.customName(Component.text(TagName));
@@ -123,7 +115,7 @@ public class Gift
         if(this._clicksToNextFetch == 0)
         {
             this.opened(ghPlayer);
-            this._clicksToNextFetch = clicksPerFetch;
+            this._clicksToNextFetch = _type.clicksPerFetch;
         }
     }
 
@@ -136,15 +128,34 @@ public class Gift
 
         Player player = ghPlayer.getPlayer();
 
+        // Collect nearby GH players and compute weights
+        Map<GHPlayer, Float> weightMap = getLootGHPlayers(ghPlayer);
+        if(weightMap.isEmpty())
+        {
+            weightMap.put(ghPlayer, 1.0f);
+        }
+
+        double sumW = 0.0;
+        for(float w : weightMap.values()) sumW += w;
+        if(sumW <= 0.0) sumW = 1.0;
+
         // give score
-        int score = scorePerFetch + RandUtil.nextInt(-scoreVariation, scoreVariation);
-        ghPlayer.getGameInstance().getOrbManager().addOrb(new ScoreOrb(score, ghPlayer, this.getLocation()));
+        int totalScore = _type.scorePerFetch;
+        if(totalScore < 1) totalScore = 1;
+        for(Map.Entry<GHPlayer, Float> e : weightMap.entrySet())
+        {
+            double fp = totalScore * (e.getValue() / sumW);
+            int share = Math.round((float) fp);
+            if(share <= 0) continue;
+            ghPlayer.getGameInstance().getOrbManager().addOrb(new ScoreOrb(share, e.getKey(), this.getLocation()));
+        }
 
         // give loot
         List<ItemStack> loots = _type.lootTable.loot();
         for(ItemStack loot : loots)
         {
-            ghPlayer.getGameInstance().getOrbManager().addOrb(new ItemOrb(loot, ghPlayer, this.getLocation()));
+            GHPlayer pickedPlayer = RandUtil.PickWeighted(weightMap);
+            ghPlayer.getGameInstance().getOrbManager().addOrb(new ItemOrb(loot, pickedPlayer, this.getLocation()));
         }
 
         // send actionbar infix:
@@ -160,5 +171,26 @@ public class Gift
     void destroy()
     {
         _giftEntity.remove();
+    }
+
+    // Helper: collect nearby GH players and return weights using normalized generalized Gaussian
+    private Map<GHPlayer, Float> getLootGHPlayers(GHPlayer source)
+    {
+        Map<GHPlayer, Float> map = new HashMap<>();
+        Location loc = this.getLocation();
+        double eNeg1 = Math.exp(-1.0);
+        for(GHPlayer p : source.getGameInstance().getPlayerManager().getOnlineGHPlayers())
+        {
+            if(!p.isValid()) continue;
+            if(p.getPlayer().getWorld() != loc.getWorld()) continue;
+            double d = p.getLocation().distance(loc);
+            if(d <= _type.lootRadius)
+            {
+                double x = Math.clamp(d / _type.lootRadius, 0.0, 1.0);
+                double w = (Math.exp(-Math.pow(x, _type.lootWeightShape)) - eNeg1) / (1.0 - eNeg1);
+                map.put(p, (float) w);
+            }
+        }
+        return map;
     }
 }

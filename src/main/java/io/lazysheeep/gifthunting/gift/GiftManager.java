@@ -298,7 +298,7 @@ public class GiftManager implements Listener
         if (item != null && clickedBlock != null && player.hasPermission("op") && _gameInstance.getCurrentStateEnum() == GHStates.IDLE)
         {
             // use giftSpawnerSetter to set or remove a spawner
-            if (item.isSimilar(ItemFactory.NormalGiftSpawnerSetter))
+            if (ItemFactory.isNormalGiftSpawnerSetter(item))
             {
                 if (action == Action.RIGHT_CLICK_BLOCK)
                 {
@@ -314,7 +314,7 @@ public class GiftManager implements Listener
                     event.setCancelled(true);
                 }
             }
-            else if (item.isSimilar(ItemFactory.SpecialGiftSpawnerSetter))
+            else if (ItemFactory.isSpecialGiftSpawnerSetter(item))
             {
                 if (action == Action.RIGHT_CLICK_BLOCK)
                 {

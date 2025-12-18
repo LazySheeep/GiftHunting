@@ -11,13 +11,36 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.NamespacedKey;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import io.lazysheeep.gifthunting.GiftHunting;
+
 public class ItemFactory
 {
+    private static NamespacedKey key(String id) { return new NamespacedKey(GiftHunting.GetPlugin(), id); }
+
+    public static boolean hasTag(ItemStack item, String id)
+    {
+        if(item == null) return false;
+        if(!item.hasItemMeta()) return false;
+        return item.getItemMeta().getPersistentDataContainer().has(key(id), PersistentDataType.BYTE);
+    }
+
+    public static boolean isNormalGiftSpawnerSetter(ItemStack item) { return hasTag(item, "normal_gift_spawner_setter"); }
+    public static boolean isSpecialGiftSpawnerSetter(ItemStack item) { return hasTag(item, "special_gift_spawner_setter"); }
+    public static boolean isBooster(ItemStack item) { return hasTag(item, "booster"); }
+    public static boolean isClub(ItemStack item) { return hasTag(item, "club"); }
+    public static boolean isStealer(ItemStack item) { return hasTag(item, "stealer"); }
+    public static boolean isSilencer(ItemStack item) { return hasTag(item, "silencer"); }
+    public static boolean isReflector(ItemStack item) { return hasTag(item, "reflector"); }
+    public static boolean isRevolution(ItemStack item) { return hasTag(item, "revolution"); }
+    public static boolean isSpeedUp(ItemStack item) { return hasTag(item, "speed_up"); }
+
     static public final ItemStack NormalGiftSpawnerSetter;
     static
     {
@@ -31,6 +54,7 @@ public class ItemFactory
             itemMeta.displayName(displayName);
             itemMeta.lore(lore);
             itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
+            itemMeta.getPersistentDataContainer().set(key("normal_gift_spawner_setter"), PersistentDataType.BYTE, (byte)1);
         });
     }
 
@@ -47,6 +71,7 @@ public class ItemFactory
             itemMeta.displayName(displayName);
             itemMeta.lore(lore);
             itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
+            itemMeta.getPersistentDataContainer().set(key("special_gift_spawner_setter"), PersistentDataType.BYTE, (byte)1);
         });
     }
 
@@ -65,6 +90,7 @@ public class ItemFactory
             itemMeta.displayName(displayName);
             itemMeta.lore(lore);
             itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
+            itemMeta.getPersistentDataContainer().set(key("booster"), PersistentDataType.BYTE, (byte)1);
         });
     }
 
@@ -82,23 +108,25 @@ public class ItemFactory
             itemMeta.displayName(displayName);
             itemMeta.lore(lore);
             itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
+            itemMeta.getPersistentDataContainer().set(key("club"), PersistentDataType.BYTE, (byte)1);
         });
     }
 
     static public final ItemStack Stealer;
     static
     {
-        Stealer = new ItemStack(Material.WARPED_FUNGUS_ON_A_STICK, 1);
+        Stealer = new ItemStack(Material.FISHING_ROD, 1);
         Component displayName = Component.text("钓礼物竿", NamedTextColor.LIGHT_PURPLE);
         List<Component> lore = new ArrayList<>();
         lore.add(Component.text("可以偷取其他玩家的礼物", NamedTextColor.AQUA));
-        lore.add(Component.text("对其他玩家右键使用", NamedTextColor.YELLOW));
+        lore.add(Component.text("钩中其他玩家后收杆", NamedTextColor.YELLOW));
         lore.add(Component.text("这是俺拾滴", NamedTextColor.GRAY));
         Stealer.editMeta(itemMeta ->
         {
             itemMeta.displayName(displayName);
             itemMeta.lore(lore);
             itemMeta.addEnchant(Enchantment.FORTUNE, 1, true);
+            itemMeta.getPersistentDataContainer().set(key("stealer"), PersistentDataType.BYTE, (byte)1);
         });
     }
 
@@ -116,6 +144,7 @@ public class ItemFactory
             itemMeta.displayName(displayName);
             itemMeta.lore(lore);
             itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
+            itemMeta.getPersistentDataContainer().set(key("silencer"), PersistentDataType.BYTE, (byte)1);
         });
     }
 
@@ -134,6 +163,8 @@ public class ItemFactory
                               itemMeta.displayName(displayName);
                               itemMeta.lore(lore);
                               itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
+                              // tag
+                              itemMeta.getPersistentDataContainer().set(key("reflector"), PersistentDataType.BYTE, (byte)1);
                           });
     }
 
@@ -153,6 +184,7 @@ public class ItemFactory
             itemMeta.displayName(displayName);
             itemMeta.lore(lore);
             itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
+            itemMeta.getPersistentDataContainer().set(key("revolution"), PersistentDataType.BYTE, (byte)1);
         });
     }
 
@@ -171,6 +203,7 @@ public class ItemFactory
             itemMeta.displayName(displayName);
             itemMeta.lore(lore);
             itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
+            itemMeta.getPersistentDataContainer().set(key("speed_up"), PersistentDataType.BYTE, (byte)1);
         });
     }
 

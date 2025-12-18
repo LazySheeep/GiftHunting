@@ -18,6 +18,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -118,7 +119,6 @@ public class SkillManager implements Listener
         {
             stealScore = (int) (_stealerScorePercentage * clickedGHPlayer.getScore());
             LazuliUI.sendMessage(player, MessageFactory.getStealMsg(clickedPlayer, stealScore));
-            LazuliUI.sendMessage(player, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(ghPlayer.getScore(), stealScore));
             LazuliUI.sendMessage(clickedPlayer, MessageFactory.getBeenStolenMsg(player, stealScore));
             LazuliUI.sendMessage(clickedPlayer, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(clickedGHPlayer.getScore(), -stealScore));
             LazuliUI.broadcast(MessageFactory.getStealBroadcastMsg(player, clickedPlayer, stealScore));
@@ -133,7 +133,6 @@ public class SkillManager implements Listener
         {
             stealScore = (int) (_stealerScorePercentage * ghPlayer.getScore() * 1.5f);
             LazuliUI.sendMessage(clickedPlayer, MessageFactory.getStealMsg(player, stealScore));
-            LazuliUI.sendMessage(clickedPlayer, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(clickedGHPlayer.getScore(), stealScore));
             LazuliUI.sendMessage(player, MessageFactory.getBeenStolenMsg(clickedPlayer, stealScore));
             LazuliUI.sendMessage(player, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(ghPlayer.getScore(), -stealScore));
             LazuliUI.broadcast(MessageFactory.getStealReflectedBroadcastMsg(player, clickedPlayer, stealScore));
@@ -185,30 +184,34 @@ public class SkillManager implements Listener
             GHPlayer ghPlayer = _gameInstance.getPlayerManager().getGHPlayer(player);
             if(ghPlayer != null)
             {
-                event.setCancelled(true);
+                // Only handle and cancel when using our custom right-click items; otherwise let vanilla behavior (e.g., fishing rod cast) proceed.
                 if(_gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING && !ghPlayer.hasBuff(SilenceBuff.class))
                 {
                     // booster
-                    if(item.isSimilar(ItemFactory.Booster))
+                    if(ItemFactory.isBooster(item))
                     {
+                        event.setCancelled(true);
                         onUseBooster(ghPlayer);
                         item.setAmount(item.getAmount() - 1);
                     }
                     // silence
-                    else if(item.isSimilar(ItemFactory.Silencer))
+                    else if(ItemFactory.isSilencer(item))
                     {
+                        event.setCancelled(true);
                         onUseSilence(ghPlayer);
                         item.setAmount(item.getAmount() - 1);
                     }
                     // reflector
-                    else if(item.isSimilar(ItemFactory.Reflector))
+                    else if(ItemFactory.isReflector(item))
                     {
+                        event.setCancelled(true);
                         onUseCounter(ghPlayer);
                         item.setAmount(item.getAmount() - 1);
                     }
                     // revolution
-                    else if(item.isSimilar(ItemFactory.Revolution))
+                    else if(ItemFactory.isRevolution(item))
                     {
+                        event.setCancelled(true);
                         /*GHPlayer revolutionTarget = _gameInstance.getPlayerManager().getAllGHPlayersSorted().getFirst();
                         ghPlayer.revolutionTimer = _revolutionDuration;
                         ghPlayer.revolutionTarget = revolutionTarget;
@@ -216,11 +219,13 @@ public class SkillManager implements Listener
                         item.setAmount(item.getAmount() - 1);*/
                     }
                     // speed up
-                    else if(item.isSimilar(ItemFactory.SpeedUp))
+                    else if(ItemFactory.isSpeedUp(item))
                     {
+                        event.setCancelled(true);
                         onUseSpeed(ghPlayer);
                         item.setAmount(item.getAmount() - 1);
                     }
+                    // else: do nothing and do not cancel, to allow normal item use such as fishing rods.
                 }
             }
         }
@@ -243,11 +248,32 @@ public class SkillManager implements Listener
                 if(clickedGHPlayer != null)
                 {
                     // steal
-                    if (_gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING && item.isSimilar(ItemFactory.Stealer))
+                    if (_gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING && ItemFactory.isStealer(item))
                     {
                         onUseSteal(ghPlayer, clickedGHPlayer);
                         item.setAmount(item.getAmount() - 1);
                     }
+                }
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerFishEvent(PlayerFishEvent event)
+    {
+        if(event.getState() == PlayerFishEvent.State.CAUGHT_ENTITY)
+        {
+            Entity hookedEntity = event.getCaught();
+            if(hookedEntity instanceof Player hookedPlayer)
+            {
+                Player player = event.getPlayer();
+                GHPlayer ghPlayer = _gameInstance.getPlayerManager().getGHPlayer(player);
+                GHPlayer hookedGHPlayer = _gameInstance.getPlayerManager().getGHPlayer(hookedPlayer);
+                ItemStack item = player.getInventory().getItemInMainHand();
+                if(ghPlayer != null && hookedGHPlayer != null && !ghPlayer.hasBuff(SilenceBuff.class) && ItemFactory.isStealer(item) && _gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING)
+                {
+                    onUseSteal(ghPlayer, hookedGHPlayer);
+                    item.setAmount(item.getAmount() - 1);
                 }
             }
         }
@@ -260,7 +286,7 @@ public class SkillManager implements Listener
         Player player = event.getPlayer();
         Entity attackedEntity = event.getAttacked();
         ItemStack item = player.getInventory().getItemInMainHand();
-        if(item.isSimilar(ItemFactory.Club) && _gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING)
+        if(ItemFactory.isClub(item) && _gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING)
         {
             GHPlayer ghPlayer = _gameInstance.getPlayerManager().getGHPlayer(player);
             if(ghPlayer != null && !ghPlayer.hasBuff(SilenceBuff.class) && attackedEntity instanceof Player attackedPlayer)

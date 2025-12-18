@@ -34,7 +34,7 @@ class IdleState extends State<GameInstance, GHStates>
     {
         for(Player player : MCUtil.GetPlayersWithPermission("op"))
         {
-            if(player.getInventory().getItemInMainHand().isSimilar(ItemFactory.NormalGiftSpawnerSetter))
+            if(ItemFactory.isNormalGiftSpawnerSetter(player.getInventory().getItemInMainHand()))
             {
                 for(Location spawnerLocation : gameInstance.getGiftManager().getNormalSpawners())
                 {
@@ -42,7 +42,7 @@ class IdleState extends State<GameInstance, GHStates>
                 }
                 LazuliUI.sendMessage(player, MessageFactory.getNormalSpawnerCountActionbar(gameInstance.getGiftManager().getNormalSpawnerCount()));
             }
-            else if(player.getInventory().getItemInMainHand().isSimilar(ItemFactory.SpecialGiftSpawnerSetter))
+            else if(ItemFactory.isSpecialGiftSpawnerSetter(player.getInventory().getItemInMainHand()))
             {
                 for(Location spawnerLocation : gameInstance.getGiftManager().getSpecialSpawners())
                 {
@@ -299,4 +299,3 @@ class FinishedState extends State<GameInstance, GHStates>
         }
     }
 }
-

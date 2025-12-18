@@ -1,6 +1,6 @@
 package io.lazysheeep.gifthunting.utils;
 
-import io.lazysheeep.gifthunting.factory.ItemFactory;
+import io.lazysheeep.gifthunting.factory.CustomItems;
 import org.bukkit.inventory.ItemStack;
 import org.spongepowered.configurate.ConfigurationNode;
 
@@ -40,12 +40,12 @@ public class LootTable
         float lootWeight_speedUp = entriesConfigNode.node("speedUp").getFloat();
 
         _lootEntries = List.of(new LootTableEntry[]{
-            new LootTableEntry(ItemFactory.Club, lootWeight_club),
-            new LootTableEntry(ItemFactory.Booster, lootWeight_booster),
-            new LootTableEntry(ItemFactory.Silencer, lootWeight_silencer),
-            new LootTableEntry(ItemFactory.Reflector, lootWeight_reflector),
-            new LootTableEntry(ItemFactory.Revolution, lootWeight_revolution),
-            new LootTableEntry(ItemFactory.SpeedUp, lootWeight_speedUp),
+            new LootTableEntry(CustomItems.CLUB.create(), lootWeight_club),
+            new LootTableEntry(CustomItems.BOOSTER.create(), lootWeight_booster),
+            new LootTableEntry(CustomItems.SILENCER.create(), lootWeight_silencer),
+            new LootTableEntry(CustomItems.REFLECTOR.create(), lootWeight_reflector),
+            new LootTableEntry(CustomItems.REVOLUTION.create(), lootWeight_revolution),
+            new LootTableEntry(CustomItems.SPEED_UP.create(), lootWeight_speedUp),
         });
 
         float totalWeight = 0.0f;

@@ -3,7 +3,7 @@ package io.lazysheeep.gifthunting.game;
 import io.lazysheeep.gifthunting.buffs.CounteringBuff;
 import io.lazysheeep.gifthunting.buffs.SilenceBuff;
 import io.lazysheeep.gifthunting.buffs.SpeedBuff;
-import io.lazysheeep.gifthunting.factory.ItemFactory;
+import io.lazysheeep.gifthunting.factory.CustomItems;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
 import io.lazysheeep.gifthunting.orbs.ScoreOrb;
 import io.lazysheeep.gifthunting.player.GHPlayer;
@@ -188,28 +188,28 @@ public class SkillManager implements Listener
                 if(_gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING && !ghPlayer.hasBuff(SilenceBuff.class))
                 {
                     // booster
-                    if(ItemFactory.isBooster(item))
+                    if(CustomItems.checkItemType(item, CustomItems.BOOSTER))
                     {
                         event.setCancelled(true);
                         onUseBooster(ghPlayer);
                         item.setAmount(item.getAmount() - 1);
                     }
                     // silence
-                    else if(ItemFactory.isSilencer(item))
+                    else if(CustomItems.checkItemType(item, CustomItems.SILENCER))
                     {
                         event.setCancelled(true);
                         onUseSilence(ghPlayer);
                         item.setAmount(item.getAmount() - 1);
                     }
                     // reflector
-                    else if(ItemFactory.isReflector(item))
+                    else if(CustomItems.checkItemType(item, CustomItems.REFLECTOR))
                     {
                         event.setCancelled(true);
                         onUseCounter(ghPlayer);
                         item.setAmount(item.getAmount() - 1);
                     }
                     // revolution
-                    else if(ItemFactory.isRevolution(item))
+                    else if(CustomItems.checkItemType(item, CustomItems.REVOLUTION))
                     {
                         event.setCancelled(true);
                         /*GHPlayer revolutionTarget = _gameInstance.getPlayerManager().getAllGHPlayersSorted().getFirst();
@@ -219,7 +219,7 @@ public class SkillManager implements Listener
                         item.setAmount(item.getAmount() - 1);*/
                     }
                     // speed up
-                    else if(ItemFactory.isSpeedUp(item))
+                    else if(CustomItems.checkItemType(item, CustomItems.SPEED_UP))
                     {
                         event.setCancelled(true);
                         onUseSpeed(ghPlayer);
@@ -248,7 +248,7 @@ public class SkillManager implements Listener
                 if(clickedGHPlayer != null)
                 {
                     // steal
-                    if (_gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING && ItemFactory.isStealer(item))
+                    if (_gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING && CustomItems.checkItemType(item, CustomItems.STEALER))
                     {
                         onUseSteal(ghPlayer, clickedGHPlayer);
                         item.setAmount(item.getAmount() - 1);
@@ -270,7 +270,7 @@ public class SkillManager implements Listener
                 GHPlayer ghPlayer = _gameInstance.getPlayerManager().getGHPlayer(player);
                 GHPlayer hookedGHPlayer = _gameInstance.getPlayerManager().getGHPlayer(hookedPlayer);
                 ItemStack item = player.getInventory().getItemInMainHand();
-                if(ghPlayer != null && hookedGHPlayer != null && !ghPlayer.hasBuff(SilenceBuff.class) && ItemFactory.isStealer(item) && _gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING)
+                if(ghPlayer != null && hookedGHPlayer != null && !ghPlayer.hasBuff(SilenceBuff.class) && CustomItems.checkItemType(item, CustomItems.STEALER) && _gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING)
                 {
                     onUseSteal(ghPlayer, hookedGHPlayer);
                     item.setAmount(item.getAmount() - 1);
@@ -286,7 +286,7 @@ public class SkillManager implements Listener
         Player player = event.getPlayer();
         Entity attackedEntity = event.getAttacked();
         ItemStack item = player.getInventory().getItemInMainHand();
-        if(ItemFactory.isClub(item) && _gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING)
+        if(CustomItems.checkItemType(item, CustomItems.CLUB) && _gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING)
         {
             GHPlayer ghPlayer = _gameInstance.getPlayerManager().getGHPlayer(player);
             if(ghPlayer != null && !ghPlayer.hasBuff(SilenceBuff.class) && attackedEntity instanceof Player attackedPlayer)

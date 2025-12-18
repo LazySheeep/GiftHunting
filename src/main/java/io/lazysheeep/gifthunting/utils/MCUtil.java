@@ -1,10 +1,8 @@
 package io.lazysheeep.gifthunting.utils;
 
-import io.lazysheeep.gifthunting.factory.ItemFactory;
+import io.lazysheeep.gifthunting.factory.CustomItems;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.util.Vector;
@@ -57,7 +55,7 @@ public class MCUtil
         for(int i = 0; i < inventory.getSize(); i ++)
         {
             ItemStack item = inventory.getItem(i);
-            if(item!= null && item.getType() != ItemFactory.Souvenir.getType())
+            if(item!= null && !CustomItems.checkItemType(item, CustomItems.SOUVENIR))
             {
                 inventory.clear(i);
             }

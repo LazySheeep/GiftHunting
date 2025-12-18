@@ -33,7 +33,7 @@ public final class GiftHunting extends JavaPlugin
         _Instance.getLogger().log(level, "[t" + _Instance.getServer().getCurrentTick() + "] " + message);
     }
 
-    private GameInstance _gameInstance;
+    private @Nullable GameInstance _gameInstance;
     private Objective _scoreObjective;
 
     public @Nullable GameInstance getGameInstance()
@@ -79,8 +79,11 @@ public final class GiftHunting extends JavaPlugin
     @Override
     public void onDisable()
     {
-        _gameInstance.switchState(GHStates.IDLE);
-        saveGHConfig();
+        if(_gameInstance != null)
+        {
+            _gameInstance.switchState(GHStates.IDLE);
+            saveGHConfig();
+        }
     }
 
     public void loadGameInstance()

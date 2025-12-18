@@ -140,6 +140,7 @@ public class GHPlayer
         }
 
         _hostPlayer.setSaturation(20.0f);
+        _hostPlayer.setFoodLevel(20);
 
         // update buffs
         for(Buff buff : _buffs.stream().toList())

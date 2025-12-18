@@ -20,6 +20,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;
 
@@ -292,6 +293,7 @@ public class GiftManager implements Listener
         Action action = event.getAction();
         ItemStack item = event.getItem();
         Block clickedBlock = event.getClickedBlock();
+        Vector blockFaceDirection = event.getBlockFace().getDirection();
 
         if (item != null && clickedBlock != null && player.hasPermission("op") && _gameInstance.getCurrentStateEnum() == GHStates.IDLE)
         {
@@ -300,13 +302,13 @@ public class GiftManager implements Listener
             {
                 if (action == Action.RIGHT_CLICK_BLOCK)
                 {
-                    Location newLocation = clickedBlock.getLocation().toCenterLocation().add(0.0f, -0.95f, 0.0f);
+                    Location newLocation = clickedBlock.getLocation().toCenterLocation().add(blockFaceDirection).add(0.0f, -1.95f, 0.0f);
                     addNormalSpawner(newLocation);
                     LazuliUI.sendMessage(player, MessageFactory.getAddGiftSpawnerActionbar());
                 }
                 else if (action == Action.LEFT_CLICK_BLOCK)
                 {
-                    Location location = clickedBlock.getLocation().toCenterLocation().add(0.0f, -0.95f, 0.0f);
+                    Location location = clickedBlock.getLocation().toCenterLocation().add(blockFaceDirection).add(0.0f, -1.95f, 0.0f);
                     if (removeNormalSpawner(location))
                         LazuliUI.sendMessage(player, MessageFactory.getRemoveGiftSpawnerActionbar());
                     event.setCancelled(true);

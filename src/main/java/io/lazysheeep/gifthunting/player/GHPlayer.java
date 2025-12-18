@@ -1,6 +1,7 @@
 package io.lazysheeep.gifthunting.player;
 
 import io.lazysheeep.gifthunting.GiftHunting;
+import io.lazysheeep.gifthunting.buffs.Buff;
 import io.lazysheeep.gifthunting.game.GameInstance;
 import io.lazysheeep.gifthunting.gift.Gift;
 import io.lazysheeep.gifthunting.utils.MCUtil;
@@ -12,6 +13,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
 import java.util.UUID;
 
 public class GHPlayer
@@ -19,13 +21,8 @@ public class GHPlayer
     private Player _hostPlayer;
     private final GameInstance _gameInstance;
     private int _score = 0;
+    private final HashSet<Buff> _buffs = new HashSet<>();
     public int lastClickGiftTime = 0;
-    public boolean isDisciple = false;
-    public int silenceTimer = 0;
-    public int reflectTimer = 0;
-    public int revolutionTimer = 0;
-    public @Nullable GHPlayer revolutionTarget = null;
-    public int speedUpTimer = 0;
 
     public @NotNull Player getPlayer()
     {
@@ -98,16 +95,41 @@ public class GHPlayer
         _gameInstance = gameInstance;
     }
 
+    public void addBuff(@NotNull Buff buff)
+    {
+        _buffs.add(buff);
+        buff.onApply(this);
+    }
+
+    public boolean hasBuff(@NotNull Class<? extends Buff> buffClass)
+    {
+        for(Buff buff : _buffs)
+        {
+            if(buff.getClass() == buffClass)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void removeBuff(@NotNull Class<? extends Buff> buffClass)
+    {
+        for(Buff buff : _buffs)
+        {
+            if(buff.getClass() == buffClass)
+            {
+                buff.onRemove(this);
+                _buffs.remove(buff);
+                return;
+            }
+        }
+    }
+
     public void reset()
     {
         _score = 0;
         lastClickGiftTime = 0;
-        isDisciple = false;
-        silenceTimer = 0;
-        reflectTimer = 0;
-        revolutionTimer = 0;
-        revolutionTarget = null;
-        speedUpTimer = 0;
     }
 
     void tick()
@@ -119,55 +141,18 @@ public class GHPlayer
 
         _hostPlayer.setSaturation(20.0f);
 
-        // disciple effect
-        if(isDisciple)
+        // update buffs
+        for(Buff buff : _buffs.stream().toList())
         {
-            Gift specialGift = GiftHunting.GetPlugin().getGameInstance().getGiftManager().getSpecialGift();
-            if(specialGift != null)
+            if(buff.getRemainingTime() <= 0)
             {
-                MCUtil.SpawnDustLineParticle(_hostPlayer.getLocation().add(0.0, 1.3, 0.0), specialGift.getLocation().add(0.0, -0.3, 0.0), 0.5f, Color.GREEN, 1.0f);
-                _hostPlayer.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 10, 0));
+                buff.onRemove(this);
+                _buffs.remove(buff);
             }
             else
             {
-                isDisciple = false;
+                buff.tick(this);
             }
-        }
-
-        // revolution effect
-        if(revolutionTarget != null && revolutionTimer > 0 && revolutionTimer % 4 == 0)
-        {
-            revolutionTarget.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 10, 0));
-            revolutionTarget.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 10, 0));
-            MCUtil.SpawnDustLineParticle(_hostPlayer.getLocation().add(0.0, 1.3, 0.0), revolutionTarget.getPlayer().getLocation().add(0.0, 1.3, 0.0), 0.5f, Color.RED, 1.0f);
-        }
-
-        // speed up effect
-        if(speedUpTimer > 0 && speedUpTimer % 4 == 0)
-        {
-            _hostPlayer.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 10, 0));
-        }
-
-        // update timer
-        if(silenceTimer > 0)
-        {
-            silenceTimer--;
-        }
-        if(reflectTimer > 0)
-        {
-            reflectTimer--;
-        }
-        if(revolutionTimer > 0)
-        {
-            revolutionTimer--;
-            if(revolutionTimer == 0)
-            {
-                revolutionTarget = null;
-            }
-        }
-        if(speedUpTimer > 0)
-        {
-            speedUpTimer--;
         }
 
         // set display score

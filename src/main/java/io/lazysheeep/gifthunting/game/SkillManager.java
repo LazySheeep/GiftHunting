@@ -1,7 +1,11 @@
 package io.lazysheeep.gifthunting.game;
 
+import io.lazysheeep.gifthunting.buffs.CounteringBuff;
+import io.lazysheeep.gifthunting.buffs.SilenceBuff;
+import io.lazysheeep.gifthunting.buffs.SpeedBuff;
 import io.lazysheeep.gifthunting.factory.ItemFactory;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
+import io.lazysheeep.gifthunting.orbs.ScoreOrb;
 import io.lazysheeep.gifthunting.player.GHPlayer;
 import io.lazysheeep.lazuliui.LazuliUI;
 import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
@@ -46,6 +50,127 @@ public class SkillManager implements Listener
         _speedUpDuration = configNode.node("speedUpDuration").getInt(0);
     }
 
+    private void onUseBooster(GHPlayer ghPlayer)
+    {
+        Player player = ghPlayer.getPlayer();
+        player.setVelocity(player.getVelocity()
+                                 .add(player.getLocation().getDirection().multiply(1.5f))
+                                 .add(new Vector(0.0f, 0.2f, 0.0f)));
+        player.getWorld().playSound(player, Sound.ITEM_FIRECHARGE_USE, SoundCategory.MASTER, 1.0f, 1.0f);
+        player.getWorld().spawnParticle(Particle.EXPLOSION, player.getLocation(), 2, 0.2f, 0.2f, 0.2f, 0.5f);
+    }
+
+    private void onUseSilence(GHPlayer ghPlayer)
+    {
+        Player player = ghPlayer.getPlayer();
+        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ELDER_GUARDIAN_CURSE, SoundCategory.MASTER, 1.0f, 1.0f);
+        for(GHPlayer otherGHPlayer : ghPlayer.getGameInstance().getPlayerManager().getOnlineGHPlayers())
+        {
+            if(otherGHPlayer != ghPlayer && otherGHPlayer.getPlayer().getLocation().distance(player.getLocation()) <= _silenceDistance)
+            {
+                if(!otherGHPlayer.hasBuff(CounteringBuff.class))
+                {
+                    otherGHPlayer.addBuff(new SilenceBuff(_silenceDuration));
+                    Player otherPlayer = otherGHPlayer.getPlayer();
+                    LazuliUI.sendMessage(otherPlayer, MessageFactory.getSilencedActionbarInfix(ghPlayer, _silenceDuration));
+                    otherPlayer.getWorld().spawnParticle(Particle.ANGRY_VILLAGER, otherPlayer.getLocation()
+                                                                                             .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
+                    otherPlayer.getWorld().playSound(otherPlayer.getLocation(), Sound.ENTITY_VILLAGER_NO, SoundCategory.MASTER, 1.0f, 1.0f);
+                }
+                // reflect
+                else
+                {
+                    ghPlayer.addBuff(new SilenceBuff(_silenceDuration * 2));
+                    LazuliUI.sendMessage(player, MessageFactory.getSilencedActionbarInfix(otherGHPlayer, _silenceDuration * 2));
+                    player.getWorld().spawnParticle(Particle.ANGRY_VILLAGER, player.getLocation()
+                                                                                   .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
+                    player.getWorld().playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, SoundCategory.MASTER, 1.0f, 1.0f);
+                    Player otherPlayer = otherGHPlayer.getPlayer();
+                    otherPlayer.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, otherPlayer.getLocation()
+                                                                                             .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
+                    otherPlayer.getWorld().playSound(otherPlayer.getLocation(), Sound.BLOCK_ANVIL_LAND, SoundCategory.MASTER, 1.0f, 1.0f);
+                    otherGHPlayer.removeBuff(CounteringBuff.class);
+                }
+            }
+        }
+    }
+
+    private void onUseCounter(GHPlayer ghPlayer)
+    {
+        Player player = ghPlayer.getPlayer();
+        ghPlayer.addBuff(new CounteringBuff(_reflectDuration));
+        player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, SoundCategory.MASTER, 1.0f, 1.0f);
+    }
+
+    private void onUseSpeed(GHPlayer ghPlayer)
+    {
+        Player player = ghPlayer.getPlayer();
+        ghPlayer.addBuff(new SpeedBuff(_speedUpDuration));
+        player.getWorld().playSound(player.getLocation(), Sound.BLOCK_TRIAL_SPAWNER_OMINOUS_ACTIVATE, SoundCategory.MASTER, 1.0f, 0.7f);
+    }
+
+    private void onUseSteal(GHPlayer ghPlayer, GHPlayer clickedGHPlayer)
+    {
+        Player player = ghPlayer.getPlayer();
+        Player clickedPlayer = clickedGHPlayer.getPlayer();
+        int stealScore;
+        if(!clickedGHPlayer.hasBuff(CounteringBuff.class))
+        {
+            stealScore = (int) (_stealerScorePercentage * clickedGHPlayer.getScore());
+            LazuliUI.sendMessage(player, MessageFactory.getStealMsg(clickedPlayer, stealScore));
+            LazuliUI.sendMessage(player, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(ghPlayer.getScore(), stealScore));
+            LazuliUI.sendMessage(clickedPlayer, MessageFactory.getBeenStolenMsg(player, stealScore));
+            LazuliUI.sendMessage(clickedPlayer, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(clickedGHPlayer.getScore(), -stealScore));
+            LazuliUI.broadcast(MessageFactory.getStealBroadcastMsg(player, clickedPlayer, stealScore));
+            clickedPlayer.getWorld().spawnParticle(Particle.ANGRY_VILLAGER, clickedPlayer.getLocation()
+                                                                                         .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
+            clickedPlayer.getWorld().playSound(clickedPlayer.getLocation(), Sound.ENTITY_VILLAGER_NO, SoundCategory.MASTER, 1.0f, 1.0f);
+            clickedGHPlayer.addScore(-stealScore);
+            _gameInstance.getOrbManager().addOrb(new ScoreOrb(stealScore, ghPlayer, clickedGHPlayer.getBodyLocation()));
+        }
+        // reflect
+        else
+        {
+            stealScore = (int) (_stealerScorePercentage * ghPlayer.getScore() * 1.5f);
+            LazuliUI.sendMessage(clickedPlayer, MessageFactory.getStealMsg(player, stealScore));
+            LazuliUI.sendMessage(clickedPlayer, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(clickedGHPlayer.getScore(), stealScore));
+            LazuliUI.sendMessage(player, MessageFactory.getBeenStolenMsg(clickedPlayer, stealScore));
+            LazuliUI.sendMessage(player, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(ghPlayer.getScore(), -stealScore));
+            LazuliUI.broadcast(MessageFactory.getStealReflectedBroadcastMsg(player, clickedPlayer, stealScore));
+            player.getWorld().spawnParticle(Particle.ANGRY_VILLAGER, clickedPlayer.getLocation()
+                                                                                  .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
+            player.getWorld().playSound(clickedPlayer.getLocation(), Sound.ENTITY_VILLAGER_NO, SoundCategory.MASTER, 1.0f, 1.0f);
+            clickedPlayer.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, clickedPlayer.getLocation()
+                                                                                         .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
+            clickedPlayer.getWorld().playSound(clickedPlayer.getLocation(), Sound.BLOCK_ANVIL_LAND, SoundCategory.MASTER, 1.0f, 1.0f);
+            ghPlayer.addScore(-stealScore);
+            _gameInstance.getOrbManager().addOrb(new ScoreOrb(stealScore, clickedGHPlayer, ghPlayer.getBodyLocation()));
+            clickedGHPlayer.removeBuff(CounteringBuff.class);
+        }
+    }
+
+    private void onUseClub(GHPlayer ghPlayer, GHPlayer attackedGHPlayer)
+    {
+        Player player = ghPlayer.getPlayer();
+        Player attackedPlayer = attackedGHPlayer.getPlayer();
+        if(!attackedGHPlayer.hasBuff(CounteringBuff.class))
+        {
+            Vector knockBack = attackedPlayer.getLocation().toVector().subtract(player.getLocation().toVector()).normalize().multiply(2.0f).add(new Vector(0.0f, 0.5f, 0.0f));
+            attackedPlayer.setVelocity(attackedPlayer.getVelocity().add(knockBack));
+            player.getWorld().playSound(player, Sound.ENTITY_ITEM_BREAK, SoundCategory.MASTER, 1.0f, 1.0f);
+        }
+        else
+        {
+            Vector knockBack = attackedPlayer.getLocation().toVector().subtract(player.getLocation().toVector()).normalize().multiply(-3.0f).add(new Vector(0.0f, 0.5f, 0.0f));
+            player.setVelocity(player.getVelocity().add(knockBack));
+            player.getWorld().playSound(player, Sound.ENTITY_ITEM_BREAK, SoundCategory.MASTER, 1.0f, 1.0f);
+            attackedPlayer.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, attackedPlayer.getLocation()
+                                                                                           .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
+            attackedPlayer.getWorld().playSound(attackedPlayer, Sound.BLOCK_ANVIL_LAND, SoundCategory.MASTER, 1.0f, 1.0f);
+            attackedGHPlayer.removeBuff(CounteringBuff.class);
+        }
+    }
+
     // right click
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteract(PlayerInteractEvent event)
@@ -61,74 +186,39 @@ public class SkillManager implements Listener
             if(ghPlayer != null)
             {
                 event.setCancelled(true);
-                if(_gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING && ghPlayer.silenceTimer == 0)
+                if(_gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING && !ghPlayer.hasBuff(SilenceBuff.class))
                 {
                     // booster
                     if(item.isSimilar(ItemFactory.Booster))
                     {
-                        player.setVelocity(player.getVelocity()
-                                                 .add(player.getLocation().getDirection().multiply(1.5f))
-                                                 .add(new Vector(0.0f, 0.2f, 0.0f)));
+                        onUseBooster(ghPlayer);
                         item.setAmount(item.getAmount() - 1);
-                        player.getWorld().playSound(player, Sound.ITEM_FIRECHARGE_USE, SoundCategory.MASTER, 1.0f, 1.0f);
-                        player.getWorld().spawnParticle(Particle.EXPLOSION, player.getLocation(), 2, 0.2f, 0.2f, 0.2f, 0.5f);
                     }
                     // silence
                     else if(item.isSimilar(ItemFactory.Silencer))
                     {
-                        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ELDER_GUARDIAN_CURSE, SoundCategory.MASTER, 1.0f, 1.0f);
-                        for(GHPlayer otherGHPlayer : _gameInstance.getPlayerManager().getOnlineGHPlayers())
-                        {
-                            if(otherGHPlayer != ghPlayer && otherGHPlayer.getPlayer().getLocation().distance(player.getLocation()) <= _silenceDistance)
-                            {
-                                if(otherGHPlayer.reflectTimer == 0)
-                                {
-                                    otherGHPlayer.silenceTimer = _silenceDuration;
-                                    Player otherPlayer = otherGHPlayer.getPlayer();
-                                    LazuliUI.sendMessage(otherPlayer, MessageFactory.getSilencedActionbarInfix(ghPlayer, _silenceDuration));
-                                    otherPlayer.getWorld().spawnParticle(Particle.ANGRY_VILLAGER, otherPlayer.getLocation()
-                                                                                                             .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
-                                    otherPlayer.getWorld().playSound(otherPlayer.getLocation(), Sound.ENTITY_VILLAGER_NO, SoundCategory.MASTER, 1.0f, 1.0f);
-                                }
-                                // reflect
-                                else
-                                {
-                                    ghPlayer.silenceTimer = _silenceDuration * 2;
-                                    LazuliUI.sendMessage(player, MessageFactory.getSilencedActionbarInfix(otherGHPlayer, _silenceDuration * 2));
-                                    player.getWorld().spawnParticle(Particle.ANGRY_VILLAGER, player.getLocation()
-                                                                                                   .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
-                                    player.getWorld().playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, SoundCategory.MASTER, 1.0f, 1.0f);
-                                    Player otherPlayer = otherGHPlayer.getPlayer();
-                                    otherPlayer.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, otherPlayer.getLocation()
-                                                                                                             .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
-                                    otherPlayer.getWorld().playSound(otherPlayer.getLocation(), Sound.BLOCK_ANVIL_LAND, SoundCategory.MASTER, 1.0f, 1.0f);
-                                    otherGHPlayer.reflectTimer = 0;
-                                }
-                            }
-                        }
+                        onUseSilence(ghPlayer);
                         item.setAmount(item.getAmount() - 1);
                     }
                     // reflector
                     else if(item.isSimilar(ItemFactory.Reflector))
                     {
-                        ghPlayer.reflectTimer = _reflectDuration;
-                        player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, SoundCategory.MASTER, 1.0f, 1.0f);
+                        onUseCounter(ghPlayer);
                         item.setAmount(item.getAmount() - 1);
                     }
                     // revolution
                     else if(item.isSimilar(ItemFactory.Revolution))
                     {
-                        GHPlayer revolutionTarget = _gameInstance.getPlayerManager().getAllGHPlayersSorted().getFirst();
+                        /*GHPlayer revolutionTarget = _gameInstance.getPlayerManager().getAllGHPlayersSorted().getFirst();
                         ghPlayer.revolutionTimer = _revolutionDuration;
                         ghPlayer.revolutionTarget = revolutionTarget;
                         LazuliUI.broadcast(MessageFactory.getRevolutionBroadcastMsg(ghPlayer, revolutionTarget));
-                        item.setAmount(item.getAmount() - 1);
+                        item.setAmount(item.getAmount() - 1);*/
                     }
                     // speed up
                     else if(item.isSimilar(ItemFactory.SpeedUp))
                     {
-                        ghPlayer.speedUpTimer = _speedUpDuration;
-                        player.getWorld().playSound(player.getLocation(), Sound.BLOCK_TRIAL_SPAWNER_OMINOUS_ACTIVATE, SoundCategory.MASTER, 1.0f, 0.7f);
+                        onUseSpeed(ghPlayer);
                         item.setAmount(item.getAmount() - 1);
                     }
                 }
@@ -144,7 +234,7 @@ public class SkillManager implements Listener
         Entity clickedEntity = event.getRightClicked();
         ItemStack item = player.getInventory().getItem(event.getHand());
         GHPlayer ghPlayer = _gameInstance.getPlayerManager().getGHPlayer(player);
-        if(ghPlayer != null && ghPlayer.silenceTimer == 0 && _gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING)
+        if(ghPlayer != null && !ghPlayer.hasBuff(SilenceBuff.class) && _gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING)
         {
             // entity clicked is player
             if(clickedEntity instanceof Player clickedPlayer)
@@ -155,40 +245,7 @@ public class SkillManager implements Listener
                     // steal
                     if (_gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING && item.isSimilar(ItemFactory.Stealer))
                     {
-                        int stealScore;
-                        if(clickedGHPlayer.reflectTimer == 0)
-                        {
-                            stealScore = (int) (_stealerScorePercentage * clickedGHPlayer.getScore());
-                            LazuliUI.sendMessage(player, MessageFactory.getStealMsg(clickedPlayer, stealScore));
-                            LazuliUI.sendMessage(player, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(ghPlayer.getScore(), stealScore));
-                            LazuliUI.sendMessage(clickedPlayer, MessageFactory.getBeenStolenMsg(player, stealScore));
-                            LazuliUI.sendMessage(clickedPlayer, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(clickedGHPlayer.getScore(), -stealScore));
-                            LazuliUI.broadcast(MessageFactory.getStealBroadcastMsg(player, clickedPlayer, stealScore));
-                            clickedPlayer.getWorld().spawnParticle(Particle.ANGRY_VILLAGER, clickedPlayer.getLocation()
-                                                                                                         .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
-                            clickedPlayer.getWorld().playSound(clickedPlayer.getLocation(), Sound.ENTITY_VILLAGER_NO, SoundCategory.MASTER, 1.0f, 1.0f);
-                            ghPlayer.addScore(stealScore);
-                            clickedGHPlayer.addScore(-stealScore);
-                        }
-                        // reflect
-                        else
-                        {
-                            stealScore = (int) (_stealerScorePercentage * ghPlayer.getScore() * 1.5f);
-                            LazuliUI.sendMessage(clickedPlayer, MessageFactory.getStealMsg(player, stealScore));
-                            LazuliUI.sendMessage(clickedPlayer, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(clickedGHPlayer.getScore(), stealScore));
-                            LazuliUI.sendMessage(player, MessageFactory.getBeenStolenMsg(clickedPlayer, stealScore));
-                            LazuliUI.sendMessage(player, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(ghPlayer.getScore(), -stealScore));
-                            LazuliUI.broadcast(MessageFactory.getStealReflectedBroadcastMsg(player, clickedPlayer, stealScore));
-                            player.getWorld().spawnParticle(Particle.ANGRY_VILLAGER, clickedPlayer.getLocation()
-                                                                                                         .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
-                            player.getWorld().playSound(clickedPlayer.getLocation(), Sound.ENTITY_VILLAGER_NO, SoundCategory.MASTER, 1.0f, 1.0f);
-                            clickedPlayer.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, clickedPlayer.getLocation()
-                                                                                                     .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
-                            clickedPlayer.getWorld().playSound(clickedPlayer.getLocation(), Sound.BLOCK_ANVIL_LAND, SoundCategory.MASTER, 1.0f, 1.0f);
-                            ghPlayer.addScore(-stealScore);
-                            clickedGHPlayer.addScore(stealScore);
-                            clickedGHPlayer.reflectTimer = 0;
-                        }
+                        onUseSteal(ghPlayer, clickedGHPlayer);
                         item.setAmount(item.getAmount() - 1);
                     }
                 }
@@ -206,27 +263,12 @@ public class SkillManager implements Listener
         if(item.isSimilar(ItemFactory.Club) && _gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING)
         {
             GHPlayer ghPlayer = _gameInstance.getPlayerManager().getGHPlayer(player);
-            if(ghPlayer != null && ghPlayer.silenceTimer == 0 && attackedEntity instanceof Player attackedPlayer)
+            if(ghPlayer != null && !ghPlayer.hasBuff(SilenceBuff.class) && attackedEntity instanceof Player attackedPlayer)
             {
                 GHPlayer attackedGHPlayer = _gameInstance.getPlayerManager().getGHPlayer(attackedPlayer);
                 if(attackedGHPlayer != null)
                 {
-                    if(attackedGHPlayer.reflectTimer == 0)
-                    {
-                        Vector knockBack = attackedPlayer.getLocation().toVector().subtract(player.getLocation().toVector()).normalize().multiply(2.0f).add(new Vector(0.0f, 0.5f, 0.0f));
-                        attackedPlayer.setVelocity(attackedPlayer.getVelocity().add(knockBack));
-                        player.getWorld().playSound(player, Sound.ENTITY_ITEM_BREAK, SoundCategory.MASTER, 1.0f, 1.0f);
-                    }
-                    else
-                    {
-                        Vector knockBack = attackedPlayer.getLocation().toVector().subtract(player.getLocation().toVector()).normalize().multiply(-3.0f).add(new Vector(0.0f, 0.5f, 0.0f));
-                        player.setVelocity(player.getVelocity().add(knockBack));
-                        player.getWorld().playSound(player, Sound.ENTITY_ITEM_BREAK, SoundCategory.MASTER, 1.0f, 1.0f);
-                        attackedPlayer.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, attackedPlayer.getLocation()
-                                                                                                         .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
-                        attackedPlayer.getWorld().playSound(attackedPlayer, Sound.BLOCK_ANVIL_LAND, SoundCategory.MASTER, 1.0f, 1.0f);
-                        attackedGHPlayer.reflectTimer = 0;
-                    }
+                    onUseClub(ghPlayer, attackedGHPlayer);
                     item.setAmount(item.getAmount() - 1);
                 }
             }

@@ -4,6 +4,8 @@ package io.lazysheeep.gifthunting.gift;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
 import io.lazysheeep.gifthunting.GiftHunting;
+import io.lazysheeep.gifthunting.buffs.SilenceBuff;
+import io.lazysheeep.gifthunting.buffs.SpeedBuff;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
 import io.lazysheeep.gifthunting.orbs.ItemOrb;
 import io.lazysheeep.gifthunting.orbs.ScoreOrb;
@@ -92,12 +94,12 @@ public class Gift
 
     public void clicked(GHPlayer ghPlayer)
     {
-        if(ghPlayer.silenceTimer > 0)
+        if(ghPlayer.hasBuff(SilenceBuff.class))
         {
             return;
         }
 
-        if(ghPlayer.speedUpTimer > 0)
+        if(ghPlayer.hasBuff(SpeedBuff.class))
         {
             this._clicksToNextFetch -= 2;
             if(this._clicksToNextFetch < 0)

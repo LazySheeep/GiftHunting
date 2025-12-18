@@ -180,7 +180,7 @@ class ProgressingState extends State<GameInstance, GHStates>
             }
         }
 
-        if(_discipleBirthTimer != -1)
+        /*if(_discipleBirthTimer != -1)
         {
             _discipleBirthTimer--;
             if(_discipleBirthTimer == 0)
@@ -195,7 +195,7 @@ class ProgressingState extends State<GameInstance, GHStates>
                 }
                 _discipleBirthTimer = -1;
             }
-        }
+        }*/
 
         int stealerGiveScore = (int)(gameInstance.getVictoryScore() * gameInstance.getStealerGiveWhenHighestScore());
         if(_stealerGiveTimer == -1)

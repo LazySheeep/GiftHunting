@@ -1,7 +1,7 @@
 package io.lazysheeep.gifthunting.game;
 
 import io.lazysheeep.gifthunting.GiftHunting;
-import io.lazysheeep.gifthunting.factory.CustomItems;
+import io.lazysheeep.gifthunting.factory.CustomItem;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
 import io.lazysheeep.gifthunting.gift.Gift;
 import io.lazysheeep.gifthunting.player.GHPlayer;
@@ -33,7 +33,7 @@ class IdleState extends State<GameInstance, GHStates>
     {
         for(Player player : MCUtil.GetPlayersWithPermission("op"))
         {
-            if(CustomItems.checkItemType(player.getInventory().getItemInMainHand(), CustomItems.NORMAL_GIFT_SPAWNER_SETTER))
+            if(CustomItem.checkItem(player.getInventory().getItemInMainHand()) == CustomItem.NORMAL_GIFT_SPAWNER_SETTER)
             {
                 for(Location spawnerLocation : gameInstance.getGiftManager().getNormalSpawners())
                 {
@@ -41,7 +41,7 @@ class IdleState extends State<GameInstance, GHStates>
                 }
                 LazuliUI.sendMessage(player, MessageFactory.getNormalSpawnerCountActionbar(gameInstance.getGiftManager().getNormalSpawnerCount()));
             }
-            else if(CustomItems.checkItemType(player.getInventory().getItemInMainHand(), CustomItems.SPECIAL_GIFT_SPAWNER_SETTER))
+            else if(CustomItem.checkItem(player.getInventory().getItemInMainHand()) == CustomItem.SPECIAL_GIFT_SPAWNER_SETTER)
             {
                 for(Location spawnerLocation : gameInstance.getGiftManager().getSpecialSpawners())
                 {
@@ -215,7 +215,7 @@ class ProgressingState extends State<GameInstance, GHStates>
                 for(GHPlayer ghPlayer : gameInstance.getPlayerManager().getOnlineGHPlayers())
                 {
                     if(ghPlayer.getScore() < stealerGiveScore)
-                        MCUtil.GiveItem(ghPlayer.getPlayer(), CustomItems.STEALER.create());
+                        MCUtil.GiveItem(ghPlayer.getPlayer(), CustomItem.STEALER.create());
                 }
                 LazuliUI.broadcast(MessageFactory.getGiveStealerMsg(stealerGiveScore));
                 _stealerGiveTimer = -1;
@@ -293,7 +293,7 @@ class FinishedState extends State<GameInstance, GHStates>
         {
             GHPlayer ghPlayer = ghPlayers.get(i);
             Player player = ghPlayer.getPlayer();
-            CustomItems.UpdateSouvenir(player, i + 1, ghPlayers.size(), ghPlayer.getScore());
+            CustomItem.UpdateSouvenir(player, i + 1, ghPlayers.size(), ghPlayer.getScore());
             player.playSound(player, Sound.ENTITY_ITEM_PICKUP, SoundCategory.MASTER, 1.0f, 1.0f);
         }
     }

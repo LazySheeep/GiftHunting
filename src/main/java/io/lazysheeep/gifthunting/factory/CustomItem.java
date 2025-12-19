@@ -20,8 +20,9 @@ import java.util.List;
 import java.util.UUID;
 
 import io.lazysheeep.gifthunting.GiftHunting;
+import org.jetbrains.annotations.Nullable;
 
-public enum CustomItems
+public enum CustomItem
 {
     NORMAL_GIFT_SPAWNER_SETTER("normal_gift_spawner_setter")
     {
@@ -210,31 +211,43 @@ public enum CustomItems
             });
             return it;
         }
+    },
+    BIND("bind")
+    {
+        @Override public ItemStack create() {
+            ItemStack it = new ItemStack(Material.LEAD, 1);
+            Component displayName = Component.text("束缚", NamedTextColor.LIGHT_PURPLE);
+            List<Component> lore = new ArrayList<>();
+            lore.add(Component.text("使目标在一段时间内无法移动", NamedTextColor.AQUA));
+            lore.add(Component.text("右键玩家使用", NamedTextColor.YELLOW));
+            it.editMeta(meta -> {
+                meta.displayName(displayName);
+                meta.lore(lore);
+                meta.addEnchant(Enchantment.UNBREAKING, 1, true);
+                setTypeTag(meta, this);
+            });
+            return it;
+        }
     };
 
     public final String id;
 
-    CustomItems(String id) { this.id = id; }
+    CustomItem(String id) { this.id = id; }
 
-    public static CustomItems fromId(String id) {
+    public static @Nullable CustomItem fromId(String id)
+    {
         if(id == null) return null;
-        for(CustomItems item : values()) if(item.id.equals(id)) return item;
+        for(CustomItem item : values()) if(item.id.equals(id)) return item;
         return null;
     }
 
     public ItemStack create() { return new ItemStack(Material.STONE); }
 
-    public static CustomItems getTypeTag(ItemStack item)
+    public static @Nullable CustomItem checkItem(ItemStack item)
     {
         if(item == null || !item.hasItemMeta()) return null;
         String id = item.getItemMeta().getPersistentDataContainer().get(ITEM_KEY, PersistentDataType.STRING);
-        return CustomItems.fromId(id);
-    }
-
-    public static boolean checkItemType(ItemStack item, CustomItems type)
-    {
-        CustomItems v = getTypeTag(item);
-        return v != null && v == type;
+        return CustomItem.fromId(id);
     }
 
     public static void UpdateSouvenir(Player player, int rank, int totalPlayer, int score)
@@ -244,7 +257,7 @@ public enum CustomItems
         ItemStack playerSouvenir = null;
         for(ItemStack item : inventory)
         {
-            if(item != null && checkItemType(item, CustomItems.SOUVENIR))
+            if(item != null && checkItem(item) == CustomItem.SOUVENIR)
             {
                 playerSouvenir = item;
                 break;
@@ -252,10 +265,10 @@ public enum CustomItems
         }
         if(playerSouvenir == null)
         {
-            inventory.addItem(CustomItems.SOUVENIR.create());
+            inventory.addItem(CustomItem.SOUVENIR.create());
             for(ItemStack item : inventory)
             {
-                if(item != null && checkItemType(item, CustomItems.SOUVENIR))
+                if(item != null && checkItem(item) == CustomItem.SOUVENIR)
                 {
                     playerSouvenir = item;
                     break;
@@ -285,7 +298,7 @@ public enum CustomItems
 
     private static final NamespacedKey ITEM_KEY = new NamespacedKey(GiftHunting.GetPlugin(), "gifthunting_item");
 
-    private static void setTypeTag(ItemMeta meta, CustomItems type)
+    private static void setTypeTag(ItemMeta meta, CustomItem type)
     {
         meta.getPersistentDataContainer().set(ITEM_KEY, PersistentDataType.STRING, type.id);
     }

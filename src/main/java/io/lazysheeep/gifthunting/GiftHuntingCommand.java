@@ -2,7 +2,7 @@ package io.lazysheeep.gifthunting;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.*;
-import io.lazysheeep.gifthunting.factory.CustomItems;
+import io.lazysheeep.gifthunting.factory.CustomItem;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
 import io.lazysheeep.gifthunting.game.GHStates;
 import io.lazysheeep.gifthunting.game.GameInstance;
@@ -99,77 +99,75 @@ public class GiftHuntingCommand extends BaseCommand
         }
     }
 
-    @Subcommand("get")
-    public class GetCommand extends BaseCommand
+    @Subcommand("item")
+    public class ItemCommand extends BaseCommand
     {
         @Subcommand("normalSetter")
         @Description("Get normal gift spawn setter")
         public void onNormalSetter(Player senderPlayer)
         {
-            senderPlayer.getInventory().addItem(CustomItems.NORMAL_GIFT_SPAWNER_SETTER.create());
+            senderPlayer.getInventory().addItem(CustomItem.NORMAL_GIFT_SPAWNER_SETTER.create());
         }
 
         @Subcommand("specialSetter")
         @Description("Get special gift spawn setter")
         public void onSpecialSetter(Player senderPlayer)
         {
-            senderPlayer.getInventory().addItem(CustomItems.SPECIAL_GIFT_SPAWNER_SETTER.create());
+            senderPlayer.getInventory().addItem(CustomItem.SPECIAL_GIFT_SPAWNER_SETTER.create());
         }
 
         @Subcommand("booster")
-        @Description("Get booster")
         public void onBooster(Player senderPlayer)
         {
-            senderPlayer.getInventory().addItem(CustomItems.BOOSTER.create());
+            senderPlayer.getInventory().addItem(CustomItem.BOOSTER.create());
         }
 
         @Subcommand("club")
-        @Description("Get club")
         public void onClub(Player senderPlayer)
         {
-            senderPlayer.getInventory().addItem(CustomItems.CLUB.create());
+            senderPlayer.getInventory().addItem(CustomItem.CLUB.create());
         }
 
         @Subcommand("stealer")
-        @Description("Get stealer")
         public void onStealer(Player senderPlayer)
         {
-            senderPlayer.getInventory().addItem(CustomItems.STEALER.create());
+            senderPlayer.getInventory().addItem(CustomItem.STEALER.create());
         }
 
         @Subcommand("silencer")
-        @Description("Get silencer")
         public void onSilencer(Player senderPlayer)
         {
-            senderPlayer.getInventory().addItem(CustomItems.SILENCER.create());
+            senderPlayer.getInventory().addItem(CustomItem.SILENCER.create());
         }
 
-        @Subcommand("reflector")
-        @Description("Get reflector")
-        public void onReflector(Player senderPlayer)
+        @Subcommand("counter")
+        public void onCounter(Player senderPlayer)
         {
-            senderPlayer.getInventory().addItem(CustomItems.COUNTER.create());
+            senderPlayer.getInventory().addItem(CustomItem.COUNTER.create());
         }
 
         @Subcommand("revolution")
-        @Description("Get revolution")
         public void onRevolution(Player senderPlayer)
         {
-            senderPlayer.getInventory().addItem(CustomItems.REVOLUTION.create());
+            senderPlayer.getInventory().addItem(CustomItem.REVOLUTION.create());
         }
 
-        @Subcommand("speedup")
-        @Description("Get speedup")
-        public void onSpeedup(Player senderPlayer)
+        @Subcommand("speed")
+        public void onSpeed(Player senderPlayer)
         {
-            senderPlayer.getInventory().addItem(CustomItems.SPEED.create());
+            senderPlayer.getInventory().addItem(CustomItem.SPEED.create());
+        }
+
+        @Subcommand("bind")
+        public void onBind(Player senderPlayer)
+        {
+            senderPlayer.getInventory().addItem(CustomItem.BIND.create());
         }
 
         @Subcommand("souvenir")
-        @Description("Get souvenir")
         public void onSouvenir(Player senderPlayer)
         {
-            senderPlayer.getInventory().addItem(CustomItems.SOUVENIR.create());
+            senderPlayer.getInventory().addItem(CustomItem.SOUVENIR.create());
         }
     }
 

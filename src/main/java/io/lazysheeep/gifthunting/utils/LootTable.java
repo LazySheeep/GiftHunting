@@ -1,7 +1,7 @@
 package io.lazysheeep.gifthunting.utils;
 
 import io.lazysheeep.gifthunting.GiftHunting;
-import io.lazysheeep.gifthunting.factory.CustomItems;
+import io.lazysheeep.gifthunting.factory.CustomItem;
 import org.bukkit.inventory.ItemStack;
 import org.spongepowered.configurate.ConfigurationNode;
 
@@ -47,7 +47,7 @@ public class LootTable
                     GiftHunting.Log(Level.WARNING, "LootTable: loot entry missing id, skipped.");
                     continue;
                 }
-                CustomItems itemType = CustomItems.fromId(id);
+                CustomItem itemType = CustomItem.fromId(id);
                 if (itemType == null)
                 {
                     GiftHunting.Log(Level.WARNING, "LootTable: unknown item id '" + id + "', skipped.");

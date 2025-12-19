@@ -1,9 +1,10 @@
 package io.lazysheeep.gifthunting.game;
 
 import io.lazysheeep.gifthunting.buffs.CounteringBuff;
+import io.lazysheeep.gifthunting.buffs.BindBuff;
 import io.lazysheeep.gifthunting.buffs.SilenceBuff;
 import io.lazysheeep.gifthunting.buffs.SpeedBuff;
-import io.lazysheeep.gifthunting.factory.CustomItems;
+import io.lazysheeep.gifthunting.factory.CustomItem;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
 import io.lazysheeep.gifthunting.orbs.ScoreOrb;
 import io.lazysheeep.gifthunting.player.GHPlayer;
@@ -21,6 +22,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import org.spongepowered.configurate.ConfigurationNode;
@@ -30,9 +32,10 @@ public class SkillManager implements Listener
     private float _stealerScorePercentage;
     private int _silenceDuration;
     private float _silenceDistance;
-    private int _reflectDuration;
+    private int _counterDuration;
     private int _revolutionDuration;
-    private int _speedUpDuration;
+    private int _speedDuration;
+    private int _bindDuration;
 
     private final GameInstance _gameInstance;
 
@@ -46,9 +49,10 @@ public class SkillManager implements Listener
         _stealerScorePercentage = configNode.node("stealerScorePercentage").getFloat(0.0f);
         _silenceDuration = configNode.node("silenceDuration").getInt(0);
         _silenceDistance = configNode.node("silenceDistance").getFloat(0.0f);
-        _reflectDuration = configNode.node("reflectDuration").getInt(0);
+        _counterDuration = configNode.node("counterDuration").getInt(0);
         _revolutionDuration = configNode.node("revolutionDuration").getInt(0);
-        _speedUpDuration = configNode.node("speedUpDuration").getInt(0);
+        _speedDuration = configNode.node("speedDuration").getInt(0);
+        _bindDuration = configNode.node("bindDuration").getInt(0);
     }
 
     private void onUseBooster(GHPlayer ghPlayer)
@@ -78,7 +82,6 @@ public class SkillManager implements Listener
                                                                                              .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
                     otherPlayer.getWorld().playSound(otherPlayer.getLocation(), Sound.ENTITY_VILLAGER_NO, SoundCategory.MASTER, 1.0f, 1.0f);
                 }
-                // reflect
                 else
                 {
                     ghPlayer.addBuff(new SilenceBuff(_silenceDuration * 2));
@@ -99,14 +102,14 @@ public class SkillManager implements Listener
     private void onUseCounter(GHPlayer ghPlayer)
     {
         Player player = ghPlayer.getPlayer();
-        ghPlayer.addBuff(new CounteringBuff(_reflectDuration));
+        ghPlayer.addBuff(new CounteringBuff(_counterDuration));
         player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, SoundCategory.MASTER, 1.0f, 1.0f);
     }
 
     private void onUseSpeed(GHPlayer ghPlayer)
     {
         Player player = ghPlayer.getPlayer();
-        ghPlayer.addBuff(new SpeedBuff(_speedUpDuration));
+        ghPlayer.addBuff(new SpeedBuff(_speedDuration));
         player.getWorld().playSound(player.getLocation(), Sound.BLOCK_TRIAL_SPAWNER_OMINOUS_ACTIVATE, SoundCategory.MASTER, 1.0f, 0.7f);
     }
 
@@ -128,7 +131,6 @@ public class SkillManager implements Listener
             clickedGHPlayer.addScore(-stealScore);
             _gameInstance.getOrbManager().addOrb(new ScoreOrb(stealScore, ghPlayer, clickedGHPlayer.getBodyLocation()));
         }
-        // reflect
         else
         {
             stealScore = (int) (_stealerScorePercentage * ghPlayer.getScore() * 1.5f);
@@ -170,68 +172,67 @@ public class SkillManager implements Listener
         }
     }
 
-    // right click
+    private void onUseBind(GHPlayer ghPlayer, GHPlayer clickedGHPlayer)
+    {
+        if(!clickedGHPlayer.hasBuff(CounteringBuff.class))
+        {
+            clickedGHPlayer.addBuff(new BindBuff(_bindDuration));
+        }
+    }
+
+    // right click use items
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteract(PlayerInteractEvent event)
     {
-        // get event attributes
         Player player = event.getPlayer();
+        GHPlayer ghPlayer = _gameInstance.getPlayerManager().getGHPlayer(player);
         Action action = event.getAction();
         ItemStack item = event.getItem();
+        CustomItem customItem = CustomItem.checkItem(item);
 
-        if(item != null && action.isRightClick())
+        if(customItem != null && action.isRightClick() && ghPlayer != null)
         {
-            GHPlayer ghPlayer = _gameInstance.getPlayerManager().getGHPlayer(player);
-            if(ghPlayer != null)
+            if(ghPlayer.hasBuff(SilenceBuff.class) || ghPlayer.hasBuff(BindBuff.class))
             {
-                // Only handle and cancel when using our custom right-click items; otherwise let vanilla behavior (e.g., fishing rod cast) proceed.
-                if(_gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING && !ghPlayer.hasBuff(SilenceBuff.class))
+                event.setCancelled(true);
+                return;
+            }
+
+            switch (customItem)
+            {
+                case BOOSTER ->
                 {
-                    // booster
-                    if(CustomItems.checkItemType(item, CustomItems.BOOSTER))
-                    {
-                        event.setCancelled(true);
-                        onUseBooster(ghPlayer);
-                        item.setAmount(item.getAmount() - 1);
-                    }
-                    // silence
-                    else if(CustomItems.checkItemType(item, CustomItems.SILENCER))
-                    {
-                        event.setCancelled(true);
-                        onUseSilence(ghPlayer);
-                        item.setAmount(item.getAmount() - 1);
-                    }
-                    // reflector
-                    else if(CustomItems.checkItemType(item, CustomItems.COUNTER))
-                    {
-                        event.setCancelled(true);
-                        onUseCounter(ghPlayer);
-                        item.setAmount(item.getAmount() - 1);
-                    }
-                    // revolution
-                    else if(CustomItems.checkItemType(item, CustomItems.REVOLUTION))
-                    {
-                        event.setCancelled(true);
-                        /*GHPlayer revolutionTarget = _gameInstance.getPlayerManager().getAllGHPlayersSorted().getFirst();
-                        ghPlayer.revolutionTimer = _revolutionDuration;
-                        ghPlayer.revolutionTarget = revolutionTarget;
-                        LazuliUI.broadcast(MessageFactory.getRevolutionBroadcastMsg(ghPlayer, revolutionTarget));
-                        item.setAmount(item.getAmount() - 1);*/
-                    }
-                    // speed up
-                    else if(CustomItems.checkItemType(item, CustomItems.SPEED))
-                    {
-                        event.setCancelled(true);
-                        onUseSpeed(ghPlayer);
-                        item.setAmount(item.getAmount() - 1);
-                    }
-                    // else: do nothing and do not cancel, to allow normal item use such as fishing rods.
+                    event.setCancelled(true);
+                    onUseBooster(ghPlayer);
+                    item.setAmount(item.getAmount() - 1);
+                }
+                case SILENCER ->
+                {
+                    event.setCancelled(true);
+                    onUseSilence(ghPlayer);
+                    item.setAmount(item.getAmount() - 1);
+                }
+                case COUNTER ->
+                {
+                    event.setCancelled(true);
+                    onUseCounter(ghPlayer);
+                    item.setAmount(item.getAmount() - 1);
+                }
+                case REVOLUTION ->
+                {
+                    event.setCancelled(true);
+                }
+                case SPEED ->
+                {
+                    event.setCancelled(true);
+                    onUseSpeed(ghPlayer);
+                    item.setAmount(item.getAmount() - 1);
                 }
             }
         }
     }
 
-    // steal
+    // bind
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event)
     {
@@ -239,42 +240,48 @@ public class SkillManager implements Listener
         Entity clickedEntity = event.getRightClicked();
         ItemStack item = player.getInventory().getItem(event.getHand());
         GHPlayer ghPlayer = _gameInstance.getPlayerManager().getGHPlayer(player);
-        if(ghPlayer != null && !ghPlayer.hasBuff(SilenceBuff.class) && _gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING)
+        if(ghPlayer != null && clickedEntity instanceof Player clickedPlayer)
         {
-            // entity clicked is player
-            if(clickedEntity instanceof Player clickedPlayer)
+            GHPlayer clickedGHPlayer = _gameInstance.getPlayerManager().getGHPlayer(clickedPlayer);
+            if(clickedGHPlayer != null)
             {
-                GHPlayer clickedGHPlayer = _gameInstance.getPlayerManager().getGHPlayer(clickedPlayer);
-                if(clickedGHPlayer != null)
+                if(ghPlayer.hasBuff(SilenceBuff.class) || ghPlayer.hasBuff(BindBuff.class))
                 {
-                    // steal
-                    if (_gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING && CustomItems.checkItemType(item, CustomItems.STEALER))
-                    {
-                        onUseSteal(ghPlayer, clickedGHPlayer);
-                        item.setAmount(item.getAmount() - 1);
-                    }
+                    event.setCancelled(true);
+                    return;
+                }
+
+                if (CustomItem.checkItem(item) == CustomItem.BIND)
+                {
+                    onUseBind(ghPlayer, clickedGHPlayer);
+                    item.setAmount(item.getAmount() - 1);
+                    event.setCancelled(true);
                 }
             }
         }
     }
 
+    // steal
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerFishEvent(PlayerFishEvent event)
     {
-        if(event.getState() == PlayerFishEvent.State.CAUGHT_ENTITY)
+        Player player = event.getPlayer();
+        GHPlayer ghPlayer = _gameInstance.getPlayerManager().getGHPlayer(player);
+        Entity hookedEntity = event.getCaught();
+        if(ghPlayer != null && event.getState() == PlayerFishEvent.State.CAUGHT_ENTITY && hookedEntity instanceof Player hookedPlayer)
         {
-            Entity hookedEntity = event.getCaught();
-            if(hookedEntity instanceof Player hookedPlayer)
+            if(ghPlayer.hasBuff(SilenceBuff.class) || ghPlayer.hasBuff(BindBuff.class))
             {
-                Player player = event.getPlayer();
-                GHPlayer ghPlayer = _gameInstance.getPlayerManager().getGHPlayer(player);
-                GHPlayer hookedGHPlayer = _gameInstance.getPlayerManager().getGHPlayer(hookedPlayer);
-                ItemStack item = player.getInventory().getItemInMainHand();
-                if(ghPlayer != null && hookedGHPlayer != null && !ghPlayer.hasBuff(SilenceBuff.class) && CustomItems.checkItemType(item, CustomItems.STEALER) && _gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING)
-                {
-                    onUseSteal(ghPlayer, hookedGHPlayer);
-                    item.setAmount(item.getAmount() - 1);
-                }
+                event.setCancelled(true);
+                return;
+            }
+
+            GHPlayer hookedGHPlayer = _gameInstance.getPlayerManager().getGHPlayer(hookedPlayer);
+            ItemStack item = player.getInventory().getItemInMainHand();
+            if(hookedGHPlayer != null && !ghPlayer.hasBuff(SilenceBuff.class) && CustomItem.checkItem(item) == CustomItem.STEALER)
+            {
+                onUseSteal(ghPlayer, hookedGHPlayer);
+                item.setAmount(item.getAmount() - 1);
             }
         }
     }
@@ -284,12 +291,19 @@ public class SkillManager implements Listener
     public void onPrePlayerAttackEntity(PrePlayerAttackEntityEvent event)
     {
         Player player = event.getPlayer();
+        GHPlayer ghPlayer = _gameInstance.getPlayerManager().getGHPlayer(player);
         Entity attackedEntity = event.getAttacked();
         ItemStack item = player.getInventory().getItemInMainHand();
-        if(CustomItems.checkItemType(item, CustomItems.CLUB) && _gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING)
+
+        if(ghPlayer != null && attackedEntity instanceof Player attackedPlayer)
         {
-            GHPlayer ghPlayer = _gameInstance.getPlayerManager().getGHPlayer(player);
-            if(ghPlayer != null && !ghPlayer.hasBuff(SilenceBuff.class) && attackedEntity instanceof Player attackedPlayer)
+            if(ghPlayer.hasBuff(SilenceBuff.class) || ghPlayer.hasBuff(BindBuff.class))
+            {
+                event.setCancelled(true);
+                return;
+            }
+
+            if(CustomItem.checkItem(item) == CustomItem.CLUB)
             {
                 GHPlayer attackedGHPlayer = _gameInstance.getPlayerManager().getGHPlayer(attackedPlayer);
                 if(attackedGHPlayer != null)

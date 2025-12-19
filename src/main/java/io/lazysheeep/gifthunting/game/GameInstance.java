@@ -147,8 +147,8 @@ public class GameInstance extends StateMachine<GameInstance, GHStates> implement
         _stealerGiveWhenHighestScore = configNode.node("stealerGiveWhenHighestScore").getFloat(0.0f);
         _stealerGiveInterval = configNode.node("stealerGiveInterval").getInt(Integer.MAX_VALUE);
 
-        _giftManager.loadConfig(configNode);
-        _skillManager.loadConfig(configNode);
+        _giftManager.loadConfig(configNode.node("gifts"));
+        _skillManager.loadConfig(configNode.node("skills"));
     }
 
     public void saveConfig(ConfigurationNode configNode) throws SerializationException

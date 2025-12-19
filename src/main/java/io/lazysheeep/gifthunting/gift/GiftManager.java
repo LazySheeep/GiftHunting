@@ -1,7 +1,7 @@
 package io.lazysheeep.gifthunting.gift;
 
 import io.lazysheeep.gifthunting.GiftHunting;
-import io.lazysheeep.gifthunting.factory.CustomItems;
+import io.lazysheeep.gifthunting.factory.CustomItem;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
 import io.lazysheeep.gifthunting.game.GHStates;
 import io.lazysheeep.gifthunting.game.GameInstance;
@@ -298,7 +298,7 @@ public class GiftManager implements Listener
         if (item != null && clickedBlock != null && player.hasPermission("op") && _gameInstance.getCurrentStateEnum() == GHStates.IDLE)
         {
             // use giftSpawnerSetter to set or remove a spawner
-            if (CustomItems.checkItemType(item, CustomItems.NORMAL_GIFT_SPAWNER_SETTER))
+            if (CustomItem.checkItem(item) == CustomItem.NORMAL_GIFT_SPAWNER_SETTER)
             {
                 if (action == Action.RIGHT_CLICK_BLOCK)
                 {
@@ -314,7 +314,7 @@ public class GiftManager implements Listener
                     event.setCancelled(true);
                 }
             }
-            else if (CustomItems.checkItemType(item, CustomItems.SPECIAL_GIFT_SPAWNER_SETTER))
+            else if (CustomItem.checkItem(item) == CustomItem.SPECIAL_GIFT_SPAWNER_SETTER)
             {
                 if (action == Action.RIGHT_CLICK_BLOCK)
                 {

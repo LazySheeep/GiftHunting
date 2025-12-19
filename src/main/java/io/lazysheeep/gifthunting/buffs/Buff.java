@@ -16,17 +16,17 @@ public abstract class Buff
         this.remainingTime = duration;
     }
 
-    public abstract void onApply(GHPlayer player);
+    public abstract void onApply(GHPlayer ghPlayer);
 
-    public abstract void onRemove(GHPlayer player);
+    public abstract void onRemove(GHPlayer ghPlayer);
 
-    protected abstract void onTick(GHPlayer player);
+    protected abstract void onTick(GHPlayer ghPlayer);
 
-    public void tick(GHPlayer player)
+    public void tick(GHPlayer ghPlayer)
     {
         if (remainingTime > 0)
         {
-            onTick(player);
+            onTick(ghPlayer);
             remainingTime--;
         }
     }

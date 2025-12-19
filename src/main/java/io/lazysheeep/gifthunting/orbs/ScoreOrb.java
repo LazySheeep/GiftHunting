@@ -76,6 +76,6 @@ public class ScoreOrb extends Orb
         _velocity.multiply(Math.exp(-_friction * deltaTime));
 
         // particle effect
-        _location.getWorld().spawnParticle(Particle.DUST, _location, 2, new Particle.DustOptions(Color.AQUA, 1.0f));
+        _location.getWorld().spawnParticle(Particle.DUST, _location, 2, new Particle.DustOptions(Color.LIME, 1.0f));
     }
 }

@@ -23,7 +23,7 @@ import io.lazysheeep.gifthunting.GiftHunting;
 
 public enum CustomItems
 {
-    NORMAL_GIFT_SPAWNER_SETTER((byte)1)
+    NORMAL_GIFT_SPAWNER_SETTER("normal_gift_spawner_setter")
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.BLAZE_ROD, 1);
@@ -40,7 +40,7 @@ public enum CustomItems
             return it;
         }
     },
-    SPECIAL_GIFT_SPAWNER_SETTER((byte)2)
+    SPECIAL_GIFT_SPAWNER_SETTER("special_gift_spawner_setter")
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.BLAZE_ROD, 1);
@@ -57,7 +57,7 @@ public enum CustomItems
             return it;
         }
     },
-    BOOSTER((byte)3)
+    BOOSTER("booster")
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.WIND_CHARGE, 1);
@@ -76,7 +76,7 @@ public enum CustomItems
             return it;
         }
     },
-    CLUB((byte)4)
+    CLUB("club")
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.STICK, 1);
@@ -94,7 +94,7 @@ public enum CustomItems
             return it;
         }
     },
-    STEALER((byte)5)
+    STEALER("stealer")
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.FISHING_ROD, 1);
@@ -112,7 +112,7 @@ public enum CustomItems
             return it;
         }
     },
-    SILENCER((byte)6)
+    SILENCER("silencer")
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.BONE_MEAL, 1);
@@ -130,7 +130,7 @@ public enum CustomItems
             return it;
         }
     },
-    REFLECTOR((byte)7)
+    COUNTER("counter")
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.ENDER_EYE, 1);
@@ -149,7 +149,7 @@ public enum CustomItems
             return it;
         }
     },
-    REVOLUTION((byte)8)
+    REVOLUTION("revolution")
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.RED_DYE, 1);
@@ -169,7 +169,7 @@ public enum CustomItems
             return it;
         }
     },
-    SPEED_UP((byte)9)
+    SPEED("speed")
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.SUGAR, 1);
@@ -188,15 +188,15 @@ public enum CustomItems
             return it;
         }
     },
-    SOUVENIR((byte)10)
+    SOUVENIR("souvenir")
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.PLAYER_HEAD, 1);
-            Component displayName = Component.text("2024圣诞纪念", NamedTextColor.LIGHT_PURPLE);
+            Component displayName = Component.text("2025圣诞纪念", NamedTextColor.LIGHT_PURPLE);
             List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("MCZJU2024年圣诞活动纪念品", NamedTextColor.AQUA));
+            lore.add(Component.text("MCZJU2025年圣诞活动纪念品", NamedTextColor.AQUA));
             lore.add(Component.text("游戏记录:", NamedTextColor.AQUA));
-            lore.add(Component.text("圣诞活动纪念品，不会被清除"));
+            lore.add(Component.text("纪念物品不会被清除", NamedTextColor.GRAY));
             it.editMeta(meta -> {
                 if(meta instanceof SkullMeta skullMeta) {
                     skullMeta.displayName(displayName);
@@ -212,13 +212,13 @@ public enum CustomItems
         }
     };
 
-    public final byte id;
+    public final String id;
 
-    CustomItems(byte id) { this.id = id; }
+    CustomItems(String id) { this.id = id; }
 
-    public static CustomItems fromId(Byte id) {
+    public static CustomItems fromId(String id) {
         if(id == null) return null;
-        for(CustomItems t : values()) if(t.id == id) return t;
+        for(CustomItems item : values()) if(item.id.equals(id)) return item;
         return null;
     }
 
@@ -227,7 +227,7 @@ public enum CustomItems
     public static CustomItems getTypeTag(ItemStack item)
     {
         if(item == null || !item.hasItemMeta()) return null;
-        Byte id = item.getItemMeta().getPersistentDataContainer().get(ITEM_KEY, PersistentDataType.BYTE);
+        String id = item.getItemMeta().getPersistentDataContainer().get(ITEM_KEY, PersistentDataType.STRING);
         return CustomItems.fromId(id);
     }
 
@@ -276,7 +276,7 @@ public enum CustomItems
                         .append(Component.text(rank + "/" + totalPlayer, NamedTextColor.GREEN))
                         .append(Component.text(", 得分: ", NamedTextColor.GOLD))
                         .append(Component.text(score, NamedTextColor.GREEN)));
-                    lore.add(Component.text("圣诞活动纪念品，不会被清除"));
+                    lore.add(Component.text("纪念物品不会被清除", NamedTextColor.GRAY));
                 }
                 itemMeta.lore(lore);
             });
@@ -287,6 +287,6 @@ public enum CustomItems
 
     private static void setTypeTag(ItemMeta meta, CustomItems type)
     {
-        meta.getPersistentDataContainer().set(ITEM_KEY, PersistentDataType.BYTE, type.id);
+        meta.getPersistentDataContainer().set(ITEM_KEY, PersistentDataType.STRING, type.id);
     }
 }

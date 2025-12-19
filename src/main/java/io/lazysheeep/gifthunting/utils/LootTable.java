@@ -1,11 +1,13 @@
 package io.lazysheeep.gifthunting.utils;
 
+import io.lazysheeep.gifthunting.GiftHunting;
 import io.lazysheeep.gifthunting.factory.CustomItems;
 import org.bukkit.inventory.ItemStack;
 import org.spongepowered.configurate.ConfigurationNode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 public class LootTable
 {
@@ -32,21 +34,38 @@ public class LootTable
         _rollChance = configNode.node("rollChance").getFloat();
 
         ConfigurationNode entriesConfigNode = configNode.node("loots");
-        float lootWeight_club = entriesConfigNode.node("club").getFloat();
-        float lootWeight_booster = entriesConfigNode.node("booster").getFloat();
-        float lootWeight_silencer = entriesConfigNode.node("silencer").getFloat();
-        float lootWeight_reflector = entriesConfigNode.node("reflector").getFloat();
-        float lootWeight_revolution = entriesConfigNode.node("revolution").getFloat();
-        float lootWeight_speedUp = entriesConfigNode.node("speedUp").getFloat();
+        List<LootTableEntry> entries = new ArrayList<>();
 
-        _lootEntries = List.of(new LootTableEntry[]{
-            new LootTableEntry(CustomItems.CLUB.create(), lootWeight_club),
-            new LootTableEntry(CustomItems.BOOSTER.create(), lootWeight_booster),
-            new LootTableEntry(CustomItems.SILENCER.create(), lootWeight_silencer),
-            new LootTableEntry(CustomItems.REFLECTOR.create(), lootWeight_reflector),
-            new LootTableEntry(CustomItems.REVOLUTION.create(), lootWeight_revolution),
-            new LootTableEntry(CustomItems.SPEED_UP.create(), lootWeight_speedUp),
-        });
+        if (entriesConfigNode.isList())
+        {
+            for (ConfigurationNode entryNode : entriesConfigNode.childrenList())
+            {
+                String id = entryNode.node("id").getString();
+                float weight = entryNode.node("weight").getFloat(0.0f);
+                if (id == null)
+                {
+                    GiftHunting.Log(Level.WARNING, "LootTable: loot entry missing id, skipped.");
+                    continue;
+                }
+                CustomItems itemType = CustomItems.fromId(id);
+                if (itemType == null)
+                {
+                    GiftHunting.Log(Level.WARNING, "LootTable: unknown item id '" + id + "', skipped.");
+                    continue;
+                }
+                if (weight <= 0.0f)
+                {
+                    continue;
+                }
+                entries.add(new LootTableEntry(itemType.create(), weight));
+            }
+        }
+        else
+        {
+            GiftHunting.Log(Level.WARNING, "LootTable: missing loot entries, skipped.");
+        }
+
+        _lootEntries = entries;
 
         float totalWeight = 0.0f;
         for(LootTableEntry entry : _lootEntries)
@@ -59,7 +78,7 @@ public class LootTable
     public List<ItemStack> loot()
     {
         List<ItemStack> loots = new ArrayList<>();
-        if (_rollTimes <= 0 || _rollChance <= 0.0f || _lootEntries.isEmpty())
+        if (_rollTimes <= 0 || _rollChance <= 0.0f || _lootEntries.isEmpty() || _totalWeight <= 0.0f)
             return loots;
 
         for (int i = 0; i < _rollTimes; i++)

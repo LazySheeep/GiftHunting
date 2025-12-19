@@ -202,7 +202,7 @@ public class SkillManager implements Listener
                         item.setAmount(item.getAmount() - 1);
                     }
                     // reflector
-                    else if(CustomItems.checkItemType(item, CustomItems.REFLECTOR))
+                    else if(CustomItems.checkItemType(item, CustomItems.COUNTER))
                     {
                         event.setCancelled(true);
                         onUseCounter(ghPlayer);
@@ -219,7 +219,7 @@ public class SkillManager implements Listener
                         item.setAmount(item.getAmount() - 1);*/
                     }
                     // speed up
-                    else if(CustomItems.checkItemType(item, CustomItems.SPEED_UP))
+                    else if(CustomItems.checkItemType(item, CustomItems.SPEED))
                     {
                         event.setCancelled(true);
                         onUseSpeed(ghPlayer);

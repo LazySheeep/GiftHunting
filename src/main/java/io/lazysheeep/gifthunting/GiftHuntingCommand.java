@@ -148,7 +148,7 @@ public class GiftHuntingCommand extends BaseCommand
         @Description("Get reflector")
         public void onReflector(Player senderPlayer)
         {
-            senderPlayer.getInventory().addItem(CustomItems.REFLECTOR.create());
+            senderPlayer.getInventory().addItem(CustomItems.COUNTER.create());
         }
 
         @Subcommand("revolution")
@@ -162,7 +162,7 @@ public class GiftHuntingCommand extends BaseCommand
         @Description("Get speedup")
         public void onSpeedup(Player senderPlayer)
         {
-            senderPlayer.getInventory().addItem(CustomItems.SPEED_UP.create());
+            senderPlayer.getInventory().addItem(CustomItems.SPEED.create());
         }
 
         @Subcommand("souvenir")

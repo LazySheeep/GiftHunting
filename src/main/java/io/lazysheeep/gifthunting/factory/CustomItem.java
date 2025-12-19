@@ -24,7 +24,7 @@ import org.jetbrains.annotations.Nullable;
 
 public enum CustomItem
 {
-    NORMAL_GIFT_SPAWNER_SETTER("normal_gift_spawner_setter")
+    NORMAL_GIFT_SPAWNER_SETTER("normal_gift_spawner_setter", Material.BLAZE_ROD)
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.BLAZE_ROD, 1);
@@ -41,7 +41,7 @@ public enum CustomItem
             return it;
         }
     },
-    SPECIAL_GIFT_SPAWNER_SETTER("special_gift_spawner_setter")
+    SPECIAL_GIFT_SPAWNER_SETTER("special_gift_spawner_setter", Material.BLAZE_ROD)
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.BLAZE_ROD, 1);
@@ -58,7 +58,7 @@ public enum CustomItem
             return it;
         }
     },
-    BOOSTER("booster")
+    BOOSTER("booster", Material.WIND_CHARGE)
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.WIND_CHARGE, 1);
@@ -77,7 +77,7 @@ public enum CustomItem
             return it;
         }
     },
-    CLUB("club")
+    CLUB("club", Material.STICK)
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.STICK, 1);
@@ -95,7 +95,7 @@ public enum CustomItem
             return it;
         }
     },
-    STEALER("stealer")
+    STEALER("stealer", Material.FISHING_ROD)
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.FISHING_ROD, 1);
@@ -113,7 +113,7 @@ public enum CustomItem
             return it;
         }
     },
-    SILENCER("silencer")
+    SILENCER("silencer", Material.BONE_MEAL)
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.BONE_MEAL, 1);
@@ -131,7 +131,7 @@ public enum CustomItem
             return it;
         }
     },
-    COUNTER("counter")
+    COUNTER("counter", Material.ENDER_EYE)
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.ENDER_EYE, 1);
@@ -150,7 +150,7 @@ public enum CustomItem
             return it;
         }
     },
-    REVOLUTION("revolution")
+    REVOLUTION("revolution", Material.RED_DYE)
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.RED_DYE, 1);
@@ -170,7 +170,7 @@ public enum CustomItem
             return it;
         }
     },
-    SPEED("speed")
+    SPEED("speed", Material.SUGAR)
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.SUGAR, 1);
@@ -189,7 +189,7 @@ public enum CustomItem
             return it;
         }
     },
-    SOUVENIR("souvenir")
+    SOUVENIR("souvenir", Material.PLAYER_HEAD)
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.PLAYER_HEAD, 1);
@@ -212,7 +212,7 @@ public enum CustomItem
             return it;
         }
     },
-    BIND("bind")
+    BIND("bind", Material.LEAD)
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.LEAD, 1);
@@ -231,8 +231,9 @@ public enum CustomItem
     };
 
     public final String id;
+    public final Material material;
 
-    CustomItem(String id) { this.id = id; }
+    CustomItem(String id, Material material) { this.id = id; this.material = material; }
 
     public static @Nullable CustomItem fromId(String id)
     {

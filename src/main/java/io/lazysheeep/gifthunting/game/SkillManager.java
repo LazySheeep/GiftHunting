@@ -57,12 +57,11 @@ public class SkillManager implements Listener
 
     private void onUseBooster(GHPlayer ghPlayer)
     {
-        Player player = ghPlayer.getPlayer();
-        player.setVelocity(player.getVelocity()
-                                 .add(player.getLocation().getDirection().multiply(1.5f))
-                                 .add(new Vector(0.0f, 0.2f, 0.0f)));
-        player.getWorld().playSound(player, Sound.ITEM_FIRECHARGE_USE, SoundCategory.MASTER, 1.0f, 1.0f);
-        player.getWorld().spawnParticle(Particle.EXPLOSION, player.getLocation(), 2, 0.2f, 0.2f, 0.2f, 0.5f);
+        var skill = ghPlayer.getSkill(CustomItem.BOOSTER);
+        if(skill != null)
+        {
+            skill.onUse();
+        }
     }
 
     private void onUseSilence(GHPlayer ghPlayer)
@@ -101,9 +100,11 @@ public class SkillManager implements Listener
 
     private void onUseCounter(GHPlayer ghPlayer)
     {
-        Player player = ghPlayer.getPlayer();
-        ghPlayer.addBuff(new CounteringBuff(_counterDuration));
-        player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_USE, SoundCategory.MASTER, 1.0f, 1.0f);
+        var skill = ghPlayer.getSkill(CustomItem.COUNTER);
+        if(skill != null)
+        {
+            skill.onUse();
+        }
     }
 
     private void onUseSpeed(GHPlayer ghPlayer)
@@ -216,7 +217,6 @@ public class SkillManager implements Listener
                 {
                     event.setCancelled(true);
                     onUseCounter(ghPlayer);
-                    item.setAmount(item.getAmount() - 1);
                 }
                 case REVOLUTION ->
                 {

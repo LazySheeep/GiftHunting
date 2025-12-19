@@ -2,18 +2,17 @@ package io.lazysheeep.gifthunting.player;
 
 import io.lazysheeep.gifthunting.GiftHunting;
 import io.lazysheeep.gifthunting.buffs.Buff;
+import io.lazysheeep.gifthunting.skills.BoosterSkill;
+import io.lazysheeep.gifthunting.skills.CounterSkill;
+import io.lazysheeep.gifthunting.skills.Skill;
+import io.lazysheeep.gifthunting.factory.CustomItem;
 import io.lazysheeep.gifthunting.game.GameInstance;
-import io.lazysheeep.gifthunting.gift.Gift;
-import io.lazysheeep.gifthunting.utils.MCUtil;
-import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 public class GHPlayer
@@ -23,6 +22,26 @@ public class GHPlayer
     private int _score = 0;
     private final HashSet<Buff> _buffs = new HashSet<>();
     public int lastClickGiftTime = 0;
+
+    private final Set<Skill> _skills = new HashSet<>();
+
+    public Skill getSkill(CustomItem item)
+    {
+        for(Skill s : _skills) if(s.getItemType() == item) return s;
+        return null;
+    }
+
+    public boolean tryUseCounterSkill()
+    {
+        Skill s = getSkill(CustomItem.COUNTER);
+        return s != null && s.tryUse();
+    }
+
+    public int getCounterDurationTicks()
+    {
+        Skill s = getSkill(CustomItem.COUNTER);
+        return s == null ? 0 : 40;
+    }
 
     public @NotNull Player getPlayer()
     {
@@ -93,6 +112,8 @@ public class GHPlayer
     {
         _hostPlayer = player;
         _gameInstance = gameInstance;
+        _skills.add(new CounterSkill(this));
+        _skills.add(new BoosterSkill(this));
     }
 
     public void addBuff(@NotNull Buff buff)
@@ -142,7 +163,6 @@ public class GHPlayer
         _hostPlayer.setSaturation(20.0f);
         _hostPlayer.setFoodLevel(20);
 
-        // update buffs
         for(Buff buff : _buffs.stream().toList())
         {
             if(buff.getRemainingTime() <= 0)
@@ -156,7 +176,11 @@ public class GHPlayer
             }
         }
 
-        // set display score
+        for(Skill s : _skills)
+        {
+            s.tick();
+        }
+
         GiftHunting.GetPlugin().getScoreObjective().getScore(_hostPlayer).setScore(_score);
     }
 }

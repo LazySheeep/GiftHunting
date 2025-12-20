@@ -8,6 +8,7 @@ import io.lazysheeep.gifthunting.factory.CustomItem;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
 import io.lazysheeep.gifthunting.orbs.ScoreOrb;
 import io.lazysheeep.gifthunting.player.GHPlayer;
+import io.lazysheeep.gifthunting.skills.Skill;
 import io.lazysheeep.lazuliui.LazuliUI;
 import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
 import org.bukkit.Particle;
@@ -22,7 +23,6 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import org.spongepowered.configurate.ConfigurationNode;
@@ -53,15 +53,6 @@ public class SkillManager implements Listener
         _revolutionDuration = configNode.node("revolutionDuration").getInt(0);
         _speedDuration = configNode.node("speedDuration").getInt(0);
         _bindDuration = configNode.node("bindDuration").getInt(0);
-    }
-
-    private void onUseBooster(GHPlayer ghPlayer)
-    {
-        var skill = ghPlayer.getSkill(CustomItem.BOOSTER);
-        if(skill != null)
-        {
-            skill.onUse();
-        }
     }
 
     private void onUseSilence(GHPlayer ghPlayer)
@@ -95,15 +86,6 @@ public class SkillManager implements Listener
                     otherGHPlayer.removeBuff(CounteringBuff.class);
                 }
             }
-        }
-    }
-
-    private void onUseCounter(GHPlayer ghPlayer)
-    {
-        var skill = ghPlayer.getSkill(CustomItem.COUNTER);
-        if(skill != null)
-        {
-            skill.onUse();
         }
     }
 
@@ -204,8 +186,7 @@ public class SkillManager implements Listener
                 case BOOSTER ->
                 {
                     event.setCancelled(true);
-                    onUseBooster(ghPlayer);
-                    item.setAmount(item.getAmount() - 1);
+                    ghPlayer.useSkill(Skill.BOOST);
                 }
                 case SILENCER ->
                 {
@@ -216,7 +197,7 @@ public class SkillManager implements Listener
                 case COUNTER ->
                 {
                     event.setCancelled(true);
-                    onUseCounter(ghPlayer);
+                    ghPlayer.useSkill(Skill.COUNTER);
                 }
                 case REVOLUTION ->
                 {

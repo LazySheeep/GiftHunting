@@ -2,18 +2,14 @@ package io.lazysheeep.gifthunting.player;
 
 import io.lazysheeep.gifthunting.GiftHunting;
 import io.lazysheeep.gifthunting.buffs.Buff;
-import io.lazysheeep.gifthunting.skills.BoosterSkill;
-import io.lazysheeep.gifthunting.skills.CounterSkill;
 import io.lazysheeep.gifthunting.skills.Skill;
-import io.lazysheeep.gifthunting.factory.CustomItem;
 import io.lazysheeep.gifthunting.game.GameInstance;
+import io.lazysheeep.gifthunting.skills.SkillState;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class GHPlayer
 {
@@ -23,25 +19,7 @@ public class GHPlayer
     private final HashSet<Buff> _buffs = new HashSet<>();
     public int lastClickGiftTime = 0;
 
-    private final Set<Skill> _skills = new HashSet<>();
-
-    public Skill getSkill(CustomItem item)
-    {
-        for(Skill s : _skills) if(s.getItemType() == item) return s;
-        return null;
-    }
-
-    public boolean tryUseCounterSkill()
-    {
-        Skill s = getSkill(CustomItem.COUNTER);
-        return s != null && s.tryUse();
-    }
-
-    public int getCounterDurationTicks()
-    {
-        Skill s = getSkill(CustomItem.COUNTER);
-        return s == null ? 0 : 40;
-    }
+    private final Map<Skill, SkillState> _skillStates = new HashMap<>();
 
     public @NotNull Player getPlayer()
     {
@@ -112,8 +90,8 @@ public class GHPlayer
     {
         _hostPlayer = player;
         _gameInstance = gameInstance;
-        _skills.add(new CounterSkill(this));
-        _skills.add(new BoosterSkill(this));
+        _skillStates.put(Skill.COUNTER, Skill.COUNTER.createDefaultState());
+        _skillStates.put(Skill.BOOST, Skill.BOOST.createDefaultState());
     }
 
     public void addBuff(@NotNull Buff buff)
@@ -147,6 +125,23 @@ public class GHPlayer
         }
     }
 
+    public boolean useSkill(@NotNull Skill skill)
+    {
+        SkillState skillState = getSkillState(skill);
+        return skill.tryUse(this, skillState);
+    }
+
+    private SkillState getSkillState(Skill skill)
+    {
+        SkillState st = _skillStates.get(skill);
+        if(st == null)
+        {
+            st = skill.createDefaultState();
+            _skillStates.put(skill, st);
+        }
+        return st;
+    }
+
     public void reset()
     {
         _score = 0;
@@ -176,9 +171,9 @@ public class GHPlayer
             }
         }
 
-        for(Skill s : _skills)
+        for(Map.Entry<Skill, SkillState> e : _skillStates.entrySet())
         {
-            s.tick();
+            e.getKey().tick(this, e.getValue());
         }
 
         GiftHunting.GetPlugin().getScoreObjective().getScore(_hostPlayer).setScore(_score);

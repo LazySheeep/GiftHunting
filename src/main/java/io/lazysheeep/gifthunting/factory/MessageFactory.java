@@ -147,17 +147,19 @@ public class MessageFactory
     {
         int progressBarToFetchL = (int)(20*((float)gift.getClicksToNextFetch()/gift.getType().clicksPerFetch));
         int progressBarToFetchR = 20 - progressBarToFetchL;
-        int progressBarTotalL = gift.getRemainingCapacity() - 1;
-        int progressBarTotalR = gift.getType().capacityInFetches - gift.getRemainingCapacity();
+        int remainingCapacity = gift.getRemainingCapacity();
+        TextComponent textComponent = Component.text("开启中 ", COLOR_TEXT)
+                                               .append(Component.text("[", COLOR_GRAY))
+                                               .append(Component.text("|".repeat(progressBarToFetchL), COLOR_VALUE))
+                                               .append(Component.text("|".repeat(progressBarToFetchR), COLOR_GRAY))
+                                               .append(Component.text("]", COLOR_GRAY));
+        if(remainingCapacity > 1)
+        {
+            textComponent = textComponent.append(Component.text(" x", COLOR_GRAY)).append(Component.text(remainingCapacity, COLOR_VALUE));
+        }
         return new Message(
                 Message.Type.ACTIONBAR_INFIX,
-                Component.text("开启中 ", COLOR_TEXT)
-                        .append(Component.text("[]".repeat(progressBarTotalL), COLOR_SPECIAL))
-                        .append(Component.text("[", COLOR_SPECIAL))
-                        .append(Component.text("|".repeat(progressBarToFetchL), COLOR_VALUE))
-                        .append(Component.text("|".repeat(progressBarToFetchR), COLOR_GRAY))
-                        .append(Component.text("]", COLOR_SPECIAL))
-                        .append(Component.text("[]".repeat(progressBarTotalR), COLOR_GRAY)),
+                textComponent,
                 Message.LoadMode.REPLACE,
                 10
         );
@@ -165,16 +167,12 @@ public class MessageFactory
 
     public static Message getGiftFetchedActionbar(Gift gift)
     {
-        int progressBarTotalL = gift.getRemainingCapacity() - 1;
-        int progressBarTotalR = gift.getType().capacityInFetches - gift.getRemainingCapacity();
         return new Message(
                 Message.Type.ACTIONBAR_INFIX,
                 Component.text("已开启 ", COLOR_CAUTION)
-                        .append(Component.text("[]".repeat(progressBarTotalL), COLOR_SPECIAL))
                         .append(Component.text("[", COLOR_GRAY))
                         .append(Component.text("|".repeat(20), COLOR_GRAY))
-                        .append(Component.text("]", COLOR_GRAY))
-                        .append(Component.text("[]".repeat(progressBarTotalR), COLOR_GRAY)),
+                        .append(Component.text("]", COLOR_GRAY)),
                 Message.LoadMode.REPLACE,
                 20
         );
@@ -490,5 +488,57 @@ public class MessageFactory
         int mm = (time/20) / 60;
         int ss = (time/20) % 60;
         return Component.text(String.format("%02d:%02d", mm, ss), COLOR_VALUE);
+    }
+
+    public static Message getSkillCooldownActionbar(int charges, int maxCharges, int cooldownTimer, int cooldownDuration, int aftercastTimer, int aftercastDuration)
+    {
+        boolean isAftercast = aftercastTimer > 0 && aftercastDuration > 0;
+        int left = isAftercast ? Math.max(0, charges - 1) : charges;
+        int rightVal = isAftercast ? Math.min(maxCharges, Math.max(0, charges)) : Math.min(maxCharges, charges + 1);
+        if(maxCharges <= 0) maxCharges = 1;
+        boolean isMax = charges >= maxCharges && cooldownTimer <= 0 && aftercastTimer <= 0;
+        int filled;
+        Component bar;
+        if(isAftercast)
+        {
+            filled = Math.max(0, Math.min(20, (int)(20f * ((float) aftercastTimer / (float) aftercastDuration))));
+            int empty = 20 - filled;
+            bar = Component.text("[", COLOR_GRAY)
+                           .append(Component.text("|".repeat(filled), COLOR_VALUE))
+                           .append(Component.text("|".repeat(empty), COLOR_GRAY))
+                           .append(Component.text("]", COLOR_GRAY));
+        }
+        else if(isMax)
+        {
+            bar = Component.text("[", COLOR_GRAY)
+                           .append(Component.text("|".repeat(20), COLOR_SPECIAL))
+                           .append(Component.text("]", COLOR_GRAY));
+        }
+        else
+        {
+            filled = 0;
+            if(cooldownDuration > 0)
+            {
+                int progressed = Math.max(0, cooldownDuration - Math.max(0, cooldownTimer));
+                filled = Math.max(0, Math.min(20, (int)(20f * ((float) progressed / (float) cooldownDuration))));
+            }
+            int empty = 20 - filled;
+            bar = Component.text("[", COLOR_GRAY)
+                           .append(Component.text("|".repeat(filled), COLOR_VALUE))
+                           .append(Component.text("|".repeat(empty), COLOR_GRAY))
+                           .append(Component.text("]", COLOR_GRAY));
+        }
+        Component rightComp = isMax ? Component.text("MAX", COLOR_SPECIAL) : Component.text(rightVal, COLOR_VALUE);
+        return new Message(
+                Message.Type.ACTIONBAR_INFIX,
+                Component.text("", COLOR_TEXT)
+                        .append(Component.text(left, COLOR_VALUE))
+                        .append(Component.text(" ", COLOR_TEXT))
+                        .append(bar)
+                        .append(Component.text(" ", COLOR_TEXT))
+                        .append(rightComp),
+                Message.LoadMode.IMMEDIATE,
+                1
+        );
     }
 }

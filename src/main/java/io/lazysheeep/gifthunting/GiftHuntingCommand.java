@@ -119,7 +119,7 @@ public class GiftHuntingCommand extends BaseCommand
         @Subcommand("booster")
         public void onBooster(Player senderPlayer)
         {
-            senderPlayer.getInventory().addItem(CustomItem.BOOSTER.create());
+            senderPlayer.getInventory().addItem(CustomItem.SKILL_BOOSTER.create());
         }
 
         @Subcommand("club")
@@ -143,7 +143,7 @@ public class GiftHuntingCommand extends BaseCommand
         @Subcommand("counter")
         public void onCounter(Player senderPlayer)
         {
-            senderPlayer.getInventory().addItem(CustomItem.COUNTER.create());
+            senderPlayer.getInventory().addItem(CustomItem.SKILL_COUNTER.create());
         }
 
         @Subcommand("revolution")

@@ -12,7 +12,7 @@ import org.bukkit.util.Vector;
 
 public enum Skill
 {
-    COUNTER(CustomItem.COUNTER, 1, 200, 20)
+    COUNTER(CustomItem.SKILL_COUNTER, 1, 200, 20)
     {
         @Override
         public void onUse(GHPlayer host, SkillState skillState)
@@ -21,7 +21,7 @@ public enum Skill
             host.getPlayer().playSound(host.getPlayer().getLocation(), Sound.BLOCK_ANVIL_USE, SoundCategory.MASTER, 1.0f, 1.0f);
         }
     },
-    BOOST(CustomItem.BOOSTER, 3, 200, 0)
+    BOOST(CustomItem.SKILL_BOOSTER, 3, 200, 0)
     {
         @Override
         public void onUse(GHPlayer host, SkillState skillState)

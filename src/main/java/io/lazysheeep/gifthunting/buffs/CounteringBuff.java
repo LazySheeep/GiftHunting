@@ -1,6 +1,8 @@
 package io.lazysheeep.gifthunting.buffs;
 
 import io.lazysheeep.gifthunting.player.GHPlayer;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 public class CounteringBuff extends Buff
 {
@@ -25,5 +27,22 @@ public class CounteringBuff extends Buff
     protected void onTick(GHPlayer player)
     {
 
+    }
+
+    @Override
+    public boolean tryMerge(Buff otherBuff)
+    {
+        if(otherBuff instanceof CounteringBuff)
+        {
+            this.remainingTime = Math.max(this.remainingTime, otherBuff.getRemainingTime());
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public net.kyori.adventure.text.TextComponent getDisplayName()
+    {
+        return Component.text("识破", NamedTextColor.AQUA);
     }
 }

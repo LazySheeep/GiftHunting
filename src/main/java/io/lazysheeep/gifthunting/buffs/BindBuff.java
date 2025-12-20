@@ -1,6 +1,8 @@
 package io.lazysheeep.gifthunting.buffs;
 
 import io.lazysheeep.gifthunting.player.GHPlayer;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -62,6 +64,23 @@ public class BindBuff extends Buff
             world.spawnParticle(Particle.DUST, new Location(world, p.getX(), p.getY(), p.getZ()), 1, 0, 0, 0, 0, dustOption);
         }
         _t += Math.PI * 0.15;
+    }
+
+    @Override
+    public boolean tryMerge(Buff otherBuff)
+    {
+        if(otherBuff instanceof BindBuff)
+        {
+            this.remainingTime = Math.max(this.remainingTime, otherBuff.remainingTime);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public net.kyori.adventure.text.TextComponent getDisplayName()
+    {
+        return Component.text("束缚", NamedTextColor.RED);
     }
 
     private static Vector ellipse(Vector o, Vector a, Vector b, double t)

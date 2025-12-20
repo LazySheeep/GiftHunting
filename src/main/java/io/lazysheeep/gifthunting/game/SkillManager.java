@@ -36,6 +36,7 @@ public class SkillManager implements Listener
     private int _revolutionDuration;
     private int _speedDuration;
     private int _bindDuration;
+    private int _bindStacksRequired;
 
     private final GameInstance _gameInstance;
 
@@ -53,21 +54,22 @@ public class SkillManager implements Listener
         _revolutionDuration = configNode.node("revolutionDuration").getInt(0);
         _speedDuration = configNode.node("speedDuration").getInt(0);
         _bindDuration = configNode.node("bindDuration").getInt(0);
+        _bindStacksRequired = configNode.node("bindStacksRequired").getInt(5);
     }
 
     private void onUseSilence(GHPlayer ghPlayer)
     {
         Player player = ghPlayer.getPlayer();
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ELDER_GUARDIAN_CURSE, SoundCategory.MASTER, 1.0f, 1.0f);
-        for(GHPlayer otherGHPlayer : ghPlayer.getGameInstance().getPlayerManager().getOnlineGHPlayers())
+        for(GHPlayer victimGHPlayer : ghPlayer.getGameInstance().getPlayerManager().getOnlineGHPlayers())
         {
-            if(otherGHPlayer != ghPlayer && otherGHPlayer.getPlayer().getLocation().distance(player.getLocation()) <= _silenceDistance)
+            if(victimGHPlayer != ghPlayer && victimGHPlayer.getPlayer().getLocation().distance(player.getLocation()) <= _silenceDistance)
             {
-                if(!otherGHPlayer.hasBuff(CounteringBuff.class))
+                if(!victimGHPlayer.hasBuff(CounteringBuff.class))
                 {
-                    otherGHPlayer.addBuff(new SilenceBuff(_silenceDuration));
-                    Player otherPlayer = otherGHPlayer.getPlayer();
-                    LazuliUI.sendMessage(otherPlayer, MessageFactory.getSilencedActionbarInfix(ghPlayer, _silenceDuration));
+                    victimGHPlayer.addBuff(new SilenceBuff(_silenceDuration));
+                    Player otherPlayer = victimGHPlayer.getPlayer();
+                    LazuliUI.sendMessage(otherPlayer, MessageFactory.getSilencedMsg(ghPlayer));
                     otherPlayer.getWorld().spawnParticle(Particle.ANGRY_VILLAGER, otherPlayer.getLocation()
                                                                                              .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
                     otherPlayer.getWorld().playSound(otherPlayer.getLocation(), Sound.ENTITY_VILLAGER_NO, SoundCategory.MASTER, 1.0f, 1.0f);
@@ -75,15 +77,17 @@ public class SkillManager implements Listener
                 else
                 {
                     ghPlayer.addBuff(new SilenceBuff(_silenceDuration * 2));
-                    LazuliUI.sendMessage(player, MessageFactory.getSilencedActionbarInfix(otherGHPlayer, _silenceDuration * 2));
+                    LazuliUI.sendMessage(player, MessageFactory.getSilencedMsg(victimGHPlayer));
                     player.getWorld().spawnParticle(Particle.ANGRY_VILLAGER, player.getLocation()
                                                                                    .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
                     player.getWorld().playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, SoundCategory.MASTER, 1.0f, 1.0f);
-                    Player otherPlayer = otherGHPlayer.getPlayer();
-                    otherPlayer.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, otherPlayer.getLocation()
+
+                    Player victimPlayer = victimGHPlayer.getPlayer();
+                    LazuliUI.sendMessage(victimPlayer, MessageFactory.getSilenceCounteredMsg(ghPlayer));
+                    victimPlayer.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, victimPlayer.getLocation()
                                                                                              .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
-                    otherPlayer.getWorld().playSound(otherPlayer.getLocation(), Sound.BLOCK_ANVIL_LAND, SoundCategory.MASTER, 1.0f, 1.0f);
-                    otherGHPlayer.removeBuff(CounteringBuff.class);
+                    victimPlayer.getWorld().playSound(victimPlayer.getLocation(), Sound.BLOCK_ANVIL_LAND, SoundCategory.MASTER, 1.0f, 1.0f);
+                    victimGHPlayer.removeBuff(CounteringBuff.class);
                 }
             }
         }
@@ -155,11 +159,16 @@ public class SkillManager implements Listener
         }
     }
 
-    private void onUseBind(GHPlayer ghPlayer, GHPlayer clickedGHPlayer)
+    private void onUseBind(ItemStack item, GHPlayer ghPlayer, GHPlayer clickedGHPlayer)
     {
         if(!clickedGHPlayer.hasBuff(CounteringBuff.class))
         {
             clickedGHPlayer.addBuff(new BindBuff(_bindDuration));
+            item.setAmount(item.getAmount() - 1);
+        }
+        else
+        {
+
         }
     }
 
@@ -183,7 +192,7 @@ public class SkillManager implements Listener
 
             switch (customItem)
             {
-                case BOOSTER ->
+                case SKILL_BOOSTER ->
                 {
                     event.setCancelled(true);
                     ghPlayer.useSkill(Skill.BOOST);
@@ -194,7 +203,7 @@ public class SkillManager implements Listener
                     onUseSilence(ghPlayer);
                     item.setAmount(item.getAmount() - 1);
                 }
-                case COUNTER ->
+                case SKILL_COUNTER ->
                 {
                     event.setCancelled(true);
                     ghPlayer.useSkill(Skill.COUNTER);
@@ -234,9 +243,8 @@ public class SkillManager implements Listener
 
                 if (CustomItem.checkItem(item) == CustomItem.BIND)
                 {
-                    onUseBind(ghPlayer, clickedGHPlayer);
-                    item.setAmount(item.getAmount() - 1);
                     event.setCancelled(true);
+                    onUseBind(item, ghPlayer, clickedGHPlayer);
                 }
             }
         }

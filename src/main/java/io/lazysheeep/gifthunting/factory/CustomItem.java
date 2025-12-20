@@ -13,7 +13,6 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.NamespacedKey;
-import org.bukkit.inventory.meta.components.UseCooldownComponent;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
@@ -59,7 +58,7 @@ public enum CustomItem
             return it;
         }
     },
-    BOOSTER("booster", Material.WIND_CHARGE)
+    SKILL_BOOSTER("booster", Material.WIND_CHARGE)
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.WIND_CHARGE, 1);
@@ -132,7 +131,7 @@ public enum CustomItem
             return it;
         }
     },
-    COUNTER("counter", Material.ENDER_EYE)
+    SKILL_COUNTER("counter", Material.ENDER_EYE)
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.ENDER_EYE, 1);

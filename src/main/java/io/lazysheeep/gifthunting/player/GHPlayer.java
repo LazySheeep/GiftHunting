@@ -2,9 +2,11 @@ package io.lazysheeep.gifthunting.player;
 
 import io.lazysheeep.gifthunting.GiftHunting;
 import io.lazysheeep.gifthunting.buffs.Buff;
+import io.lazysheeep.gifthunting.factory.MessageFactory;
 import io.lazysheeep.gifthunting.skills.Skill;
 import io.lazysheeep.gifthunting.game.GameInstance;
 import io.lazysheeep.gifthunting.skills.SkillState;
+import io.lazysheeep.lazuliui.LazuliUI;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -96,6 +98,13 @@ public class GHPlayer
 
     public void addBuff(@NotNull Buff buff)
     {
+        for(Buff existingBuff : _buffs)
+        {
+            if(existingBuff.tryMerge(buff))
+            {
+                return;
+            }
+        }
         _buffs.add(buff);
         buff.onApply(this);
     }
@@ -110,6 +119,18 @@ public class GHPlayer
             }
         }
         return false;
+    }
+
+    public <T extends Buff> T getBuffInstance(Class<T> buffClass)
+    {
+        for(Buff buff : _buffs)
+        {
+            if(buffClass.isInstance(buff))
+            {
+                return buffClass.cast(buff);
+            }
+        }
+        return null;
     }
 
     public void removeBuff(@NotNull Class<? extends Buff> buffClass)
@@ -160,14 +181,11 @@ public class GHPlayer
 
         for(Buff buff : _buffs.stream().toList())
         {
+            buff.tick(this);
             if(buff.getRemainingTime() <= 0)
             {
                 buff.onRemove(this);
                 _buffs.remove(buff);
-            }
-            else
-            {
-                buff.tick(this);
             }
         }
 
@@ -175,6 +193,8 @@ public class GHPlayer
         {
             e.getKey().tick(this, e.getValue());
         }
+
+        LazuliUI.sendMessage(_hostPlayer, MessageFactory.getBuffsActionbar(new java.util.ArrayList<>(_buffs)));
 
         GiftHunting.GetPlugin().getScoreObjective().getScore(_hostPlayer).setScore(_score);
     }

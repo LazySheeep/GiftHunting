@@ -1,6 +1,6 @@
 package io.lazysheeep.gifthunting.factory;
 
-import io.lazysheeep.gifthunting.GiftHunting;
+import io.lazysheeep.gifthunting.buffs.Buff;
 import io.lazysheeep.gifthunting.game.GameInstance;
 import io.lazysheeep.gifthunting.gift.Gift;
 import io.lazysheeep.gifthunting.player.GHPlayer;
@@ -155,7 +155,7 @@ public class MessageFactory
                                                .append(Component.text("]", COLOR_GRAY));
         if(remainingCapacity > 1)
         {
-            textComponent = textComponent.append(Component.text(" x", COLOR_GRAY)).append(Component.text(remainingCapacity, COLOR_VALUE));
+            textComponent = textComponent.append(Component.text(" x", COLOR_CAUTION)).append(Component.text(remainingCapacity, COLOR_VALUE));
         }
         return new Message(
                 Message.Type.ACTIONBAR_INFIX,
@@ -225,15 +225,27 @@ public class MessageFactory
         );
     }
 
-    public static Message getSilencedActionbarInfix(GHPlayer badGuy, int duration)
+    public static Message getSilencedMsg(GHPlayer badGuy)
     {
         return new Message(
-                Message.Type.ACTIONBAR_INFIX,
+                Message.Type.CHAT,
                 Component.text("被 ", COLOR_BAD)
                          .append(Component.text(badGuy.getPlayer().getName(), COLOR_VALUE))
                          .append(Component.text(" 沉默了！", COLOR_BAD)),
                 Message.LoadMode.REPLACE,
-                duration
+                1
+        );
+    }
+
+    public static Message getSilenceCounteredMsg(GHPlayer badGuy)
+    {
+        return new Message(
+                Message.Type.CHAT,
+                Component.text("识破了 ", COLOR_GOOD)
+                         .append(Component.text(badGuy.getPlayer().getName(), COLOR_VALUE))
+                         .append(Component.text(" 的沉默效果！", COLOR_GOOD)),
+                Message.LoadMode.REPLACE,
+                1
         );
     }
 
@@ -247,7 +259,7 @@ public class MessageFactory
                         .append(Component.text(score, COLOR_VALUE))
                         .append(Component.text(" 点数", COLOR_CAUTION)),
                 Sound.UI_TOAST_CHALLENGE_COMPLETE,
-                Message.LoadMode.IMMEDIATE,
+                Message.LoadMode.REPLACE,
                 1
         );
     }
@@ -483,10 +495,10 @@ public class MessageFactory
         return Component.text("Cleared " + count + " untracked gifts!", COLOR_CAUTION);
     }
 
-    private static TextComponent getFormattedTime(int time)
+    private static TextComponent getFormattedTime(int ticks)
     {
-        int mm = (time/20) / 60;
-        int ss = (time/20) % 60;
+        int mm = (ticks/20) / 60;
+        int ss = (ticks/20) % 60;
         return Component.text(String.format("%02d:%02d", mm, ss), COLOR_VALUE);
     }
 
@@ -539,6 +551,31 @@ public class MessageFactory
                         .append(rightComp),
                 Message.LoadMode.IMMEDIATE,
                 1
+        );
+    }
+
+    public static Message getBuffsActionbar(List<Buff> buffs)
+    {
+        TextComponent comp = Component.text("");
+        boolean first = true;
+        for(Buff b : buffs)
+        {
+            if(!first)
+            {
+                comp = comp.append(Component.text("  "));
+            }
+            first = false;
+            comp = comp
+                .append(b.getDisplayName())
+                .append(Component.text("(", COLOR_GRAY))
+                .append(Component.text(b.getRemainingTime() / 20, COLOR_VALUE))
+                .append(Component.text(")", COLOR_GRAY));
+        }
+        return new Message(
+            Message.Type.ACTIONBAR_INFIX,
+            comp,
+            Message.LoadMode.IMMEDIATE,
+            1
         );
     }
 }

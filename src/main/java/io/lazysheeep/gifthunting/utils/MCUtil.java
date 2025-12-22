@@ -27,16 +27,6 @@ public class MCUtil
         return result;
     }
 
-    public static void RemovePlayerItem(Player player, ItemStack itemToRemove)
-    {
-        PlayerInventory inventory = player.getInventory();
-        for(ItemStack item : inventory)
-        {
-            if(item != null && item.isSimilar(itemToRemove))
-                inventory.remove(item);
-        }
-    }
-
     public static int GetFirstEmptyAndNotHeldSlot(PlayerInventory inventory)
     {
         for(int i = 0; i < inventory.getSize(); i ++)
@@ -85,5 +75,36 @@ public class MCUtil
             inventory.setHeldItemSlot(inventory.firstEmpty());
         }
         player.playSound(player, Sound.ENTITY_ITEM_PICKUP, SoundCategory.MASTER, 1.0f, 1.0f);
+    }
+
+    public static void RemovePlayerItem(Player player, ItemStack itemToRemove)
+    {
+        PlayerInventory inventory = player.getInventory();
+        for(ItemStack item : inventory)
+        {
+            if(item != null && item.isSimilar(itemToRemove))
+                inventory.remove(item);
+        }
+    }
+
+    public static void RemoveItem(Player player, CustomItem customItem, int count)
+    {
+        if(player == null || customItem == null || count <= 0) return;
+        PlayerInventory inv = player.getInventory();
+        int remaining = count;
+        for(int slot = 0; slot < inv.getSize() && remaining > 0; slot++)
+        {
+            ItemStack it = inv.getItem(slot);
+            if(CustomItem.checkItem(it) == customItem)
+            {
+                int take = Math.min(remaining, it.getAmount());
+                it.setAmount(it.getAmount() - take);
+                if(it.getAmount() <= 0)
+                {
+                    inv.setItem(slot, null);
+                }
+                remaining -= take;
+            }
+        }
     }
 }

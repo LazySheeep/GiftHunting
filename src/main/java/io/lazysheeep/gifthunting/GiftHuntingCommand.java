@@ -100,75 +100,16 @@ public class GiftHuntingCommand extends BaseCommand
     }
 
     @Subcommand("item")
-    public class ItemCommand extends BaseCommand
+    @CommandCompletion("@custom_item_ids")
+    public void onItem(Player senderPlayer, String itemID)
     {
-        @Subcommand("normalSetter")
-        @Description("Get normal gift spawn setter")
-        public void onNormalSetter(Player senderPlayer)
+        CustomItem item = CustomItem.fromId(itemID);
+        if(item == null)
         {
-            senderPlayer.getInventory().addItem(CustomItem.NORMAL_GIFT_SPAWNER_SETTER.create());
+            senderPlayer.sendMessage(Component.text("Unknown item id: " + itemID, COLOR_VITAL));
+            return;
         }
-
-        @Subcommand("specialSetter")
-        @Description("Get special gift spawn setter")
-        public void onSpecialSetter(Player senderPlayer)
-        {
-            senderPlayer.getInventory().addItem(CustomItem.SPECIAL_GIFT_SPAWNER_SETTER.create());
-        }
-
-        @Subcommand("booster")
-        public void onBooster(Player senderPlayer)
-        {
-            senderPlayer.getInventory().addItem(CustomItem.SKILL_BOOSTER.create());
-        }
-
-        @Subcommand("club")
-        public void onClub(Player senderPlayer)
-        {
-            senderPlayer.getInventory().addItem(CustomItem.CLUB.create());
-        }
-
-        @Subcommand("stealer")
-        public void onStealer(Player senderPlayer)
-        {
-            senderPlayer.getInventory().addItem(CustomItem.STEALER.create());
-        }
-
-        @Subcommand("silencer")
-        public void onSilencer(Player senderPlayer)
-        {
-            senderPlayer.getInventory().addItem(CustomItem.SILENCER.create());
-        }
-
-        @Subcommand("counter")
-        public void onCounter(Player senderPlayer)
-        {
-            senderPlayer.getInventory().addItem(CustomItem.SKILL_COUNTER.create());
-        }
-
-        @Subcommand("revolution")
-        public void onRevolution(Player senderPlayer)
-        {
-            senderPlayer.getInventory().addItem(CustomItem.REVOLUTION.create());
-        }
-
-        @Subcommand("speed")
-        public void onSpeed(Player senderPlayer)
-        {
-            senderPlayer.getInventory().addItem(CustomItem.SPEED.create());
-        }
-
-        @Subcommand("bind")
-        public void onBind(Player senderPlayer)
-        {
-            senderPlayer.getInventory().addItem(CustomItem.BIND.create());
-        }
-
-        @Subcommand("souvenir")
-        public void onSouvenir(Player senderPlayer)
-        {
-            senderPlayer.getInventory().addItem(CustomItem.SOUVENIR.create());
-        }
+        senderPlayer.getInventory().addItem(item.create());
     }
 
     @Subcommand("clear")

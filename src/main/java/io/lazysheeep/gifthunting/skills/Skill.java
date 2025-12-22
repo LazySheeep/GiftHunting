@@ -35,10 +35,10 @@ public enum Skill
         }
     };
 
-    private final CustomItem itemType;
-    private final int maxCharges;
-    private final int cooldownDuration;
-    private final int aftercastDuration;
+    public final CustomItem itemType;
+    public final int maxCharges;
+    public final int cooldownDuration;
+    public final int aftercastDuration;
 
     Skill(CustomItem itemType, int maxCharges, int cooldownDuration, int aftercastDuration)
     {

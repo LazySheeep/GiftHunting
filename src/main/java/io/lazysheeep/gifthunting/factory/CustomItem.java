@@ -2,6 +2,7 @@ package io.lazysheeep.gifthunting.factory;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
+import io.lazysheeep.gifthunting.skills.Skill;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -62,8 +63,10 @@ public enum CustomItem
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.WIND_CHARGE, 1);
-            Component displayName = Component.text("弹射", NamedTextColor.LIGHT_PURPLE);
+            Component displayName = Component.text("技能：弹射", NamedTextColor.LIGHT_PURPLE);
             List<Component> lore = new ArrayList<>();
+            lore.add(Component.text("冷却: ", NamedTextColor.GOLD).append(Component.text(Skill.BOOST.cooldownDuration / 20 + "s", NamedTextColor.GREEN)));
+            lore.add(Component.text("最大次数: ", NamedTextColor.GOLD).append(Component.text(Skill.BOOST.maxCharges, NamedTextColor.GREEN)));
             lore.add(Component.text("将自己向所指的方向弹射", NamedTextColor.AQUA));
             lore.add(Component.text("在助跑起跳时弹射效果最佳", NamedTextColor.AQUA));
             lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
@@ -77,7 +80,7 @@ public enum CustomItem
             return it;
         }
     },
-    CLUB("club", Material.STICK)
+    STICK("stick", Material.STICK)
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.STICK, 1);
@@ -85,7 +88,25 @@ public enum CustomItem
             List<Component> lore = new ArrayList<>();
             lore.add(Component.text("看起来只是普通的木棍", NamedTextColor.AQUA));
             lore.add(Component.text("但是能够把人打飞", NamedTextColor.AQUA));
-            lore.add(Component.text("那么代价是什么呢", NamedTextColor.GRAY));
+            lore.add(Component.text("集齐10个合成超级木棍", NamedTextColor.GRAY));
+            it.editMeta(meta -> {
+                meta.displayName(displayName);
+                meta.lore(lore);
+                meta.addEnchant(Enchantment.UNBREAKING, 1, true);
+                setTypeTag(meta, this);
+            });
+            return it;
+        }
+    },
+    SUPER_STICK("super_stick", Material.BREEZE_ROD)
+    {
+        @Override public ItemStack create() {
+            ItemStack it = new ItemStack(Material.BREEZE_ROD, 1);
+            Component displayName = Component.text("超级木棍", NamedTextColor.LIGHT_PURPLE);
+            List<Component> lore = new ArrayList<>();
+            lore.add(Component.text("用普通木棍合成的超级木棍", NamedTextColor.AQUA));
+            lore.add(Component.text("能真的把人打飞", NamedTextColor.AQUA));
+            lore.add(Component.text("请求起飞", NamedTextColor.GRAY));
             it.editMeta(meta -> {
                 meta.displayName(displayName);
                 meta.lore(lore);
@@ -135,9 +156,12 @@ public enum CustomItem
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.ENDER_EYE, 1);
-            Component displayName = Component.text("识破", NamedTextColor.LIGHT_PURPLE);
+            Component displayName = Component.text("技能：识破", NamedTextColor.LIGHT_PURPLE);
             List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("能够在 2 秒内", NamedTextColor.AQUA));
+            lore.add(Component.text("冷却: ", NamedTextColor.GOLD).append(Component.text(Skill.COUNTER.cooldownDuration / 20 + "s", NamedTextColor.GREEN)));
+            lore.add(Component.text("持续时间: ", NamedTextColor.GOLD).append(Component.text(Skill.COUNTER.aftercastDuration, NamedTextColor.GREEN)));
+            lore.add(Component.text("最大次数: ", NamedTextColor.GOLD).append(Component.text(Skill.COUNTER.maxCharges, NamedTextColor.GREEN)));
+            lore.add(Component.text("能够在短时间内内", NamedTextColor.AQUA));
             lore.add(Component.text("反弹一次他人对你使用的技能", NamedTextColor.AQUA));
             lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
             lore.add(Component.text("接下来，时机很重要", NamedTextColor.GRAY));

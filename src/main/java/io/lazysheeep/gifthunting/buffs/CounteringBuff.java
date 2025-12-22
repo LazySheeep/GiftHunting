@@ -43,6 +43,6 @@ public class CounteringBuff extends Buff
     @Override
     public net.kyori.adventure.text.TextComponent getDisplayName()
     {
-        return Component.text("识破", NamedTextColor.AQUA);
+        return Component.text("识破", NamedTextColor.GREEN);
     }
 }

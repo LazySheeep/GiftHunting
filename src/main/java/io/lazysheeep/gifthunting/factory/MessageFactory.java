@@ -26,10 +26,41 @@ public class MessageFactory
     public static final TextColor COLOR_SPECIAL = NamedTextColor.LIGHT_PURPLE;
     public static final TextColor COLOR_VITAL = NamedTextColor.RED;
     public static final TextColor COLOR_GRAY = NamedTextColor.GRAY;
+    public static final TextColor COLOR_PLAIN = NamedTextColor.WHITE;
     public static final TextColor COLOR_GOOD = NamedTextColor.GREEN;
     public static final TextColor COLOR_BAD = NamedTextColor.RED;
 
     private MessageFactory() {}
+
+    public static Message getOnBecomeGHPlayerMsg()
+    {
+        return new Message(
+                Message.Type.CHAT,
+                Component.text("已进入圣诞活动区域", COLOR_GRAY),
+                Message.LoadMode.REPLACE,
+                1
+        );
+    }
+
+    public static Message getOnReconnectGHPlayerMsg()
+    {
+        return new Message(
+                Message.Type.CHAT,
+                Component.text("已重新进入圣诞活动区域", COLOR_GRAY),
+                Message.LoadMode.REPLACE,
+                1
+        );
+    }
+
+    public static Message getOnNoLongerGHPlayerMsg()
+    {
+        return new Message(
+                Message.Type.CHAT,
+                Component.text("已离开圣诞活动区域", COLOR_GRAY),
+                Message.LoadMode.REPLACE,
+                1
+        );
+    }
 
     public static Message getGameReadyingMsg(int readyStateDuration)
     {
@@ -39,7 +70,7 @@ public class MessageFactory
                         .append(getFormattedTime(readyStateDuration))
                         .append(Component.text(" 后开始！", COLOR_CAUTION)),
                 Sound.BLOCK_NOTE_BLOCK_PLING,
-                Message.LoadMode.IMMEDIATE,
+                Message.LoadMode.REPLACE,
                 1
         );
     }
@@ -122,7 +153,7 @@ public class MessageFactory
         );
     }
 
-    public static List<Message> getProgressingActionbarSuffixWhenScoreChanged(int currentScore, int scoreDelta)
+    public static List<Message> getActionbarSuffixWhenScoreChanged(int currentScore, int scoreDelta)
     {
         List<Message> messages = new ArrayList<>();
         messages.add(new Message(
@@ -567,9 +598,9 @@ public class MessageFactory
             first = false;
             comp = comp
                 .append(b.getDisplayName())
-                .append(Component.text("(", COLOR_GRAY))
+                .append(Component.text("(", COLOR_PLAIN))
                 .append(Component.text(b.getRemainingTime() / 20, COLOR_VALUE))
-                .append(Component.text(")", COLOR_GRAY));
+                .append(Component.text(")", COLOR_PLAIN));
         }
         return new Message(
             Message.Type.ACTIONBAR_INFIX,

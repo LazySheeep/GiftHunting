@@ -1,9 +1,6 @@
 package io.lazysheeep.gifthunting.game;
 
-import io.lazysheeep.gifthunting.buffs.CounteringBuff;
-import io.lazysheeep.gifthunting.buffs.BindBuff;
-import io.lazysheeep.gifthunting.buffs.SilenceBuff;
-import io.lazysheeep.gifthunting.buffs.SpeedBuff;
+import io.lazysheeep.gifthunting.buffs.*;
 import io.lazysheeep.gifthunting.factory.CustomItem;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
 import io.lazysheeep.gifthunting.orbs.ScoreOrb;
@@ -110,7 +107,6 @@ public class SkillManager implements Listener
             stealScore = (int) (_stealerScorePercentage * clickedGHPlayer.getScore());
             LazuliUI.sendMessage(player, MessageFactory.getStealMsg(clickedPlayer, stealScore));
             LazuliUI.sendMessage(clickedPlayer, MessageFactory.getBeenStolenMsg(player, stealScore));
-            LazuliUI.sendMessage(clickedPlayer, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(clickedGHPlayer.getScore(), -stealScore));
             LazuliUI.broadcast(MessageFactory.getStealBroadcastMsg(player, clickedPlayer, stealScore));
             clickedPlayer.getWorld().spawnParticle(Particle.ANGRY_VILLAGER, clickedPlayer.getLocation()
                                                                                          .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
@@ -123,7 +119,6 @@ public class SkillManager implements Listener
             stealScore = (int) (_stealerScorePercentage * ghPlayer.getScore() * 1.5f);
             LazuliUI.sendMessage(clickedPlayer, MessageFactory.getStealMsg(player, stealScore));
             LazuliUI.sendMessage(player, MessageFactory.getBeenStolenMsg(clickedPlayer, stealScore));
-            LazuliUI.sendMessage(player, MessageFactory.getProgressingActionbarSuffixWhenScoreChanged(ghPlayer.getScore(), -stealScore));
             LazuliUI.broadcast(MessageFactory.getStealReflectedBroadcastMsg(player, clickedPlayer, stealScore));
             player.getWorld().spawnParticle(Particle.ANGRY_VILLAGER, clickedPlayer.getLocation()
                                                                                   .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
@@ -143,20 +138,46 @@ public class SkillManager implements Listener
         Player attackedPlayer = attackedGHPlayer.getPlayer();
         if(!attackedGHPlayer.hasBuff(CounteringBuff.class))
         {
-            Vector knockBack = attackedPlayer.getLocation().toVector().subtract(player.getLocation().toVector()).normalize().multiply(2.0f).add(new Vector(0.0f, 0.5f, 0.0f));
-            attackedPlayer.setVelocity(attackedPlayer.getVelocity().add(knockBack));
             player.getWorld().playSound(player, Sound.ENTITY_ITEM_BREAK, SoundCategory.MASTER, 1.0f, 1.0f);
+
+            Vector knockBack = player.getLocation().getDirection().setY(0.0).normalize().setY(0.3).multiply(2.0);
+            attackedPlayer.setVelocity(attackedPlayer.getVelocity().add(knockBack));
+            attackedPlayer.getWorld().playSound(player, Sound.ENTITY_PLAYER_HURT, SoundCategory.MASTER, 1.0f, 1.0f);
+            attackedPlayer.getWorld().spawnParticle(Particle.CRIT, attackedGHPlayer.getBodyLocation(), 8, 0.3f, 0.3f, 0.3f);
+            attackedPlayer.sendHurtAnimation(0);
         }
         else
         {
-            Vector knockBack = attackedPlayer.getLocation().toVector().subtract(player.getLocation().toVector()).normalize().multiply(-3.0f).add(new Vector(0.0f, 0.5f, 0.0f));
-            player.setVelocity(player.getVelocity().add(knockBack));
             player.getWorld().playSound(player, Sound.ENTITY_ITEM_BREAK, SoundCategory.MASTER, 1.0f, 1.0f);
+
             attackedPlayer.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, attackedPlayer.getLocation()
                                                                                            .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
             attackedPlayer.getWorld().playSound(attackedPlayer, Sound.BLOCK_ANVIL_LAND, SoundCategory.MASTER, 1.0f, 1.0f);
             attackedGHPlayer.removeBuff(CounteringBuff.class);
+
+            Vector knockBack = player.getLocation().getDirection().setY(0.0).normalize().setY(0.3).multiply(-3.0);
+            player.setVelocity(player.getVelocity().add(knockBack));
+            player.getWorld().playSound(player, Sound.ENTITY_PLAYER_HURT, SoundCategory.MASTER, 1.0f, 1.0f);
+            player.getWorld().spawnParticle(Particle.CRIT, attackedGHPlayer.getBodyLocation(), 8, 0.3f, 0.3f, 0.3f);
+            player.sendHurtAnimation(0);
         }
+    }
+
+    private void onUseBigClub(GHPlayer ghPlayer, GHPlayer attackedGHPlayer)
+    {
+        Player player = ghPlayer.getPlayer();
+        Player attackedPlayer = attackedGHPlayer.getPlayer();
+
+        player.getWorld().playSound(player, Sound.ENTITY_ITEM_BREAK, SoundCategory.MASTER, 1.0f, 0.8f);
+
+        Vector knockBack = player.getLocation().getDirection().setY(0.0).normalize().setY(1.5).multiply(80.0);
+        attackedPlayer.setVelocity(attackedPlayer.getVelocity().add(knockBack));
+        attackedPlayer.getWorld().playSound(player, Sound.ENTITY_PLAYER_HURT, SoundCategory.MASTER, 1.0f, 1.0f);
+        attackedPlayer.getWorld().playSound(player, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, SoundCategory.MASTER, 1.0f, 0.9f);
+        attackedPlayer.getWorld().spawnParticle(Particle.CRIT, attackedGHPlayer.getBodyLocation(), 16, 0.5f, 0.5f, 0.5f);
+        attackedPlayer.getWorld().spawnParticle(Particle.EXPLOSION, attackedGHPlayer.getBodyLocation(), 1, 0.0f, 0.0f, 0.0f);
+        attackedPlayer.sendHurtAnimation(0);
+        attackedGHPlayer.addBuff(new BlewUpBuff(20));
     }
 
     private void onUseBind(ItemStack item, GHPlayer ghPlayer, GHPlayer clickedGHPlayer)
@@ -292,14 +313,20 @@ public class SkillManager implements Listener
                 return;
             }
 
-            if(CustomItem.checkItem(item) == CustomItem.CLUB)
+            GHPlayer attackedGHPlayer = _gameInstance.getPlayerManager().getGHPlayer(attackedPlayer);
+            if(attackedGHPlayer != null)
             {
-                GHPlayer attackedGHPlayer = _gameInstance.getPlayerManager().getGHPlayer(attackedPlayer);
-                if(attackedGHPlayer != null)
+                CustomItem type = CustomItem.checkItem(item);
+                if(type == CustomItem.STICK)
                 {
                     onUseClub(ghPlayer, attackedGHPlayer);
-                    item.setAmount(item.getAmount() - 1);
                 }
+                else if(type == CustomItem.SUPER_STICK)
+                {
+                    onUseBigClub(ghPlayer, attackedGHPlayer);
+                }
+                item.setAmount(item.getAmount() - 1);
+                event.setCancelled(true);
             }
         }
     }

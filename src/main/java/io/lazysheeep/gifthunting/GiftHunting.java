@@ -19,6 +19,8 @@ import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 import java.nio.file.Path;
 import java.util.logging.Level;
 
+import io.lazysheeep.gifthunting.factory.CustomItem;
+
 public final class GiftHunting extends JavaPlugin
 {
     private static GiftHunting _Instance;
@@ -55,6 +57,11 @@ public final class GiftHunting extends JavaPlugin
         // register commands
         PaperCommandManager commandManager = new PaperCommandManager(this);
         commandManager.registerCommand(new GiftHuntingCommand());
+        commandManager.getCommandCompletions().registerCompletion("custom_item_ids", c -> {
+            java.util.ArrayList<String> ids = new java.util.ArrayList<>();
+            for(CustomItem it : CustomItem.values()) ids.add(it.id);
+            return ids;
+        });
 
         // if config folder does not exist, create it and copy the default config
         if(!getDataFolder().exists())

@@ -1,6 +1,7 @@
 package io.lazysheeep.gifthunting.player;
 
 import io.lazysheeep.gifthunting.GiftHunting;
+import io.lazysheeep.gifthunting.factory.MessageFactory;
 import io.lazysheeep.gifthunting.game.GHStates;
 import io.lazysheeep.gifthunting.game.GameInstance;
 import io.lazysheeep.gifthunting.utils.MCUtil;
@@ -114,6 +115,7 @@ public class GHPlayerManager implements Listener
             {
                 _ghPlayers.remove(ghPlayer.getUUID());
                 _offlineGHPlayers.put(ghPlayer.getUUID(), ghPlayer);
+                LazuliUI.sendMessage(ghPlayer.getPlayer(), MessageFactory.getOnNoLongerGHPlayerMsg());
             }
         }
         // Create GHPlayers that should be GHPlayers
@@ -127,6 +129,7 @@ public class GHPlayerManager implements Listener
                     if(offlineGHPlayer.getUUID().equals(player.getUniqueId()))
                     {
                         reconnectGHPlayer(offlineGHPlayer, player);
+                        LazuliUI.sendMessage(player, MessageFactory.getOnReconnectGHPlayerMsg());
                         isReconnecting = true;
                         break;
                     }
@@ -134,6 +137,7 @@ public class GHPlayerManager implements Listener
                 if(!isReconnecting)
                 {
                     createGHPlayer(player);
+                    LazuliUI.sendMessage(player, MessageFactory.getOnBecomeGHPlayerMsg());
                 }
             }
         }

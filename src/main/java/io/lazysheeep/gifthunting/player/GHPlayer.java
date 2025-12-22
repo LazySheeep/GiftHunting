@@ -13,6 +13,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+import io.lazysheeep.gifthunting.factory.CustomItem;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
+import io.lazysheeep.gifthunting.utils.MCUtil;
+
 public class GHPlayer
 {
     private Player _hostPlayer;
@@ -80,6 +85,7 @@ public class GHPlayer
 
     public void addScore(int score)
     {
+        LazuliUI.sendMessage(_hostPlayer, MessageFactory.getActionbarSuffixWhenScoreChanged(_score, score));
         this._score += score;
     }
 
@@ -169,6 +175,24 @@ public class GHPlayer
         lastClickGiftTime = 0;
     }
 
+    private void autoCraftBigClub()
+    {
+        PlayerInventory inv = _hostPlayer.getInventory();
+        int totalClub = 0;
+        for(ItemStack it : inv)
+        {
+            if(CustomItem.checkItem(it) == CustomItem.STICK)
+            {
+                totalClub += it.getAmount();
+            }
+        }
+        if(totalClub >= 10)
+        {
+            MCUtil.RemoveItem(_hostPlayer, CustomItem.STICK, 10);
+            MCUtil.GiveItem(_hostPlayer, CustomItem.SUPER_STICK.create());
+        }
+    }
+
     void tick()
     {
         if(_hostPlayer == null || !_hostPlayer.isConnected())
@@ -178,6 +202,8 @@ public class GHPlayer
 
         _hostPlayer.setSaturation(20.0f);
         _hostPlayer.setFoodLevel(20);
+
+        autoCraftBigClub();
 
         for(Buff buff : _buffs.stream().toList())
         {

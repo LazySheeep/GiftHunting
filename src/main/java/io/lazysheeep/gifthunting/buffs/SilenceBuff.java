@@ -43,6 +43,6 @@ public class SilenceBuff extends Buff
     @Override
     public net.kyori.adventure.text.TextComponent getDisplayName()
     {
-        return Component.text("沉默", NamedTextColor.DARK_GRAY);
+        return Component.text("沉默", NamedTextColor.YELLOW);
     }
 }

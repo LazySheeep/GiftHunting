@@ -118,7 +118,7 @@ public class GameInstance extends StateMachine<GameInstance, GHStates> implement
     {
         _playerManager.tick();
         _giftManager.tick();
-        _orbManager.tick();
+        _orbManager.tick(this);
 
         super.tick();
     }

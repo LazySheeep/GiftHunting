@@ -5,9 +5,9 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
-public class JueshengBuff extends Buff
+public class DawnBuff extends Buff
 {
-    public JueshengBuff(int duration)
+    public DawnBuff(int duration)
     {
         super(duration);
     }
@@ -33,6 +33,6 @@ public class JueshengBuff extends Buff
     @Override
     public TextComponent getDisplayName()
     {
-        return Component.text("决胜", NamedTextColor.GOLD);
+        return Component.text("决胜", NamedTextColor.LIGHT_PURPLE);
     }
 }

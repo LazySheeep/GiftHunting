@@ -296,6 +296,23 @@ public enum CustomItem
             });
             return it;
         }
+    },
+    ABSORB("absorb", Material.HEART_OF_THE_SEA)
+    {
+        @Override public ItemStack create() {
+            var it = new ItemStack(Material.HEART_OF_THE_SEA, 1);
+            var displayName = Component.text("吸取", NamedTextColor.LIGHT_PURPLE);
+            List<Component> lore = new ArrayList<>();
+            lore.add(Component.text("吸引周围的所有能量球", NamedTextColor.AQUA));
+            lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
+            it.editMeta(meta -> {
+                meta.displayName(displayName);
+                meta.lore(lore);
+                meta.addEnchant(Enchantment.UNBREAKING, 1, true);
+                setTypeTag(meta, this);
+            });
+            return it;
+        }
     };
 
     public final String id;

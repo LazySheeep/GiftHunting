@@ -41,6 +41,7 @@ public class SkillManager implements Listener
     private int _bindDuration;
     private int _bindStacksRequired;
     private int _oathDuration = 200;
+    private double _absorbRadius = 6.0;
 
     private final GameInstance _gameInstance;
 
@@ -59,6 +60,7 @@ public class SkillManager implements Listener
         _speedDuration = configNode.node("speedDuration").getInt(0);
         _bindDuration = configNode.node("bindDuration").getInt(0);
         _bindStacksRequired = configNode.node("bindStacksRequired").getInt(5);
+        _absorbRadius = configNode.node("absorbRadius").getDouble(6.0);
     }
 
     private void onUseSilence(GHPlayer ghPlayer)
@@ -119,7 +121,7 @@ public class SkillManager implements Listener
                                                                                          .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
             clickedPlayer.getWorld().playSound(clickedPlayer.getLocation(), Sound.ENTITY_VILLAGER_NO, SoundCategory.MASTER, 1.0f, 1.0f);
             clickedGHPlayer.addScore(-stealScore);
-            _gameInstance.getOrbManager().addOrb(new ScoreOrb(stealScore, ghPlayer, clickedGHPlayer.getBodyLocation()));
+            _gameInstance.getOrbManager().addOrb(new ScoreOrb(clickedGHPlayer.getBodyLocation(), clickedGHPlayer, ghPlayer, stealScore));
         }
         else
         {
@@ -134,7 +136,7 @@ public class SkillManager implements Listener
                                                                                          .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
             clickedPlayer.getWorld().playSound(clickedPlayer.getLocation(), Sound.BLOCK_ANVIL_LAND, SoundCategory.MASTER, 1.0f, 1.0f);
             ghPlayer.addScore(-stealScore);
-            _gameInstance.getOrbManager().addOrb(new ScoreOrb(stealScore, clickedGHPlayer, ghPlayer.getBodyLocation()));
+            _gameInstance.getOrbManager().addOrb(new ScoreOrb(ghPlayer.getBodyLocation(), ghPlayer, clickedGHPlayer, stealScore));
             clickedGHPlayer.removeBuff(CounteringBuff.class);
         }
     }
@@ -200,6 +202,18 @@ public class SkillManager implements Listener
         }
     }
 
+    private void onUseAbsorb(GHPlayer ghPlayer)
+    {
+        double r2 = _absorbRadius * _absorbRadius;
+        for(var orb : _gameInstance.getOrbManager().getOrbsSnapshot())
+        {
+            if(orb.getLocation().distanceSquared(ghPlayer.getBodyLocation()) <= r2)
+            {
+                orb.setTarget(ghPlayer);
+            }
+        }
+    }
+
     // right click use items
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteract(PlayerInteractEvent event)
@@ -244,6 +258,12 @@ public class SkillManager implements Listener
                 {
                     event.setCancelled(true);
                     onUseSpeed(ghPlayer);
+                    item.setAmount(item.getAmount() - 1);
+                }
+                case ABSORB ->
+                {
+                    event.setCancelled(true);
+                    onUseAbsorb(ghPlayer);
                     item.setAmount(item.getAmount() - 1);
                 }
             }
@@ -377,7 +397,7 @@ public class SkillManager implements Listener
 
         event.setCancelled(true);
 
-        if(!victim.hasBuff(JueshengBuff.class)) return;
+        if(!victim.hasBuff(DawnBuff.class)) return;
         if(victim.hasBuff(OathBuff.class)) return;
 
         if(victim.hasBuff(CounteringBuff.class))
@@ -389,7 +409,7 @@ public class SkillManager implements Listener
         {
             int lose = Math.max(1, (int)(victim.getScore() * 0.1f));
             victim.addScore(-lose);
-            _gameInstance.getOrbManager().addOrb(new ScoreOrb(lose, null, victim.getBodyLocation()).forbid(victim));
+            _gameInstance.getOrbManager().addOrb(new ScoreOrb(victim.getBodyLocation(), victim, null, lose));
         }
     }
 }

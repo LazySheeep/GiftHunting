@@ -149,7 +149,7 @@ public class Gift
             double fp = totalScore * (e.getValue() / sumW);
             int share = Math.round((float) fp);
             if(share <= 0) continue;
-            ghPlayer.getGameInstance().getOrbManager().addOrb(new ScoreOrb(share, e.getKey(), this.getLocation()));
+            ghPlayer.getGameInstance().getOrbManager().addOrb(new ScoreOrb(this.getLocation(), null, e.getKey(), share));
         }
 
         // give loot
@@ -157,7 +157,7 @@ public class Gift
         for(ItemStack loot : loots)
         {
             GHPlayer pickedPlayer = RandUtil.PickWeighted(weightMap);
-            ghPlayer.getGameInstance().getOrbManager().addOrb(new ItemOrb(loot, pickedPlayer, this.getLocation()));
+            ghPlayer.getGameInstance().getOrbManager().addOrb(new ItemOrb(this.getLocation(), null, pickedPlayer, loot));
         }
 
         // send actionbar infix:

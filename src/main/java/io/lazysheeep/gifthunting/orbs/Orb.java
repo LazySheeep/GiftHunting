@@ -1,21 +1,22 @@
 package io.lazysheeep.gifthunting.orbs;
 
-import io.lazysheeep.gifthunting.GiftHunting;
+import io.lazysheeep.gifthunting.game.GameInstance;
 import io.lazysheeep.gifthunting.player.GHPlayer;
 import io.lazysheeep.gifthunting.utils.MCUtil;
 import io.lazysheeep.gifthunting.utils.RandUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class Orb
 {
     protected GHPlayer _target;
+    protected final @Nullable GHPlayer _source;
     protected Location _location;
     protected Vector _velocity;
     protected int _timer = -1;
     protected boolean _collected = false;
-    protected GHPlayer _forbidden;
 
     protected final int _startDelay = 10;
     protected final float _force = 24.0f;
@@ -24,10 +25,11 @@ public abstract class Orb
     protected final float _captureDistance = 3.0f;
     protected final float _collectDistance = 0.6f;
 
-    protected Orb(Location location, GHPlayer target)
+    protected Orb(Location location, @Nullable GHPlayer source, GHPlayer target)
     {
-        _target = target;
         _location = location.clone();
+        _target = target;
+        _source = source;
         _velocity = new Vector(RandUtil.nextFloat(-3.0f, 3.0f), RandUtil.nextFloat(2.0f, 4.0f), RandUtil.nextFloat(-3.0f, 3.0f));
     }
 
@@ -36,23 +38,17 @@ public abstract class Orb
         return _collected;
     }
 
-    public Orb forbid(GHPlayer gh)
-    {
-        _forbidden = gh;
-        return this;
-    }
-
     protected abstract void onCollected();
 
     protected abstract void onTick();
 
     protected boolean canCapture(GHPlayer gh)
     {
-        if(_forbidden != null && gh == _forbidden) return false;
+        if(_source != null && gh == _source) return false;
         return true;
     }
 
-    public void tick()
+    public void tick(GameInstance gameInstance)
     {
         if(_target != null && (!_target.isValid() || _target.getLocation().getWorld() != _location.getWorld()))
             _collected = true;
@@ -82,7 +78,7 @@ public abstract class Orb
                     double d2 = p.getLocation().toVector().distanceSquared(_location.toVector());
                     if(d2 <= _captureDistance * _captureDistance)
                     {
-                        GHPlayer gh = GiftHunting.GetPlugin().getGameInstance().getPlayerManager().getGHPlayer(p);
+                        GHPlayer gh = gameInstance.getPlayerManager().getGHPlayer(p);
                         if(gh != null && gh.isValid() && canCapture(gh))
                         {
                             if(d2 < bestDist2)
@@ -98,7 +94,7 @@ public abstract class Orb
 
             if(_target != null)
             {
-                if(canCapture(_target) && _target.getBodyLocation().distance(_location) <= _collectDistance)
+                if(_target.getBodyLocation().distance(_location) <= _collectDistance)
                 {
                     _collected = true;
                     onCollected();
@@ -115,5 +111,15 @@ public abstract class Orb
         _velocity.multiply(Math.exp(-_friction * deltaTime));
 
         onTick();
+    }
+
+    public void setTarget(io.lazysheeep.gifthunting.player.GHPlayer target)
+    {
+        this._target = target;
+    }
+
+    public org.bukkit.Location getLocation()
+    {
+        return _location;
     }
 }

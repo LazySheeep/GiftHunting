@@ -342,7 +342,7 @@ public class GiftManager implements Listener
         if(gift != null && ghPlayer != null)
         {
             int currentTick = GiftHunting.GetPlugin().getServer().getCurrentTick();
-            if(_gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING && currentTick - ghPlayer.lastClickGiftTime >= 4)
+            if(_gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING && currentTick - ghPlayer.lastClickGiftTime >= 3)
             {
                 gift.clicked(ghPlayer);
                 ghPlayer.lastClickGiftTime = currentTick;

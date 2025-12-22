@@ -17,7 +17,7 @@ import io.lazysheeep.gifthunting.factory.CustomItem;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import io.lazysheeep.gifthunting.utils.MCUtil;
-import io.lazysheeep.gifthunting.buffs.JueshengBuff;
+import io.lazysheeep.gifthunting.buffs.DawnBuff;
 
 public class GHPlayer
 {
@@ -332,14 +332,14 @@ public class GHPlayer
         if(victory > 0)
         {
             boolean shouldHave = _score >= (int)(victory * 0.8f);
-            boolean has = hasBuff(JueshengBuff.class);
+            boolean has = hasBuff(DawnBuff.class);
             if(shouldHave && !has)
             {
-                addBuff(new JueshengBuff(-1));
+                addBuff(new DawnBuff(-1));
             }
             else if(!shouldHave && has)
             {
-                removeBuff(JueshengBuff.class);
+                removeBuff(DawnBuff.class);
             }
         }
 

@@ -613,4 +613,22 @@ public class MessageFactory
             1
         );
     }
+
+    public static Message getCapturedItemFromOtherMsg(String sourceName, Component itemName)
+    {
+        TextComponent comp = Component.text("获取了", COLOR_TEXT)
+            .append(Component.text(sourceName, COLOR_VALUE))
+            .append(Component.text("掉落的", COLOR_TEXT))
+            .append(itemName);
+        return new Message(Message.Type.CHAT, comp, Message.LoadMode.REPLACE, 1);
+    }
+
+    public static Message getCapturedScoreFromOtherMsg(String sourceName, int scoreValue)
+    {
+        TextComponent comp = Component.text("获取了", COLOR_TEXT)
+            .append(Component.text(sourceName, COLOR_VALUE))
+            .append(Component.text("掉落的", COLOR_TEXT))
+            .append(Component.text(scoreValue + "分数", COLOR_VARIABLE));
+        return new Message(Message.Type.CHAT, comp, Message.LoadMode.REPLACE, 1);
+    }
 }

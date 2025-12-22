@@ -67,11 +67,17 @@ public class MCUtil
     public static void GiveItem(Player player, ItemStack itemStack)
     {
         PlayerInventory inventory = player.getInventory();
+        int held = inventory.getHeldItemSlot();
+        boolean heldWasEmpty = inventory.getItem(held) == null;
         inventory.addItem(itemStack);
-        int firstEmpty = inventory.firstEmpty();
-        if(firstEmpty >= 0 && firstEmpty <= 8)
+        boolean heldNowEmpty = inventory.getItem(held) == null;
+        if(heldWasEmpty && !heldNowEmpty)
         {
-            inventory.setHeldItemSlot(inventory.firstEmpty());
+            int firstEmpty = inventory.firstEmpty();
+            if(firstEmpty >= 0 && firstEmpty <= 8)
+            {
+                inventory.setHeldItemSlot(firstEmpty);
+            }
         }
         player.playSound(player, Sound.ENTITY_ITEM_PICKUP, SoundCategory.MASTER, 1.0f, 1.0f);
         updatePlayerSlots(player);

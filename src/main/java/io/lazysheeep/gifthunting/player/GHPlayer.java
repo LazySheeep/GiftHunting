@@ -17,6 +17,7 @@ import io.lazysheeep.gifthunting.factory.CustomItem;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import io.lazysheeep.gifthunting.utils.MCUtil;
+import io.lazysheeep.gifthunting.buffs.JueshengBuff;
 
 public class GHPlayer
 {
@@ -101,6 +102,7 @@ public class GHPlayer
         {
             _skillStates.put(Skill.COUNTER, Skill.COUNTER.createDefaultState());
             _skillStates.put(Skill.BOOST, Skill.BOOST.createDefaultState());
+            _skillStates.put(Skill.DAWN, Skill.DAWN.createDefaultState());
         }
         if(gameInstance.getCurrentStateEnum() == io.lazysheeep.gifthunting.game.GHStates.PROGRESSING)
         {
@@ -325,12 +327,26 @@ public class GHPlayer
         _hostPlayer.setFoodLevel(20);
 
         autoCraftBigClub();
-        // removed ensureLockedPlaceholders; updateSlot is called upon inventory mutations
+
+        int victory = _gameInstance.getVictoryScore();
+        if(victory > 0)
+        {
+            boolean shouldHave = _score >= (int)(victory * 0.8f);
+            boolean has = hasBuff(JueshengBuff.class);
+            if(shouldHave && !has)
+            {
+                addBuff(new JueshengBuff(-1));
+            }
+            else if(!shouldHave && has)
+            {
+                removeBuff(JueshengBuff.class);
+            }
+        }
 
         for(Buff buff : _buffs.stream().toList())
         {
             buff.tick(this);
-            if(buff.getRemainingTime() <= 0)
+            if(buff.getRemainingTime() == 0)
             {
                 buff.onRemove(this);
                 _buffs.remove(buff);

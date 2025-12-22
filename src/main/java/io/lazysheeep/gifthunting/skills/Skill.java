@@ -2,10 +2,8 @@ package io.lazysheeep.gifthunting.skills;
 
 import io.lazysheeep.gifthunting.buffs.CounteringBuff;
 import io.lazysheeep.gifthunting.factory.CustomItem;
-import io.lazysheeep.gifthunting.factory.MessageFactory;
 import io.lazysheeep.gifthunting.player.GHPlayer;
 import io.lazysheeep.gifthunting.utils.MCUtil;
-import io.lazysheeep.lazuliui.LazuliUI;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
@@ -36,6 +34,20 @@ public enum Skill
             player.getWorld().playSound(player, Sound.ITEM_FIRECHARGE_USE, SoundCategory.MASTER, 1.0f, 1.0f);
             player.getWorld().spawnParticle(Particle.EXPLOSION, player.getLocation(), 2, 0.2f, 0.2f, 0.2f, 0.5f);
         }
+    },
+    DAWN(CustomItem.SKILL_DAWN_BOW, 1, 1200, 0)
+    {
+        @Override
+        public void onUse(GHPlayer host, SkillState skillState)
+        {
+            host.updateSlot();
+        }
+
+        @Override
+        protected void onChargeGained(GHPlayer host, SkillState state)
+        {
+            MCUtil.GiveItem(host.getPlayer(), CustomItem.SKILL_DAWN_ARROW.create());
+        }
     };
 
     public final CustomItem itemType;
@@ -63,6 +75,10 @@ public enum Skill
         if(!skillState.enabled)
         {
             skillState.enabled = true;
+            if(skillState.charges > 0)
+            {
+                onChargeGained(host, skillState);
+            }
         }
     }
 
@@ -97,6 +113,8 @@ public enum Skill
         return true;
     }
 
+    protected void onChargeGained(GHPlayer host, SkillState state) { }
+
     public void tick(GHPlayer host, SkillState skillState)
     {
         if(!skillState.enabled) return;
@@ -122,6 +140,7 @@ public enum Skill
                 if(skillState.charges < maxCharges)
                 {
                     skillState.charges++;
+                    onChargeGained(host, skillState);
                 }
                 if(skillState.charges < maxCharges)
                 {
@@ -140,14 +159,14 @@ public enum Skill
         ItemStack itemInMainHand = host.getPlayer().getInventory().getItemInMainHand();
         if(CustomItem.checkItem(itemInMainHand) == itemType)
         {
-            var msg = MessageFactory.getSkillCooldownActionbar(
+            var msg = io.lazysheeep.gifthunting.factory.MessageFactory.getSkillCooldownActionbar(
                 skillState.charges,
                 maxCharges,
                 skillState.cooldownTimer,
                 cooldownDuration,
                 skillState.aftercastTimer,
                 aftercastDuration);
-            LazuliUI.sendMessage(host.getPlayer(), msg);
+            io.lazysheeep.lazuliui.LazuliUI.sendMessage(host.getPlayer(), msg);
         }
     }
 

@@ -13,6 +13,7 @@ import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Arrow;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -22,7 +23,12 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.NamespacedKey;
 import org.spongepowered.configurate.ConfigurationNode;
+import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.projectiles.ProjectileSource;
 
 public class SkillManager implements Listener
 {
@@ -34,6 +40,7 @@ public class SkillManager implements Listener
     private int _speedDuration;
     private int _bindDuration;
     private int _bindStacksRequired;
+    private int _oathDuration = 200;
 
     private final GameInstance _gameInstance;
 
@@ -328,6 +335,61 @@ public class SkillManager implements Listener
                 item.setAmount(item.getAmount() - 1);
                 event.setCancelled(true);
             }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onEntityShootBow(EntityShootBowEvent event)
+    {
+        if(!(event.getEntity() instanceof Player shooter)) return;
+        GHPlayer gh = _gameInstance.getPlayerManager().getGHPlayer(shooter);
+        if(gh == null) return;
+        ItemStack bow = event.getBow();
+        if(CustomItem.checkItem(bow) != CustomItem.SKILL_DAWN_BOW) return;
+        ItemStack consumed = event.getConsumable();
+        if(CustomItem.checkItem(consumed) != CustomItem.SKILL_DAWN_ARROW)
+        {
+            event.setCancelled(true);
+            return;
+        }
+        Arrow arrow = (Arrow) event.getProjectile();
+        NamespacedKey key = new NamespacedKey(io.lazysheeep.gifthunting.GiftHunting.GetPlugin(), "dawn_arrow");
+        arrow.getPersistentDataContainer().set(key, PersistentDataType.INTEGER, 1);
+        arrow.setPickupStatus(Arrow.PickupStatus.DISALLOWED);
+        gh.useSkill(Skill.DAWN);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onProjectileHit(ProjectileHitEvent event)
+    {
+        if(!(event.getEntity() instanceof Arrow arrow)) return;
+        NamespacedKey key = new NamespacedKey(io.lazysheeep.gifthunting.GiftHunting.GetPlugin(), "dawn_arrow");
+        Integer tag = arrow.getPersistentDataContainer().get(key, PersistentDataType.INTEGER);
+        if(tag == null || tag != 1) return;
+        ProjectileSource src = arrow.getShooter();
+        if(!(src instanceof Player shooter)) return;
+        GHPlayer attacker = _gameInstance.getPlayerManager().getGHPlayer(shooter);
+        if(attacker == null) return;
+        Entity hit = event.getHitEntity();
+        if(!(hit instanceof Player victimPlayer)) return;
+        GHPlayer victim = _gameInstance.getPlayerManager().getGHPlayer(victimPlayer);
+        if(victim == null) return;
+
+        event.setCancelled(true);
+
+        if(!victim.hasBuff(JueshengBuff.class)) return;
+        if(victim.hasBuff(OathBuff.class)) return;
+
+        if(victim.hasBuff(CounteringBuff.class))
+        {
+            victim.addBuff(new OathBuff(_oathDuration));
+            victim.removeBuff(CounteringBuff.class);
+        }
+        else
+        {
+            int lose = Math.max(1, (int)(victim.getScore() * 0.1f));
+            victim.addScore(-lose);
+            _gameInstance.getOrbManager().addOrb(new ScoreOrb(lose, null, victim.getBodyLocation()).forbid(victim));
         }
     }
 }

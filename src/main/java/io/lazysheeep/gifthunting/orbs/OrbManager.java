@@ -18,6 +18,8 @@ public class OrbManager
 
     public void tick()
     {
+        _orbs.removeIf(Orb::isCollected);
+
         for(Orb orb : _orbs)
         {
             orb.tick();

@@ -59,6 +59,17 @@ public enum CustomItem
             return it;
         }
     },
+    PLACEHOLDER("placeholder", Material.GRAY_STAINED_GLASS_PANE)
+    {
+        @Override public ItemStack create() {
+            ItemStack it = new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE, 1);
+            it.editMeta(meta -> {
+                meta.displayName(Component.text("锁定栏位", NamedTextColor.GRAY));
+                setTypeTag(meta, this);
+            });
+            return it;
+        }
+    },
     SKILL_BOOSTER("booster", Material.WIND_CHARGE, 0)
     {
         @Override public ItemStack create() {
@@ -97,6 +108,39 @@ public enum CustomItem
                 meta.displayName(displayName);
                 meta.lore(lore);
                 meta.addEnchant(Enchantment.UNBREAKING, 1, true);
+                setTypeTag(meta, this);
+            });
+            return it;
+        }
+    },
+    SKILL_DAWN_BOW("dawn_bow", Material.BOW, 2)
+    {
+        @Override public ItemStack create() {
+            ItemStack it = new ItemStack(Material.BOW, 1);
+            Component displayName = Component.text("猎杀黎明之弓", NamedTextColor.LIGHT_PURPLE);
+            List<Component> lore = new ArrayList<>();
+            lore.add(Component.text("冷却: ", NamedTextColor.GOLD).append(Component.text(Skill.DAWN.cooldownDuration / 20 + "s", NamedTextColor.GREEN)));
+            lore.add(Component.text("最大次数: ", NamedTextColor.GOLD).append(Component.text(Skill.DAWN.maxCharges, NamedTextColor.GREEN)));
+            lore.add(Component.text("用于释放技能：猎杀黎明", NamedTextColor.AQUA));
+            it.editMeta(meta -> {
+                meta.displayName(displayName);
+                meta.lore(lore);
+                meta.addEnchant(Enchantment.UNBREAKING, 1, true);
+                setTypeTag(meta, this);
+            });
+            return it;
+        }
+    },
+    SKILL_DAWN_ARROW("dawn_arrow", Material.ARROW, 29)
+    {
+        @Override public ItemStack create() {
+            ItemStack it = new ItemStack(Material.ARROW, 1);
+            Component displayName = Component.text("猎杀黎明之箭", NamedTextColor.LIGHT_PURPLE);
+            List<Component> lore = new ArrayList<>();
+            lore.add(Component.text("用于技能：猎杀黎明", NamedTextColor.AQUA));
+            it.editMeta(meta -> {
+                meta.displayName(displayName);
+                meta.lore(lore);
                 setTypeTag(meta, this);
             });
             return it;
@@ -248,17 +292,6 @@ public enum CustomItem
                 meta.displayName(displayName);
                 meta.lore(lore);
                 meta.addEnchant(Enchantment.UNBREAKING, 1, true);
-                setTypeTag(meta, this);
-            });
-            return it;
-        }
-    },
-    PLACEHOLDER("placeholder", Material.GRAY_STAINED_GLASS_PANE)
-    {
-        @Override public ItemStack create() {
-            ItemStack it = new ItemStack(Material.GRAY_STAINED_GLASS_PANE, 1);
-            it.editMeta(meta -> {
-                meta.displayName(Component.text("锁定栏位", NamedTextColor.GRAY));
                 setTypeTag(meta, this);
             });
             return it;

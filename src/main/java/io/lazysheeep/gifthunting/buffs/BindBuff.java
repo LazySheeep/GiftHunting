@@ -67,17 +67,6 @@ public class BindBuff extends Buff
     }
 
     @Override
-    public boolean tryMerge(Buff otherBuff)
-    {
-        if(otherBuff instanceof BindBuff)
-        {
-            this.remainingTime = Math.max(this.remainingTime, otherBuff.remainingTime);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
     public net.kyori.adventure.text.TextComponent getDisplayName()
     {
         return Component.text("束缚", NamedTextColor.RED);

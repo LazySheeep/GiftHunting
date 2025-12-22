@@ -1,15 +1,13 @@
 package io.lazysheeep.gifthunting.buffs;
 
 import io.lazysheeep.gifthunting.player.GHPlayer;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.Color;
-import org.bukkit.Particle;
 
-public class BlewUpBuff extends Buff
+public class JueshengBuff extends Buff
 {
-    public BlewUpBuff(int duration)
+    public JueshengBuff(int duration)
     {
         super(duration);
     }
@@ -17,24 +15,24 @@ public class BlewUpBuff extends Buff
     @Override
     public void onApply(GHPlayer ghPlayer)
     {
-
+        ghPlayer.getPlayer().setGlowing(true);
     }
 
     @Override
     public void onRemove(GHPlayer ghPlayer)
     {
-
+        ghPlayer.getPlayer().setGlowing(false);
     }
 
     @Override
     protected void onTick(GHPlayer ghPlayer)
     {
-        ghPlayer.getPlayer().getWorld().spawnParticle(Particle.DUST,ghPlayer.getPlayer().getLocation(),5, 0.2, 0.2, 0.2, new Particle.DustOptions(Color.WHITE, 2.0f));
+        ghPlayer.getPlayer().setGlowing(true);
     }
 
     @Override
     public TextComponent getDisplayName()
     {
-        return Component.text("击飞", NamedTextColor.YELLOW);
+        return Component.text("决胜", NamedTextColor.GOLD);
     }
 }

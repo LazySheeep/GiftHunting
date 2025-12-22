@@ -32,17 +32,6 @@ public class SpeedBuff extends Buff
     }
 
     @Override
-    public boolean tryMerge(Buff otherBuff)
-    {
-        if (otherBuff instanceof SpeedBuff)
-        {
-            this.remainingTime = Math.max(this.remainingTime, otherBuff.getRemainingTime());
-            return true;
-        }
-        return false;
-    }
-
-    @Override
     public net.kyori.adventure.text.TextComponent getDisplayName()
     {
         return Component.text("迅捷", NamedTextColor.GREEN);

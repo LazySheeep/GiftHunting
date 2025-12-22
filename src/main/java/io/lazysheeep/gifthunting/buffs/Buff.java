@@ -29,14 +29,32 @@ public abstract class Buff
 
     protected abstract void onTick(GHPlayer ghPlayer);
 
-    public abstract boolean tryMerge(Buff otherBuff);
+    public boolean tryMerge(Buff otherBuff)
+    {
+        if(otherBuff != null && otherBuff.getClass() == this.getClass())
+        {
+            if(this.remainingTime == -1 || otherBuff.remainingTime == -1)
+            {
+                this.remainingTime = -1;
+            }
+            else
+            {
+                this.remainingTime = Math.max(this.remainingTime, otherBuff.remainingTime);
+            }
+            return true;
+        }
+        return false;
+    }
 
     public void tick(GHPlayer ghPlayer)
     {
+        if(remainingTime != 0)
+        {
+            onTick(ghPlayer);
+        }
         if (remainingTime > 0)
         {
             remainingTime--;
-            onTick(ghPlayer);
         }
     }
 }

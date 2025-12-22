@@ -596,10 +596,14 @@ public class MessageFactory
                 comp = comp.append(Component.text("  "));
             }
             first = false;
+            int rt = b.getRemainingTime();
+            TextComponent timeComp = (rt == -1)
+                ? Component.text("∞", COLOR_VALUE)
+                : Component.text(rt / 20, COLOR_VALUE);
             comp = comp
                 .append(b.getDisplayName())
                 .append(Component.text("(", COLOR_PLAIN))
-                .append(Component.text(b.getRemainingTime() / 20, COLOR_VALUE))
+                .append(timeComp)
                 .append(Component.text(")", COLOR_PLAIN));
         }
         return new Message(

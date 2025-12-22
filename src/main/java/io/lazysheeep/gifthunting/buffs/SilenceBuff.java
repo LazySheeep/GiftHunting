@@ -30,17 +30,6 @@ public class SilenceBuff extends Buff
     }
 
     @Override
-    public boolean tryMerge(Buff otherBuff)
-    {
-        if(otherBuff instanceof SilenceBuff)
-        {
-            this.remainingTime = Math.max(this.remainingTime, otherBuff.getRemainingTime());
-            return true;
-        }
-        return false;
-    }
-
-    @Override
     public net.kyori.adventure.text.TextComponent getDisplayName()
     {
         return Component.text("沉默", NamedTextColor.YELLOW);

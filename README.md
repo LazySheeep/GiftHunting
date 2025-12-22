@@ -1,7 +1,5 @@
 # GiftHunting - A Minecraft minigame
 
-- 10个木棍合成大木棍
-
 【G】视角始终锁定到距离最近的礼物盒
 
 得分 > 80% 时，获得【决胜】Buff，始终赋予玩家发光效果，免疫所有负面效果

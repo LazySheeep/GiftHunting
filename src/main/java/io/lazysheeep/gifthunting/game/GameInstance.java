@@ -165,18 +165,6 @@ public class GameInstance extends StateMachine<GameInstance, GHStates> implement
     }
 
     @Override
-    protected void onBeforeSwitch(GHStates newState, GHStates oldState)
-    {
-
-    }
-
-    @Override
-    protected void onAfterSwitch(GHStates oldState, GHStates newState)
-    {
-        GiftHunting.Log(Level.INFO, "Game state changed: " + oldState + " -> " + newState);
-    }
-
-    @Override
     protected State<GameInstance, GHStates> createState(GHStates state)
     {
         return switch (state)

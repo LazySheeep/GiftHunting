@@ -21,7 +21,7 @@ import io.lazysheeep.gifthunting.utils.MCUtil;
 public class GHPlayer
 {
     private Player _hostPlayer;
-    private final GameInstance _gameInstance;
+    private GameInstance _gameInstance;
     private int _score = 0;
     private final HashSet<Buff> _buffs = new HashSet<>();
     public int lastClickGiftTime = 0;
@@ -31,11 +31,6 @@ public class GHPlayer
     public @NotNull Player getPlayer()
     {
         return _hostPlayer;
-    }
-
-    public void reconnect(@NotNull Player player)
-    {
-        _hostPlayer = player;
     }
 
     public UUID getUUID()
@@ -94,12 +89,34 @@ public class GHPlayer
         this._score = score;
     }
 
-    GHPlayer(@NotNull Player player, @NotNull GameInstance gameInstance)
+    GHPlayer()
     {
-        _hostPlayer = player;
+    }
+
+    public void onConnect(@NotNull GameInstance gameInstance, @NotNull Player player)
+    {
         _gameInstance = gameInstance;
-        _skillStates.put(Skill.COUNTER, Skill.COUNTER.createDefaultState());
-        _skillStates.put(Skill.BOOST, Skill.BOOST.createDefaultState());
+        _hostPlayer = player;
+        if(_skillStates.isEmpty())
+        {
+            _skillStates.put(Skill.COUNTER, Skill.COUNTER.createDefaultState());
+            _skillStates.put(Skill.BOOST, Skill.BOOST.createDefaultState());
+        }
+        if(gameInstance.getCurrentStateEnum() == io.lazysheeep.gifthunting.game.GHStates.PROGRESSING)
+        {
+            enableAllSkills();
+        }
+        else
+        {
+            disableAllSkills();
+        }
+        updateSlot();
+    }
+
+    public void onDisconnect(@NotNull GameInstance gameInstance)
+    {
+        disableAllSkills();
+        updateSlot();
     }
 
     public void addBuff(@NotNull Buff buff)
@@ -152,6 +169,22 @@ public class GHPlayer
         }
     }
 
+    public void enableAllSkills()
+    {
+        for(Map.Entry<Skill, SkillState> e : _skillStates.entrySet())
+        {
+            e.getKey().onEnable(this, e.getValue());
+        }
+    }
+
+    public void disableAllSkills()
+    {
+        for(Map.Entry<Skill, SkillState> e : _skillStates.entrySet())
+        {
+            e.getKey().onDisable(this, e.getValue());
+        }
+    }
+
     public boolean useSkill(@NotNull Skill skill)
     {
         SkillState skillState = getSkillState(skill);
@@ -193,6 +226,94 @@ public class GHPlayer
         }
     }
 
+    public void updateSlot()
+    {
+        PlayerInventory inv = _hostPlayer.getInventory();
+        HashMap<Integer, CustomItem> lockedMap = new HashMap<>();
+        for(CustomItem ci : CustomItem.values())
+        {
+            if(ci.lockedSlot >= 0 && ci.lockedSlot < inv.getSize())
+            {
+                lockedMap.put(ci.lockedSlot, ci);
+            }
+        }
+
+        ArrayList<ItemStack> itemCache = new ArrayList<>();
+        // remove wrong items from locked slots
+        for(Map.Entry<Integer, CustomItem> e : lockedMap.entrySet())
+        {
+            int slot = e.getKey();
+            CustomItem target = e.getValue();
+            ItemStack slotItem = inv.getItem(slot);
+            CustomItem slotType = CustomItem.checkItem(slotItem);
+            if(slotItem != null && slotType != CustomItem.PLACEHOLDER && slotType != target)
+            {
+                inv.setItem(slot, null);
+                itemCache.add(slotItem);
+            }
+        }
+        // collect locked items from non-locked slots
+        HashSet<Integer> lockedSlots = new HashSet<>(lockedMap.keySet());
+        HashMap<CustomItem, Integer> totalCounts = new HashMap<>();
+        for(int i = 0; i < inv.getSize(); i++)
+        {
+            if(lockedSlots.contains(i)) continue;
+            ItemStack it = inv.getItem(i);
+            CustomItem type = CustomItem.checkItem(it);
+            if(type != null && type.lockedSlot >= 0)
+            {
+                totalCounts.put(type, totalCounts.getOrDefault(type, 0) + it.getAmount());
+                inv.setItem(i, null);
+            }
+        }
+        // place locked items
+        for(Map.Entry<Integer, CustomItem> e : lockedMap.entrySet())
+        {
+            int slot = e.getKey();
+            CustomItem target = e.getValue();
+            int available = totalCounts.getOrDefault(target, 0);
+            if(available <= 0) continue;
+
+            ItemStack current = inv.getItem(slot);
+            CustomItem currentType = CustomItem.checkItem(current);
+            if(current != null && currentType == target)
+            {
+                int max = current.getMaxStackSize();
+                int space = Math.max(0, max - current.getAmount());
+                if(space > 0)
+                {
+                    int use = Math.min(space, available);
+                    current.setAmount(current.getAmount() + use);
+                    totalCounts.put(target, available - use);
+                }
+            }
+            else
+            {
+                ItemStack stack = target.create();
+                int max = stack.getMaxStackSize();
+                int toPlace = Math.min(max, available);
+                stack.setAmount(toPlace);
+                inv.setItem(slot, stack);
+                totalCounts.put(target, available - toPlace);
+            }
+        }
+        // place placeholders
+        for(Map.Entry<Integer, CustomItem> e : lockedMap.entrySet())
+        {
+            int slot = e.getKey();
+            ItemStack slotItem = inv.getItem(slot);
+            if(slotItem == null)
+            {
+                inv.setItem(slot, CustomItem.PLACEHOLDER.create());
+            }
+        }
+        // restore cached items
+        for(ItemStack cached : itemCache)
+        {
+            inv.addItem(cached);
+        }
+    }
+
     void tick()
     {
         if(_hostPlayer == null || !_hostPlayer.isConnected())
@@ -204,6 +325,7 @@ public class GHPlayer
         _hostPlayer.setFoodLevel(20);
 
         autoCraftBigClub();
+        // removed ensureLockedPlaceholders; updateSlot is called upon inventory mutations
 
         for(Buff buff : _buffs.stream().toList())
         {

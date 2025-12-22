@@ -7,6 +7,7 @@ public class SkillState
     public int aftercastTimer;
     public boolean overlayAftercastApplied;
     public boolean overlayCooldownApplied;
+    public boolean enabled;
 
     public SkillState(int initialCharges)
     {
@@ -15,5 +16,6 @@ public class SkillState
         this.aftercastTimer = 0;
         this.overlayAftercastApplied = false;
         this.overlayCooldownApplied = false;
+        this.enabled = false;
     }
 }

@@ -1,6 +1,7 @@
 package io.lazysheeep.gifthunting.player;
 
 import io.lazysheeep.gifthunting.GiftHunting;
+import io.lazysheeep.gifthunting.factory.CustomItem;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
 import io.lazysheeep.gifthunting.game.GHStates;
 import io.lazysheeep.gifthunting.game.GameInstance;
@@ -13,6 +14,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -71,26 +75,6 @@ public class GHPlayerManager implements Listener
         _gameInstance = gameInstance;
     }
 
-    private void createGHPlayer(@NotNull Player player)
-    {
-        GHPlayer ghPlayer = new GHPlayer(player, _gameInstance);
-        MCUtil.ClearInventory(player);
-        _ghPlayers.put(player.getUniqueId(), ghPlayer);
-    }
-
-    private void reconnectGHPlayer(@NotNull GHPlayer offlineGHPlayer, @NotNull Player player)
-    {
-        offlineGHPlayer.reconnect(player);
-        _offlineGHPlayers.remove(player.getUniqueId());
-        _ghPlayers.put(player.getUniqueId(), offlineGHPlayer);
-    }
-
-    private void destroyGHPlayer(@NotNull GHPlayer ghPlayer)
-    {
-        LazuliUI.flush(ghPlayer.getPlayer());
-        ghPlayer.destroy();
-    }
-
     public @Nullable GHPlayer getGHPlayer(@NotNull Player player)
     {
         return _ghPlayers.get(player.getUniqueId());
@@ -108,17 +92,16 @@ public class GHPlayerManager implements Listener
 
     public void tick()
     {
-        // Remove GHPlayers that should not be GHPlayers
         for(GHPlayer ghPlayer : getOnlineGHPlayers())
         {
             if(!shouldBeGHPlayer(ghPlayer.getPlayer()))
             {
                 _ghPlayers.remove(ghPlayer.getUUID());
                 _offlineGHPlayers.put(ghPlayer.getUUID(), ghPlayer);
+                ghPlayer.onDisconnect(_gameInstance);
                 LazuliUI.sendMessage(ghPlayer.getPlayer(), MessageFactory.getOnNoLongerGHPlayerMsg());
             }
         }
-        // Create GHPlayers that should be GHPlayers
         for(Player player : GiftHunting.GetPlugin().getServer().getOnlinePlayers())
         {
             if(shouldBeGHPlayer(player) && !isGHPlayer(player))
@@ -126,22 +109,28 @@ public class GHPlayerManager implements Listener
                 boolean isReconnecting = false;
                 for(GHPlayer offlineGHPlayer : getOfflineGHPlayers())
                 {
+                    // reconnect
                     if(offlineGHPlayer.getUUID().equals(player.getUniqueId()))
                     {
-                        reconnectGHPlayer(offlineGHPlayer, player);
+                        _offlineGHPlayers.remove(player.getUniqueId());
+                        _ghPlayers.put(player.getUniqueId(), offlineGHPlayer);
+                        offlineGHPlayer.onConnect(_gameInstance, player);
                         LazuliUI.sendMessage(player, MessageFactory.getOnReconnectGHPlayerMsg());
                         isReconnecting = true;
                         break;
                     }
                 }
+                // create
                 if(!isReconnecting)
                 {
-                    createGHPlayer(player);
+                    GHPlayer ghPlayer = new GHPlayer();
+                    MCUtil.ClearInventory(player);
+                    ghPlayer.onConnect(_gameInstance, player);
+                    _ghPlayers.put(player.getUniqueId(), ghPlayer);
                     LazuliUI.sendMessage(player, MessageFactory.getOnBecomeGHPlayerMsg());
                 }
             }
         }
-        // Tick GHPlayers
         if(_gameInstance.getCurrentStateEnum() != GHStates.IDLE)
         {
             for(GHPlayer ghPlayer : getOnlineGHPlayers())
@@ -151,7 +140,6 @@ public class GHPlayerManager implements Listener
         }
     }
 
-    // player fall damage
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityDamage(EntityDamageEvent event)
     {
@@ -164,12 +152,41 @@ public class GHPlayerManager implements Listener
         }
     }
 
-    // protect itemFrame
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerItemFrameChange(PlayerItemFrameChangeEvent event)
     {
         Player player = event.getPlayer();
         if(!player.hasPermission("op") && isGHPlayer(player))
+        {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onInventoryClick(InventoryClickEvent event)
+    {
+        if(!(event.getWhoClicked() instanceof Player player)) return;
+        GHPlayer gh = getGHPlayer(player);
+        if(gh == null) return;
+        int slot = event.getSlot();
+        for(CustomItem ci : CustomItem.values())
+        {
+            if(ci.lockedSlot >= 0 && ci.lockedSlot == slot)
+            {
+                event.setCancelled(true);
+                return;
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onPlayerDropItem(PlayerDropItemEvent event)
+    {
+        Player player = event.getPlayer();
+        GHPlayer gh = getGHPlayer(player);
+        if(gh == null) return;
+        ItemStack stack = event.getItemDrop().getItemStack();
+        if(CustomItem.checkItem(stack) != null)
         {
             event.setCancelled(true);
         }

@@ -1,7 +1,10 @@
 package io.lazysheeep.gifthunting.game;
 
+import io.lazysheeep.gifthunting.GiftHunting;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 
 public abstract class StateMachine<SM extends StateMachine<SM, S>, S extends Enum<S>>
 {
@@ -29,12 +32,11 @@ public abstract class StateMachine<SM extends StateMachine<SM, S>, S extends Enu
         S oldStateEnum = _currentStateEnum;
         State<SM, S> oldState = _currentState;
         State<SM, S> newState = getStateCached(newStateEnum);
-        onBeforeSwitch(oldStateEnum, newStateEnum);
         oldState.onExit((SM)this);
         newState.onEnter((SM)this);
         _currentStateEnum = newStateEnum;
         _currentState = newState;
-        onAfterSwitch(oldStateEnum, newStateEnum);
+        GiftHunting.Log(Level.INFO, "Game state changed: " + oldStateEnum + " -> " + newStateEnum);
     }
 
     public void tick()
@@ -52,8 +54,4 @@ public abstract class StateMachine<SM extends StateMachine<SM, S>, S extends Enu
     }
 
     protected abstract State<SM, S> createState(S state);
-
-    protected abstract void onBeforeSwitch(S oldState, S newState);
-
-    protected abstract void onAfterSwitch(S oldState, S newState);
 }

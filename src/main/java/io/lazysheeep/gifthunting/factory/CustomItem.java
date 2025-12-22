@@ -59,7 +59,7 @@ public enum CustomItem
             return it;
         }
     },
-    SKILL_BOOSTER("booster", Material.WIND_CHARGE)
+    SKILL_BOOSTER("booster", Material.WIND_CHARGE, 0)
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.WIND_CHARGE, 1);
@@ -71,6 +71,28 @@ public enum CustomItem
             lore.add(Component.text("在助跑起跳时弹射效果最佳", NamedTextColor.AQUA));
             lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
             lore.add(Component.text("飞起来！", NamedTextColor.GRAY));
+            it.editMeta(meta -> {
+                meta.displayName(displayName);
+                meta.lore(lore);
+                meta.addEnchant(Enchantment.UNBREAKING, 1, true);
+                setTypeTag(meta, this);
+            });
+            return it;
+        }
+    },
+    SKILL_COUNTER("counter", Material.ENDER_EYE, 1)
+    {
+        @Override public ItemStack create() {
+            ItemStack it = new ItemStack(Material.ENDER_EYE, 1);
+            Component displayName = Component.text("技能：识破", NamedTextColor.LIGHT_PURPLE);
+            List<Component> lore = new ArrayList<>();
+            lore.add(Component.text("冷却: ", NamedTextColor.GOLD).append(Component.text(Skill.COUNTER.cooldownDuration / 20 + "s", NamedTextColor.GREEN)));
+            lore.add(Component.text("持续时间: ", NamedTextColor.GOLD).append(Component.text(Skill.COUNTER.aftercastDuration, NamedTextColor.GREEN)));
+            lore.add(Component.text("最大次数: ", NamedTextColor.GOLD).append(Component.text(Skill.COUNTER.maxCharges, NamedTextColor.GREEN)));
+            lore.add(Component.text("能够在短时间内内", NamedTextColor.AQUA));
+            lore.add(Component.text("反弹一次他人对你使用的技能", NamedTextColor.AQUA));
+            lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
+            lore.add(Component.text("接下来，时机很重要", NamedTextColor.GRAY));
             it.editMeta(meta -> {
                 meta.displayName(displayName);
                 meta.lore(lore);
@@ -143,28 +165,6 @@ public enum CustomItem
             lore.add(Component.text("使周围玩家无法开启礼物和使用道具", NamedTextColor.AQUA));
             lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
             lore.add(Component.text("为什么不说话，是不喜欢吗", NamedTextColor.GRAY));
-            it.editMeta(meta -> {
-                meta.displayName(displayName);
-                meta.lore(lore);
-                meta.addEnchant(Enchantment.UNBREAKING, 1, true);
-                setTypeTag(meta, this);
-            });
-            return it;
-        }
-    },
-    SKILL_COUNTER("counter", Material.ENDER_EYE)
-    {
-        @Override public ItemStack create() {
-            ItemStack it = new ItemStack(Material.ENDER_EYE, 1);
-            Component displayName = Component.text("技能：识破", NamedTextColor.LIGHT_PURPLE);
-            List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("冷却: ", NamedTextColor.GOLD).append(Component.text(Skill.COUNTER.cooldownDuration / 20 + "s", NamedTextColor.GREEN)));
-            lore.add(Component.text("持续时间: ", NamedTextColor.GOLD).append(Component.text(Skill.COUNTER.aftercastDuration, NamedTextColor.GREEN)));
-            lore.add(Component.text("最大次数: ", NamedTextColor.GOLD).append(Component.text(Skill.COUNTER.maxCharges, NamedTextColor.GREEN)));
-            lore.add(Component.text("能够在短时间内内", NamedTextColor.AQUA));
-            lore.add(Component.text("反弹一次他人对你使用的技能", NamedTextColor.AQUA));
-            lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
-            lore.add(Component.text("接下来，时机很重要", NamedTextColor.GRAY));
             it.editMeta(meta -> {
                 meta.displayName(displayName);
                 meta.lore(lore);
@@ -252,12 +252,25 @@ public enum CustomItem
             });
             return it;
         }
+    },
+    PLACEHOLDER("placeholder", Material.GRAY_STAINED_GLASS_PANE)
+    {
+        @Override public ItemStack create() {
+            ItemStack it = new ItemStack(Material.GRAY_STAINED_GLASS_PANE, 1);
+            it.editMeta(meta -> {
+                meta.displayName(Component.text("锁定栏位", NamedTextColor.GRAY));
+                setTypeTag(meta, this);
+            });
+            return it;
+        }
     };
 
     public final String id;
     public final Material material;
+    public final int lockedSlot;
 
-    CustomItem(String id, Material material) { this.id = id; this.material = material; }
+    CustomItem(String id, Material material) { this(id, material, -1); }
+    CustomItem(String id, Material material, int lockedSlot) { this.id = id; this.material = material; this.lockedSlot = lockedSlot; }
 
     public static @Nullable CustomItem fromId(String id)
     {

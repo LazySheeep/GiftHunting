@@ -130,6 +130,7 @@ class ProgressingState extends State<GameInstance, GHStates>
             LazuliUI.sendMessage(player, MessageFactory.getGameStartMsg());
             LazuliUI.sendMessage(player, MessageFactory.getProgressingActionbarSuffix(ghPlayer));
             LazuliUI.sendMessage(player, MessageFactory.getGameStartActionbar());
+            ghPlayer.enableAllSkills();
         }
     }
 
@@ -239,6 +240,7 @@ class ProgressingState extends State<GameInstance, GHStates>
     @Override
     public void onExit(GameInstance gameInstance)
     {
+        for(var gh : gameInstance.getPlayerManager().getOnlineGHPlayers()) gh.disableAllSkills();
         // clear gifts
         gameInstance.getGiftManager().removeAllGifts();
     }

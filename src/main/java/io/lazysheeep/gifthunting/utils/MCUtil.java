@@ -1,11 +1,11 @@
 package io.lazysheeep.gifthunting.utils;
 
+import io.lazysheeep.gifthunting.GiftHunting;
 import io.lazysheeep.gifthunting.factory.CustomItem;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.util.Vector;
 
 import java.util.*;
 
@@ -50,18 +50,17 @@ public class MCUtil
                 inventory.clear(i);
             }
         }
+        updatePlayerSlots(player);
     }
 
-    public static void SpawnDustLineParticle(Location start, Location end, float step, Color color, float size)
+    private static void updatePlayerSlots(Player player)
     {
-        double distance = start.distance(end);
-        Vector stepVector = end.toVector().subtract(start.toVector()).normalize().multiply(step);
-        int stepCount = (int)Math.ceil(distance / step);
-        Location particleLocation = start.clone();
-        for(int i = 0; i < stepCount; i++)
+        var gi = GiftHunting.GetPlugin().getGameInstance();
+        if(gi == null) return;
+        var gh = gi.getPlayerManager().getGHPlayer(player);
+        if(gh != null)
         {
-            particleLocation.getWorld().spawnParticle(Particle.DUST, particleLocation, 1, new Particle.DustOptions(color, size));
-            particleLocation.add(stepVector);
+            gh.updateSlot();
         }
     }
 
@@ -75,16 +74,12 @@ public class MCUtil
             inventory.setHeldItemSlot(inventory.firstEmpty());
         }
         player.playSound(player, Sound.ENTITY_ITEM_PICKUP, SoundCategory.MASTER, 1.0f, 1.0f);
+        updatePlayerSlots(player);
     }
 
-    public static void RemovePlayerItem(Player player, ItemStack itemToRemove)
+    public static void RemoveItem(Player player, CustomItem customItem)
     {
-        PlayerInventory inventory = player.getInventory();
-        for(ItemStack item : inventory)
-        {
-            if(item != null && item.isSimilar(itemToRemove))
-                inventory.remove(item);
-        }
+        RemoveItem(player, customItem, Integer.MAX_VALUE);
     }
 
     public static void RemoveItem(Player player, CustomItem customItem, int count)
@@ -105,6 +100,20 @@ public class MCUtil
                 }
                 remaining -= take;
             }
+        }
+        updatePlayerSlots(player);
+    }
+
+    public static void SpawnDustLineParticle(Location start, Location end, float step, Color color, float size)
+    {
+        double distance = start.distance(end);
+        org.bukkit.util.Vector stepVector = end.toVector().subtract(start.toVector()).normalize().multiply(step);
+        int stepCount = (int)Math.ceil(distance / step);
+        Location particleLocation = start.clone();
+        for(int i = 0; i < stepCount; i++)
+        {
+            particleLocation.getWorld().spawnParticle(Particle.DUST, particleLocation, 1, new Particle.DustOptions(color, size));
+            particleLocation.add(stepVector);
         }
     }
 }

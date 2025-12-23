@@ -3,6 +3,7 @@ package io.lazysheeep.gifthunting.factory;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
 import io.lazysheeep.gifthunting.skills.Skill;
+import io.papermc.paper.datacomponent.item.UseCooldown;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -14,6 +15,7 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.meta.components.UseCooldownComponent;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
@@ -70,13 +72,13 @@ public enum CustomItem
             return it;
         }
     },
-    SKILL_BOOSTER("booster", Material.WIND_CHARGE, 0)
+    SKILL_BOOSTER("skill_item_booster", Material.WIND_CHARGE, 0)
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.WIND_CHARGE, 1);
-            Component displayName = Component.text("技能：弹射", NamedTextColor.LIGHT_PURPLE);
+            Component displayName = Component.text("技能: 弹射", NamedTextColor.LIGHT_PURPLE);
             List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("冷却: ", NamedTextColor.GOLD).append(Component.text(Skill.BOOST.cooldownDuration / 20 + "s", NamedTextColor.GREEN)));
+            lore.add(Component.text("冷却: ", NamedTextColor.GOLD).append(Component.text(String.format("%.1fs", Skill.BOOST.cooldownDuration / 20f), NamedTextColor.GREEN)));
             lore.add(Component.text("最大次数: ", NamedTextColor.GOLD).append(Component.text(Skill.BOOST.maxCharges, NamedTextColor.GREEN)));
             lore.add(Component.text("将自己向所指的方向弹射", NamedTextColor.AQUA));
             lore.add(Component.text("在助跑起跳时弹射效果最佳", NamedTextColor.AQUA));
@@ -91,14 +93,14 @@ public enum CustomItem
             return it;
         }
     },
-    SKILL_COUNTER("counter", Material.ENDER_EYE, 1)
+    SKILL_COUNTER("skill_item_counter", Material.ENDER_EYE, 1)
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.ENDER_EYE, 1);
-            Component displayName = Component.text("技能：识破", NamedTextColor.LIGHT_PURPLE);
+            Component displayName = Component.text("技能: 识破", NamedTextColor.LIGHT_PURPLE);
             List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("冷却: ", NamedTextColor.GOLD).append(Component.text(Skill.COUNTER.cooldownDuration / 20 + "s", NamedTextColor.GREEN)));
-            lore.add(Component.text("持续时间: ", NamedTextColor.GOLD).append(Component.text(Skill.COUNTER.aftercastDuration, NamedTextColor.GREEN)));
+            lore.add(Component.text("冷却: ", NamedTextColor.GOLD).append(Component.text(String.format("%.1fs", Skill.COUNTER.cooldownDuration / 20f), NamedTextColor.GREEN)));
+            lore.add(Component.text("持续时间: ", NamedTextColor.GOLD).append(Component.text(String.format("%.1fs", Skill.COUNTER.aftercastDuration / 20f), NamedTextColor.GREEN)));
             lore.add(Component.text("最大次数: ", NamedTextColor.GOLD).append(Component.text(Skill.COUNTER.maxCharges, NamedTextColor.GREEN)));
             lore.add(Component.text("能够在短时间内内", NamedTextColor.AQUA));
             lore.add(Component.text("反弹一次他人对你使用的技能", NamedTextColor.AQUA));
@@ -113,13 +115,14 @@ public enum CustomItem
             return it;
         }
     },
-    SKILL_DAWN_BOW("dawn_bow", Material.BOW, 2)
+    SKILL_DAWN_BOW("skill_dawn_bow", Material.BOW, 2)
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.BOW, 1);
-            Component displayName = Component.text("猎杀黎明之弓", NamedTextColor.LIGHT_PURPLE);
+            Component displayName = Component.text("技能: 猎杀黎明", NamedTextColor.LIGHT_PURPLE);
             List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("冷却: ", NamedTextColor.GOLD).append(Component.text(Skill.DAWN.cooldownDuration / 20 + "s", NamedTextColor.GREEN)));
+            String cd = String.format("%.1fs", Skill.DAWN.cooldownDuration / 20f);
+            lore.add(Component.text("冷却: ", NamedTextColor.GOLD).append(Component.text(cd, NamedTextColor.GREEN)));
             lore.add(Component.text("最大次数: ", NamedTextColor.GOLD).append(Component.text(Skill.DAWN.maxCharges, NamedTextColor.GREEN)));
             lore.add(Component.text("用于释放技能：猎杀黎明", NamedTextColor.AQUA));
             it.editMeta(meta -> {

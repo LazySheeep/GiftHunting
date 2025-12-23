@@ -15,6 +15,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerChangedMainHandEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -92,6 +93,7 @@ public class GHPlayerManager implements Listener
 
     public void tick()
     {
+        // disconnect players
         for(GHPlayer ghPlayer : getOnlineGHPlayers())
         {
             if(!shouldBeGHPlayer(ghPlayer.getPlayer()))
@@ -102,6 +104,7 @@ public class GHPlayerManager implements Listener
                 LazuliUI.sendMessage(ghPlayer.getPlayer(), MessageFactory.getOnNoLongerGHPlayerMsg());
             }
         }
+        // connect players
         for(Player player : GiftHunting.GetPlugin().getServer().getOnlinePlayers())
         {
             if(shouldBeGHPlayer(player) && !isGHPlayer(player))
@@ -131,6 +134,7 @@ public class GHPlayerManager implements Listener
                 }
             }
         }
+        // tick players
         if(_gameInstance.getCurrentStateEnum() != GHStates.IDLE)
         {
             for(GHPlayer ghPlayer : getOnlineGHPlayers())

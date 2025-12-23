@@ -2,8 +2,11 @@ package io.lazysheeep.gifthunting.skills;
 
 import io.lazysheeep.gifthunting.buffs.CounteringBuff;
 import io.lazysheeep.gifthunting.factory.CustomItem;
+import io.lazysheeep.gifthunting.factory.MessageFactory;
 import io.lazysheeep.gifthunting.player.GHPlayer;
 import io.lazysheeep.gifthunting.utils.MCUtil;
+import io.lazysheeep.lazuliui.LazuliUI;
+import io.lazysheeep.lazuliui.Message;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
@@ -48,16 +51,23 @@ public enum Skill
         {
             MCUtil.GiveItem(host.getPlayer(), CustomItem.SKILL_DAWN_ARROW.create());
         }
+
+        @Override
+        public void onDisable(GHPlayer host, SkillState skillState)
+        {
+            super.onDisable(host, skillState);
+            MCUtil.RemoveItem(host.getPlayer(), CustomItem.SKILL_DAWN_ARROW);
+        }
     };
 
-    public final CustomItem itemType;
+    public final CustomItem skillItem;
     public final int maxCharges;
     public final int cooldownDuration;
     public final int aftercastDuration;
 
-    Skill(CustomItem itemType, int maxCharges, int cooldownDuration, int aftercastDuration)
+    Skill(CustomItem skillItem, int maxCharges, int cooldownDuration, int aftercastDuration)
     {
-        this.itemType = itemType;
+        this.skillItem = skillItem;
         this.maxCharges = maxCharges;
         this.cooldownDuration = cooldownDuration;
         this.aftercastDuration = aftercastDuration;
@@ -67,47 +77,47 @@ public enum Skill
 
     public SkillState createDefaultState()
     {
-        return new SkillState(maxCharges);
+        return new SkillState();
     }
 
     public void onEnable(GHPlayer host, SkillState skillState)
     {
-        if(!skillState.enabled)
+        if(skillState.charges > 0)
         {
-            skillState.enabled = true;
-            if(skillState.charges > 0)
-            {
-                onChargeGained(host, skillState);
-            }
+            onChargeGained(host, skillState);
+        }
+        if(skillState.charges < maxCharges && skillState.cooldownTimer == -1)
+        {
+            skillState.cooldownTimer = 0;
+            skillState.overlayCooldownApplied = false;
         }
     }
 
     public void onDisable(GHPlayer host, SkillState skillState)
     {
-        if(skillState.enabled)
-        {
-            skillState.enabled = false;
-            MCUtil.RemoveItem(host.getPlayer(), itemType);
-        }
+        MCUtil.RemoveItem(host.getPlayer(), skillItem);
+        skillState.overlayCooldownApplied = false;
+        skillState.overlayAftercastApplied = false;
     }
 
     public boolean tryUse(GHPlayer host, SkillState skillState)
     {
         if(!skillState.enabled) return false;
-        if(skillState.charges <= 0 || skillState.aftercastTimer > 0)
-        {
-            return false;
-        }
+        if(skillState.charges <= 0 || skillState.aftercastTimer >= 0) return false;
         if(aftercastDuration > 0)
         {
-            skillState.aftercastTimer = aftercastDuration;
+            skillState.aftercastTimer = 0;
             skillState.overlayAftercastApplied = false;
         }
         else
         {
             skillState.charges--;
-            if(skillState.cooldownTimer <= 0) skillState.cooldownTimer = cooldownDuration;
-            skillState.overlayCooldownApplied = false;
+            if(skillState.cooldownTimer == -1)
+            {
+                skillState.cooldownTimer = 0;
+                skillState.overlayCooldownApplied = false;
+                applyCooldownOverlayIfNeeded(host, skillState);
+            }
         }
         onUse(host, skillState);
         return true;
@@ -118,55 +128,76 @@ public enum Skill
     public void tick(GHPlayer host, SkillState skillState)
     {
         if(!skillState.enabled) return;
+
         ensureItemPresent(host);
-        if(skillState.aftercastTimer > 0)
+
+        if(aftercastDuration > 0 && skillState.aftercastTimer >= 0)
         {
             applyAftercastOverlayIfNeeded(host, skillState);
-            skillState.aftercastTimer--;
-            if(skillState.aftercastTimer <= 0)
+            skillState.aftercastTimer++;
+            if(skillState.aftercastTimer >= aftercastDuration)
             {
+                skillState.aftercastTimer = -1;
+                skillState.overlayAftercastApplied = false;
                 skillState.charges--;
                 if(skillState.charges < 0) skillState.charges = 0;
-                if(skillState.cooldownTimer <= 0) skillState.cooldownTimer = cooldownDuration;
-                skillState.overlayCooldownApplied = false;
-            }
-        }
-        else if(skillState.cooldownTimer > 0)
-        {
-            applyCooldownOverlayIfNeeded(host, skillState);
-            skillState.cooldownTimer--;
-            if(skillState.cooldownTimer <= 0)
-            {
-                if(skillState.charges < maxCharges)
+                if(skillState.charges < maxCharges && skillState.cooldownTimer == -1)
                 {
-                    skillState.charges++;
-                    onChargeGained(host, skillState);
-                }
-                if(skillState.charges < maxCharges)
-                {
-                    skillState.cooldownTimer = cooldownDuration;
+                    skillState.cooldownTimer = 0;
                     skillState.overlayCooldownApplied = false;
                 }
             }
         }
         else
         {
-            clearOverlayIfIdle(host, skillState);
+            if(skillState.charges < maxCharges)
+            {
+                if(skillState.cooldownTimer == -1)
+                {
+                    skillState.cooldownTimer = 0;
+                    skillState.overlayCooldownApplied = false;
+                }
+                else
+                {
+                    applyCooldownOverlayIfNeeded(host, skillState);
+                    skillState.cooldownTimer++;
+                    if(skillState.cooldownTimer >= cooldownDuration)
+                    {
+                        skillState.cooldownTimer = -1;
+                        skillState.overlayCooldownApplied = false;
+                        if(skillState.charges < maxCharges)
+                        {
+                            skillState.charges++;
+                            onChargeGained(host, skillState);
+                            if(skillState.charges < maxCharges)
+                            {
+                                skillState.cooldownTimer = 0;
+                                skillState.overlayCooldownApplied = false;
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                skillState.cooldownTimer = -1;
+                clearOverlayIfIdle(host, skillState);
+            }
         }
 
         syncItemAmount(host, skillState);
 
         ItemStack itemInMainHand = host.getPlayer().getInventory().getItemInMainHand();
-        if(CustomItem.checkItem(itemInMainHand) == itemType)
+        if(CustomItem.checkItem(itemInMainHand) == skillItem)
         {
-            var msg = io.lazysheeep.gifthunting.factory.MessageFactory.getSkillCooldownActionbar(
+            Message msg = MessageFactory.getSkillCooldownActionbar(
                 skillState.charges,
                 maxCharges,
                 skillState.cooldownTimer,
                 cooldownDuration,
                 skillState.aftercastTimer,
                 aftercastDuration);
-            io.lazysheeep.lazuliui.LazuliUI.sendMessage(host.getPlayer(), msg);
+            LazuliUI.sendMessage(host.getPlayer(), msg);
         }
     }
 
@@ -176,7 +207,7 @@ public enum Skill
         boolean has = false;
         for(ItemStack it : p.getInventory())
         {
-            if(CustomItem.checkItem(it) == itemType)
+            if(CustomItem.checkItem(it) == skillItem)
             {
                 has = true;
                 break;
@@ -184,7 +215,7 @@ public enum Skill
         }
         if(!has)
         {
-            MCUtil.GiveItem(p, itemType.create());
+            MCUtil.GiveItem(p, skillItem.create());
         }
     }
 
@@ -194,7 +225,7 @@ public enum Skill
         ItemStack found = null;
         for(ItemStack it : p.getInventory())
         {
-            if(CustomItem.checkItem(it) == itemType)
+            if(CustomItem.checkItem(it) == skillItem)
             {
                 found = it;
                 break;
@@ -209,10 +240,10 @@ public enum Skill
 
     private void applyAftercastOverlayIfNeeded(GHPlayer host, SkillState skillState)
     {
-        if(skillState.aftercastTimer > 0 && !skillState.overlayAftercastApplied)
+        if(skillState.aftercastTimer >= 0 && !skillState.overlayAftercastApplied)
         {
-            int ticks = Math.max(1, aftercastDuration);
-            host.getPlayer().setCooldown(itemType.material, ticks);
+            int remaining = Math.max(1, aftercastDuration - Math.max(0, skillState.aftercastTimer));
+            host.getPlayer().setCooldown(skillItem.material, remaining);
             skillState.overlayAftercastApplied = true;
             skillState.overlayCooldownApplied = false;
         }
@@ -220,23 +251,23 @@ public enum Skill
 
     private void applyCooldownOverlayIfNeeded(GHPlayer host, SkillState skillState)
     {
-        if(skillState.cooldownTimer > 0 && !skillState.overlayCooldownApplied)
+        if(skillState.cooldownTimer >= 0 && !skillState.overlayCooldownApplied)
         {
             if(skillState.charges == 0)
             {
-                int remaining = Math.max(1, skillState.cooldownTimer);
-                host.getPlayer().setCooldown(itemType.material, remaining);
+                int remaining = Math.max(1, cooldownDuration - skillState.cooldownTimer);
+                host.getPlayer().setCooldown(skillItem.material, remaining);
+                skillState.overlayCooldownApplied = true;
+                skillState.overlayAftercastApplied = false;
             }
-            skillState.overlayCooldownApplied = true;
-            skillState.overlayAftercastApplied = false;
         }
     }
 
     private void clearOverlayIfIdle(GHPlayer host, SkillState skillState)
     {
-        if(skillState.aftercastTimer <= 0 && skillState.cooldownTimer <= 0)
+        if(skillState.aftercastTimer < 0 && skillState.cooldownTimer < 0)
         {
-            host.getPlayer().setCooldown(itemType.material, 0);
+            host.getPlayer().setCooldown(skillItem.material, 0);
             skillState.overlayAftercastApplied = false;
             skillState.overlayCooldownApplied = false;
         }

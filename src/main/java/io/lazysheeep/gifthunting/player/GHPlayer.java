@@ -3,6 +3,7 @@ package io.lazysheeep.gifthunting.player;
 import io.lazysheeep.gifthunting.GiftHunting;
 import io.lazysheeep.gifthunting.buffs.Buff;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
+import io.lazysheeep.gifthunting.game.GHStates;
 import io.lazysheeep.gifthunting.skills.Skill;
 import io.lazysheeep.gifthunting.game.GameInstance;
 import io.lazysheeep.gifthunting.skills.SkillState;
@@ -90,27 +91,16 @@ public class GHPlayer
         this._score = score;
     }
 
-    GHPlayer()
-    {
-    }
+    GHPlayer() {}
 
     public void onConnect(@NotNull GameInstance gameInstance, @NotNull Player player)
     {
         _gameInstance = gameInstance;
         _hostPlayer = player;
-        if(_skillStates.isEmpty())
+        if(gameInstance.getCurrentStateEnum() == GHStates.PROGRESSING)
         {
-            _skillStates.put(Skill.COUNTER, Skill.COUNTER.createDefaultState());
-            _skillStates.put(Skill.BOOST, Skill.BOOST.createDefaultState());
-            _skillStates.put(Skill.DAWN, Skill.DAWN.createDefaultState());
-        }
-        if(gameInstance.getCurrentStateEnum() == io.lazysheeep.gifthunting.game.GHStates.PROGRESSING)
-        {
-            enableAllSkills();
-        }
-        else
-        {
-            disableAllSkills();
+            enableSkill(Skill.BOOST);
+            enableSkill(Skill.COUNTER);
         }
         updateSlot();
     }
@@ -173,17 +163,37 @@ public class GHPlayer
 
     public void enableAllSkills()
     {
-        for(Map.Entry<Skill, SkillState> e : _skillStates.entrySet())
+        for(Skill skill : Skill.values())
         {
-            e.getKey().onEnable(this, e.getValue());
+            enableSkill(skill);
+        }
+    }
+
+    public void enableSkill(Skill skill)
+    {
+        SkillState skillState = getSkillState(skill);
+        if(!skillState.enabled)
+        {
+            skill.onEnable(this, skillState);
+            skillState.enabled = true;
         }
     }
 
     public void disableAllSkills()
     {
-        for(Map.Entry<Skill, SkillState> e : _skillStates.entrySet())
+        for(Skill skill : Skill.values())
         {
-            e.getKey().onDisable(this, e.getValue());
+            disableSkill(skill);
+        }
+    }
+
+    public void disableSkill(Skill skill)
+    {
+        SkillState skillState = getSkillState(skill);
+        if(skillState.enabled)
+        {
+            skill.onDisable(this, skillState);
+            skillState.enabled = false;
         }
     }
 
@@ -328,21 +338,18 @@ public class GHPlayer
 
         autoCraftBigClub();
 
-        int victory = _gameInstance.getVictoryScore();
-        if(victory > 0)
+        // manage Dawn buff
+        boolean shouldHave = _score >= (int)(_gameInstance.getVictoryScore() * 0.8f);
+        boolean has = hasBuff(DawnBuff.class);
+        if(shouldHave && !has)
         {
-            boolean shouldHave = _score >= (int)(victory * 0.8f);
-            boolean has = hasBuff(DawnBuff.class);
-            if(shouldHave && !has)
-            {
-                addBuff(new DawnBuff(-1));
-            }
-            else if(!shouldHave && has)
-            {
-                removeBuff(DawnBuff.class);
-            }
+            addBuff(new DawnBuff(-1));
         }
-
+        else if(!shouldHave && has)
+        {
+            removeBuff(DawnBuff.class);
+        }
+        // tick buffs
         for(Buff buff : _buffs.stream().toList())
         {
             buff.tick(this);
@@ -352,14 +359,47 @@ public class GHPlayer
                 _buffs.remove(buff);
             }
         }
-
+        // show buffs actionbar only if not holding a skill item
+        ItemStack inHand = _hostPlayer.getInventory().getItemInMainHand();
+        CustomItem held = CustomItem.checkItem(inHand);
+        boolean holdingSkill = false;
+        if(held != null)
+        {
+            for(Skill s : Skill.values())
+            {
+                if(s.skillItem == held)
+                {
+                    holdingSkill = true;
+                    break;
+                }
+            }
+        }
+        if(!holdingSkill)
+        {
+            LazuliUI.sendMessage(_hostPlayer, MessageFactory.getBuffsActionbar(new java.util.ArrayList<>(_buffs)));
+        }
+        // manage Dawn skill
+        boolean shouldEnable = _gameInstance.anyPlayerHasDawnBuff();
+        boolean isEnabled = getSkillState(Skill.DAWN).enabled;
+        if(shouldEnable && !isEnabled)
+        {
+            enableSkill(Skill.DAWN);
+        }
+        else if(!shouldEnable && isEnabled)
+        {
+            disableSkill(Skill.DAWN);
+        }
+        // tick skills
         for(Map.Entry<Skill, SkillState> e : _skillStates.entrySet())
         {
-            e.getKey().tick(this, e.getValue());
+            Skill skill = e.getKey();
+            SkillState skillState = e.getValue();
+            if(skillState.enabled)
+            {
+                skill.tick(this, skillState);
+            }
         }
-
-        LazuliUI.sendMessage(_hostPlayer, MessageFactory.getBuffsActionbar(new java.util.ArrayList<>(_buffs)));
-
+        // update scoreboard
         GiftHunting.GetPlugin().getScoreObjective().getScore(_hostPlayer).setScore(_score);
     }
 }

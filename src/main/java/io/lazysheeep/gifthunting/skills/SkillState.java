@@ -5,17 +5,17 @@ public class SkillState
     public int charges;
     public int cooldownTimer;
     public int aftercastTimer;
+    public boolean enabled;
     public boolean overlayAftercastApplied;
     public boolean overlayCooldownApplied;
-    public boolean enabled;
 
-    public SkillState(int initialCharges)
+    public SkillState()
     {
-        this.charges = initialCharges;
-        this.cooldownTimer = 0;
-        this.aftercastTimer = 0;
+        this.charges = 0;
+        this.cooldownTimer = -1;
+        this.aftercastTimer = -1;
+        this.enabled = false;
         this.overlayAftercastApplied = false;
         this.overlayCooldownApplied = false;
-        this.enabled = false;
     }
 }

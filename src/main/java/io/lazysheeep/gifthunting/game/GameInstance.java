@@ -164,6 +164,15 @@ public class GameInstance extends StateMachine<GameInstance, GHStates> implement
         _giftManager.saveConfig(configNode);
     }
 
+    public boolean anyPlayerHasDawnBuff()
+    {
+        if(_currentState instanceof ProgressingState progressingState)
+        {
+            return progressingState.anyPlayerHasDawnBuff();
+        }
+        return false;
+    }
+
     @Override
     protected State<GameInstance, GHStates> createState(GHStates state)
     {

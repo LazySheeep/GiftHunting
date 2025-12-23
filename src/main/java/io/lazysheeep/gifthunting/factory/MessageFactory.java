@@ -535,17 +535,17 @@ public class MessageFactory
 
     public static Message getSkillCooldownActionbar(int charges, int maxCharges, int cooldownTimer, int cooldownDuration, int aftercastTimer, int aftercastDuration)
     {
-        boolean isAftercast = aftercastTimer > 0 && aftercastDuration > 0;
+        boolean isAftercast = aftercastDuration > 0 && aftercastTimer >= 0;
         int left = isAftercast ? Math.max(0, charges - 1) : charges;
         int rightVal = isAftercast ? Math.min(maxCharges, Math.max(0, charges)) : Math.min(maxCharges, charges + 1);
         if(maxCharges <= 0) maxCharges = 1;
-        boolean isMax = charges >= maxCharges && cooldownTimer <= 0 && aftercastTimer <= 0;
-        int filled;
+        boolean isMax = charges >= maxCharges && cooldownTimer == -1 && aftercastTimer == -1;
         Component bar;
         if(isAftercast)
         {
-            filled = Math.max(0, Math.min(20, (int)(20f * ((float) aftercastTimer / (float) aftercastDuration))));
-            int empty = 20 - filled;
+
+            int empty = Math.max(0, Math.min(20, (int) (20f * ((float) aftercastTimer / (float) aftercastDuration))));
+            int filled = 20 - empty;
             bar = Component.text("[", COLOR_GRAY)
                            .append(Component.text("|".repeat(filled), COLOR_VALUE))
                            .append(Component.text("|".repeat(empty), COLOR_GRAY))
@@ -559,11 +559,10 @@ public class MessageFactory
         }
         else
         {
-            filled = 0;
-            if(cooldownDuration > 0)
+            int filled = 0;
+            if(cooldownDuration > 0 && cooldownTimer >= 0)
             {
-                int progressed = Math.max(0, cooldownDuration - Math.max(0, cooldownTimer));
-                filled = Math.max(0, Math.min(20, (int)(20f * ((float) progressed / (float) cooldownDuration))));
+                filled = Math.max(0, Math.min(20, (int)(20f * ((float) cooldownTimer / (float) cooldownDuration))));
             }
             int empty = 20 - filled;
             bar = Component.text("[", COLOR_GRAY)

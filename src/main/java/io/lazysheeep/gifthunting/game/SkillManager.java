@@ -407,6 +407,7 @@ public class SkillManager implements Listener
         }
         else
         {
+            event.setCancelled(false);
             int lose = Math.max(1, (int)(victim.getScore() * 0.1f));
             victim.addScore(-lose);
             _gameInstance.getOrbManager().addOrb(new ScoreOrb(victim.getBodyLocation(), victim, null, lose));

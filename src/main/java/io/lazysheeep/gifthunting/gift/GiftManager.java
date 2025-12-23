@@ -172,6 +172,7 @@ public class GiftManager implements Listener
 
     public void tick()
     {
+        // remove empty gifts
         for(Gift gift : new ArrayList<>(_normalGifts))
         {
             if(gift.isEmpty())
@@ -182,6 +183,15 @@ public class GiftManager implements Listener
         if(_specialGift != null && _specialGift.isEmpty())
         {
             removeGift(_specialGift);
+        }
+        // spawn particles on gifts
+        if(Bukkit.getServer().getCurrentTick() % 40 == 0)
+        {
+            for(Gift gift : getNormalGifts())
+                _gameInstance.getGameWorld().spawnParticle(Particle.HAPPY_VILLAGER, gift.getLocation(), 1, 0.3f, 0.3f, 0.3f);
+            Gift specialGift = getSpecialGift();
+            if(specialGift != null)
+                _gameInstance.getGameWorld().spawnParticle(Particle.HAPPY_VILLAGER, specialGift.getLocation(), 2, 0.4f, 0.4f, 0.4f);
         }
     }
 

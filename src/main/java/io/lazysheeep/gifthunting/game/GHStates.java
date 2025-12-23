@@ -1,10 +1,11 @@
 package io.lazysheeep.gifthunting.game;
 
 import io.lazysheeep.gifthunting.GiftHunting;
+import io.lazysheeep.gifthunting.buffs.DawnBuff;
 import io.lazysheeep.gifthunting.factory.CustomItem;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
-import io.lazysheeep.gifthunting.gift.Gift;
 import io.lazysheeep.gifthunting.player.GHPlayer;
+import io.lazysheeep.gifthunting.skills.Skill;
 import io.lazysheeep.gifthunting.utils.MCUtil;
 import io.lazysheeep.lazuliui.LazuliUI;
 import org.bukkit.*;
@@ -113,6 +114,12 @@ class ProgressingState extends State<GameInstance, GHStates>
     private int _specialGiftSpawnTimer = -1;
     private int _discipleBirthTimer = -1;
     private int _stealerGiveTimer = -1;
+    private boolean _hasDawnBuff = false;
+
+    public boolean anyPlayerHasDawnBuff()
+    {
+        return _hasDawnBuff;
+    }
 
     @Override
     public void onEnter(GameInstance gameInstance)
@@ -127,10 +134,11 @@ class ProgressingState extends State<GameInstance, GHStates>
             Player player = ghPlayer.getPlayer();
             ghPlayer.reset();
             MCUtil.ClearInventory(player);
+            ghPlayer.enableSkill(Skill.BOOST);
+            ghPlayer.enableSkill(Skill.COUNTER);
             LazuliUI.sendMessage(player, MessageFactory.getGameStartMsg());
             LazuliUI.sendMessage(player, MessageFactory.getProgressingActionbarSuffix(ghPlayer));
             LazuliUI.sendMessage(player, MessageFactory.getGameStartActionbar());
-            ghPlayer.enableAllSkills();
         }
     }
 
@@ -139,12 +147,13 @@ class ProgressingState extends State<GameInstance, GHStates>
     {
         _timer++;
 
+        // update player actionbar
         if(_timer % 20 == 0)
         {
             for(GHPlayer ghPlayer : gameInstance.getPlayerManager().getOnlineGHPlayers())
                 LazuliUI.sendMessage(ghPlayer.getPlayer(), MessageFactory.getProgressingActionbarPrefix(_timer));
         }
-
+        // spawn normal gift
         if(_normalGiftSpawnTimer == -1)
         {
             int threshold = (int)(gameInstance.getSpawnGiftCountPerPlayer() * gameInstance.getPlayerManager().getOnlineGHPlayerCount() * gameInstance.getNewGiftBatchThreshold());
@@ -162,7 +171,7 @@ class ProgressingState extends State<GameInstance, GHStates>
                 _normalGiftSpawnTimer = -1;
             }
         }
-
+        // spawn special gift
         if(_specialGiftSpawnTimer == -1)
         {
             if(!gameInstance.getGiftManager().hasSpecialGift())
@@ -197,6 +206,7 @@ class ProgressingState extends State<GameInstance, GHStates>
             }
         }*/
 
+        // give stealer
         int stealerGiveScore = (int)(gameInstance.getVictoryScore() * gameInstance.getStealerGiveWhenHighestScore());
         if(_stealerGiveTimer == -1)
         {
@@ -223,15 +233,21 @@ class ProgressingState extends State<GameInstance, GHStates>
             }
         }
 
-        if(_timer % 40 == 0)
+        // update hasDawnBuff
+        if(_timer % 20 == 0)
         {
-            for(Gift gift : gameInstance.getGiftManager().getNormalGifts())
-                gameInstance.getGameWorld().spawnParticle(Particle.HAPPY_VILLAGER, gift.getLocation(), 1, 0.3f, 0.3f, 0.3f);
-            Gift specialGift = gameInstance.getGiftManager().getSpecialGift();
-            if(specialGift != null)
-                gameInstance.getGameWorld().spawnParticle(Particle.HAPPY_VILLAGER, specialGift.getLocation(), 2, 0.4f, 0.4f, 0.4f);
+            _hasDawnBuff = false;
+            for(var gh : gameInstance.getPlayerManager().getOnlineGHPlayers())
+            {
+                if(gh.hasBuff(DawnBuff.class))
+                {
+                    _hasDawnBuff = true;
+                    break;
+                }
+            }
         }
 
+        // check victory condition
         List<GHPlayer> ghPlayers = gameInstance.getPlayerManager().getAllGHPlayersSorted();
         if(!ghPlayers.isEmpty() && ghPlayers.getFirst().getScore() >= gameInstance.getVictoryScore())
             gameInstance.switchState(GHStates.FINISHED);

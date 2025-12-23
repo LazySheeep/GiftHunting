@@ -24,6 +24,11 @@ public abstract class StateMachine<SM extends StateMachine<SM, S>, S extends Enu
         return _currentStateEnum;
     }
 
+    public State<SM, S> getCurrentState()
+    {
+        return _currentState;
+    }
+
     public void switchState(S newStateEnum)
     {
         if(newStateEnum == _currentStateEnum)

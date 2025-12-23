@@ -99,7 +99,10 @@ public class GHPlayerManager implements Listener
             if(!shouldBeGHPlayer(ghPlayer.getPlayer()))
             {
                 _ghPlayers.remove(ghPlayer.getUUID());
-                _offlineGHPlayers.put(ghPlayer.getUUID(), ghPlayer);
+                if(_gameInstance.getCurrentStateEnum() != GHStates.IDLE)
+                {
+                    _offlineGHPlayers.put(ghPlayer.getUUID(), ghPlayer);
+                }
                 ghPlayer.onDisconnect(_gameInstance);
                 LazuliUI.sendMessage(ghPlayer.getPlayer(), MessageFactory.getOnNoLongerGHPlayerMsg());
             }

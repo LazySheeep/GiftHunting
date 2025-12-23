@@ -136,6 +136,7 @@ class ProgressingState extends State<GameInstance, GHStates>
             MCUtil.ClearInventory(player);
             ghPlayer.enableSkill(Skill.BOOST);
             ghPlayer.enableSkill(Skill.COUNTER);
+            ghPlayer.enableSkill(Skill.DETECT);
             LazuliUI.sendMessage(player, MessageFactory.getGameStartMsg());
             LazuliUI.sendMessage(player, MessageFactory.getProgressingActionbarSuffix(ghPlayer));
             LazuliUI.sendMessage(player, MessageFactory.getGameStartActionbar());

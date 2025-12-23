@@ -12,6 +12,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.CompassMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.NamespacedKey;
@@ -100,7 +101,7 @@ public enum CustomItem
             Component displayName = Component.text("技能: 识破", NamedTextColor.LIGHT_PURPLE);
             List<Component> lore = new ArrayList<>();
             lore.add(Component.text("冷却: ", NamedTextColor.GOLD).append(Component.text(String.format("%.1fs", Skill.COUNTER.cooldownDuration / 20f), NamedTextColor.GREEN)));
-            lore.add(Component.text("持续时间: ", NamedTextColor.GOLD).append(Component.text(String.format("%.1fs", Skill.COUNTER.aftercastDuration / 20f), NamedTextColor.GREEN)));
+            lore.add(Component.text("持续时间: ", NamedTextColor.GOLD).append(Component.text(String.format("%.1fs", Skill.COUNTER.activeDuration / 20f), NamedTextColor.GREEN)));
             lore.add(Component.text("最大次数: ", NamedTextColor.GOLD).append(Component.text(Skill.COUNTER.maxCharges, NamedTextColor.GREEN)));
             lore.add(Component.text("能够在短时间内内", NamedTextColor.AQUA));
             lore.add(Component.text("反弹一次他人对你使用的技能", NamedTextColor.AQUA));
@@ -145,6 +146,33 @@ public enum CustomItem
                 meta.displayName(displayName);
                 meta.lore(lore);
                 setTypeTag(meta, this);
+            });
+            return it;
+        }
+    },
+    SKILL_DETECT("skill_item_detect", Material.COMPASS, 8)
+    {
+        @Override public ItemStack create() {
+            ItemStack it = new ItemStack(Material.COMPASS, 1);
+            Component displayName = Component.text("技能: 探测", NamedTextColor.LIGHT_PURPLE);
+            List<Component> lore = new ArrayList<>();
+            String cd = String.format("%.1fs", Skill.DETECT.cooldownDuration / 20f);
+            String dur = String.format("%.1fs", Skill.DETECT.activeDuration / 20f);
+            lore.add(Component.text("冷却: ", NamedTextColor.GOLD).append(Component.text(cd, NamedTextColor.GREEN)));
+            lore.add(Component.text("持续时间: ", NamedTextColor.GOLD).append(Component.text(dur, NamedTextColor.GREEN)));
+            lore.add(Component.text("最大次数: ", NamedTextColor.GOLD).append(Component.text(Skill.DETECT.maxCharges, NamedTextColor.GREEN)));
+            lore.add(Component.text("在持续时间内指向礼物", NamedTextColor.AQUA));
+            lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
+            it.editMeta(meta -> {
+                meta.displayName(displayName);
+                meta.lore(lore);
+                meta.addEnchant(Enchantment.UNBREAKING, 1, true);
+                setTypeTag(meta, this);
+                if(meta instanceof CompassMeta compassMeta)
+                {
+                    compassMeta.setLodestoneTracked(false);
+                    compassMeta.setLodestone(null);
+                }
             });
             return it;
         }

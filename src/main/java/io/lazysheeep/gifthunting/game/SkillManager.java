@@ -250,6 +250,11 @@ public class SkillManager implements Listener
                     event.setCancelled(true);
                     ghPlayer.useSkill(Skill.COUNTER);
                 }
+                case SKILL_DETECT ->
+                {
+                    event.setCancelled(true);
+                    ghPlayer.useSkill(Skill.DETECT);
+                }
                 case REVOLUTION ->
                 {
                     event.setCancelled(true);

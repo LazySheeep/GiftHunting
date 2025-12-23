@@ -533,18 +533,17 @@ public class MessageFactory
         return Component.text(String.format("%02d:%02d", mm, ss), COLOR_VALUE);
     }
 
-    public static Message getSkillCooldownActionbar(int charges, int maxCharges, int cooldownTimer, int cooldownDuration, int aftercastTimer, int aftercastDuration)
+    public static Message getSkillCooldownActionbar(int charges, int maxCharges, int cooldownTimer, int cooldownDuration, int activeTimer, int activeDuration)
     {
-        boolean isAftercast = aftercastDuration > 0 && aftercastTimer >= 0;
-        int left = isAftercast ? Math.max(0, charges - 1) : charges;
-        int rightVal = isAftercast ? Math.min(maxCharges, Math.max(0, charges)) : Math.min(maxCharges, charges + 1);
+        boolean isActive = activeDuration > 0 && activeTimer >= 0;
+        int left = isActive ? Math.max(0, charges - 1) : charges;
+        int rightVal = isActive ? Math.min(maxCharges, Math.max(0, charges)) : Math.min(maxCharges, charges + 1);
         if(maxCharges <= 0) maxCharges = 1;
-        boolean isMax = charges >= maxCharges && cooldownTimer == -1 && aftercastTimer == -1;
+        boolean isMax = charges >= maxCharges && cooldownTimer == -1 && activeTimer == -1;
         Component bar;
-        if(isAftercast)
+        if(isActive)
         {
-
-            int empty = Math.max(0, Math.min(20, (int) (20f * ((float) aftercastTimer / (float) aftercastDuration))));
+            int empty = Math.max(0, Math.min(20, (int) (20f * ((float) activeTimer / (float) activeDuration))));
             int filled = 20 - empty;
             bar = Component.text("[", COLOR_GRAY)
                            .append(Component.text("|".repeat(filled), COLOR_VALUE))
@@ -629,5 +628,18 @@ public class MessageFactory
             .append(Component.text("掉落的", COLOR_TEXT))
             .append(Component.text(scoreValue + "分数", COLOR_VARIABLE));
         return new Message(Message.Type.CHAT, comp, Message.LoadMode.REPLACE, 1);
+    }
+
+    public static Message getDetectActionbar(boolean isSpecial, int distance)
+    {
+        TextComponent comp = Component.text(isSpecial ? "特殊礼物: " : "普通礼物: ", COLOR_TEXT)
+                                      .append(Component.text(distance, COLOR_VALUE))
+                                      .append(Component.text("m", COLOR_TEXT));
+        return new Message(
+            Message.Type.ACTIONBAR_INFIX,
+            comp,
+            Message.LoadMode.IMMEDIATE,
+            1
+        );
     }
 }

@@ -7,12 +7,16 @@ import io.lazysheeep.gifthunting.player.GHPlayer;
 import io.lazysheeep.gifthunting.utils.MCUtil;
 import io.lazysheeep.lazuliui.LazuliUI;
 import io.lazysheeep.lazuliui.Message;
+import net.kyori.adventure.text.Component;
+import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
+import org.bukkit.inventory.meta.CompassMeta;
+import org.jetbrains.annotations.Nullable;
 
 public enum Skill
 {
@@ -58,19 +62,62 @@ public enum Skill
             super.onDisable(host, skillState);
             MCUtil.RemoveItem(host.getPlayer(), CustomItem.SKILL_DAWN_ARROW);
         }
+    },
+    DETECT(CustomItem.SKILL_DETECT, 1, 1200, 200)
+    {
+        @Override
+        public void onUse(GHPlayer host, SkillState skillState) { }
+
+        @Override
+        protected void tickActive(GHPlayer host, SkillState skillState)
+        {
+            var player = host.getPlayer();
+            var gm = host.getGameInstance().getGiftManager();
+            var special = gm.getSpecialGift();
+            if(special != null)
+            {
+                setDetectCompassTarget(player, special.getLocation());
+                LazuliUI.sendMessage(player, MessageFactory.getDetectActionbar(true, (int) player.getLocation().distance(special.getLocation())));
+            }
+            else
+            {
+                double minDist = Double.MAX_VALUE;
+                Location nearest = null;
+                for(var g : gm.getNormalGifts())
+                {
+                    double d = player.getLocation().distance(g.getLocation());
+                    if(d < minDist)
+                    {
+                        minDist = d;
+                        nearest = g.getLocation();
+                    }
+                }
+                if(nearest != null)
+                {
+                    setDetectCompassTarget(player, nearest);
+                    LazuliUI.sendMessage(player, MessageFactory.getDetectActionbar(false, (int) minDist));
+                }
+            }
+        }
+
+        @Override
+        protected void onActiveEnd(GHPlayer host, SkillState state)
+        {
+            setDetectCompassTarget(host.getPlayer(), null);
+        }
     };
 
     public final CustomItem skillItem;
     public final int maxCharges;
     public final int cooldownDuration;
-    public final int aftercastDuration;
+    public final int activeDuration;
 
-    Skill(CustomItem skillItem, int maxCharges, int cooldownDuration, int aftercastDuration)
+    Skill(CustomItem skillItem, int maxCharges, int cooldownDuration, int activeDuration)
     {
         this.skillItem = skillItem;
         this.maxCharges = maxCharges;
         this.cooldownDuration = cooldownDuration;
-        this.aftercastDuration = aftercastDuration;
+        this.activeDuration = activeDuration;
     }
 
     public abstract void onUse(GHPlayer host, SkillState skillState);
@@ -103,10 +150,10 @@ public enum Skill
     public boolean tryUse(GHPlayer host, SkillState skillState)
     {
         if(!skillState.enabled) return false;
-        if(skillState.charges <= 0 || skillState.aftercastTimer >= 0) return false;
-        if(aftercastDuration > 0)
+        if(skillState.charges <= 0 || skillState.activeTimer >= 0) return false;
+        if(activeDuration > 0)
         {
-            skillState.aftercastTimer = 0;
+            skillState.activeTimer = 0;
             skillState.overlayAftercastApplied = false;
         }
         else
@@ -125,19 +172,25 @@ public enum Skill
 
     protected void onChargeGained(GHPlayer host, SkillState state) { }
 
+    protected void tickActive(GHPlayer host, SkillState state) { }
+
+    protected void onActiveEnd(GHPlayer host, SkillState state) { }
+
     public void tick(GHPlayer host, SkillState skillState)
     {
         if(!skillState.enabled) return;
 
         ensureItemPresent(host);
 
-        if(aftercastDuration > 0 && skillState.aftercastTimer >= 0)
+        if(activeDuration > 0 && skillState.activeTimer >= 0)
         {
             applyAftercastOverlayIfNeeded(host, skillState);
-            skillState.aftercastTimer++;
-            if(skillState.aftercastTimer >= aftercastDuration)
+            tickActive(host, skillState);
+            skillState.activeTimer++;
+            if(skillState.activeTimer >= activeDuration)
             {
-                skillState.aftercastTimer = -1;
+                onActiveEnd(host, skillState);
+                skillState.activeTimer = -1;
                 skillState.overlayAftercastApplied = false;
                 skillState.charges--;
                 if(skillState.charges < 0) skillState.charges = 0;
@@ -195,8 +248,8 @@ public enum Skill
                 maxCharges,
                 skillState.cooldownTimer,
                 cooldownDuration,
-                skillState.aftercastTimer,
-                aftercastDuration);
+                skillState.activeTimer,
+                activeDuration);
             LazuliUI.sendMessage(host.getPlayer(), msg);
         }
     }
@@ -240,9 +293,9 @@ public enum Skill
 
     private void applyAftercastOverlayIfNeeded(GHPlayer host, SkillState skillState)
     {
-        if(skillState.aftercastTimer >= 0 && !skillState.overlayAftercastApplied)
+        if(skillState.activeTimer >= 0 && !skillState.overlayAftercastApplied)
         {
-            int remaining = Math.max(1, aftercastDuration - Math.max(0, skillState.aftercastTimer));
+            int remaining = Math.max(1, activeDuration - skillState.activeTimer);
             host.getPlayer().setCooldown(skillItem.material, remaining);
             skillState.overlayAftercastApplied = true;
             skillState.overlayCooldownApplied = false;
@@ -265,11 +318,32 @@ public enum Skill
 
     private void clearOverlayIfIdle(GHPlayer host, SkillState skillState)
     {
-        if(skillState.aftercastTimer < 0 && skillState.cooldownTimer < 0)
+        if(skillState.activeTimer < 0 && skillState.cooldownTimer < 0)
         {
             host.getPlayer().setCooldown(skillItem.material, 0);
             skillState.overlayAftercastApplied = false;
             skillState.overlayCooldownApplied = false;
+        }
+    }
+
+    private static void setDetectCompassTarget(Player player, @Nullable Location location)
+    {
+        var inv = player.getInventory();
+        for(int i = 0; i < inv.getSize(); i++)
+        {
+            ItemStack it = inv.getItem(i);
+            if(CustomItem.checkItem(it) == CustomItem.SKILL_DETECT)
+            {
+                it.editMeta(m -> {
+                    if(m instanceof CompassMeta cm)
+                    {
+                        cm.setLodestoneTracked(false);
+                        cm.setLodestone(location);
+                    }
+                });
+                inv.setItem(i, it);
+                break;
+            }
         }
     }
 }

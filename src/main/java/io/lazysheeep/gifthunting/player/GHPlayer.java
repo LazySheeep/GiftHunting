@@ -101,6 +101,7 @@ public class GHPlayer
         {
             enableSkill(Skill.BOOST);
             enableSkill(Skill.COUNTER);
+            enableSkill(Skill.DETECT);
         }
         updateSlot();
     }

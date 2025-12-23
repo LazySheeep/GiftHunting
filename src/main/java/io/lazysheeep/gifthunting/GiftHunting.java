@@ -16,6 +16,7 @@ import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.logging.Level;
 
@@ -37,6 +38,7 @@ public final class GiftHunting extends JavaPlugin
 
     private @Nullable GameInstance _gameInstance;
     private Objective _scoreObjective;
+    private @Nullable String _currentConfigName;
 
     public @Nullable GameInstance getGameInstance()
     {
@@ -61,6 +63,25 @@ public final class GiftHunting extends JavaPlugin
             java.util.ArrayList<String> ids = new java.util.ArrayList<>();
             for(CustomItem it : CustomItem.values()) ids.add(it.id);
             return ids;
+        });
+        commandManager.getCommandCompletions().registerCompletion("config_names", c -> {
+            java.util.ArrayList<String> names = new java.util.ArrayList<>();
+            File dir = getDataFolder();
+            if(dir.exists())
+            {
+                File[] list = dir.listFiles((d, name) -> name.endsWith(".conf"));
+                if(list != null)
+                {
+                    for(File f : list)
+                    {
+                        String n = f.getName();
+                        if(n.endsWith(".conf")) n = n.substring(0, n.length()-5);
+                        names.add(n);
+                    }
+                }
+            }
+            if(names.isEmpty()) names.add("gifthunting");
+            return names;
         });
 
         // if config folder does not exist, create it and copy the default config
@@ -93,15 +114,16 @@ public final class GiftHunting extends JavaPlugin
         }
     }
 
-    public void loadGameInstance()
+    public void loadGameInstance(String configName)
     {
         if(_gameInstance != null)
         {
             Log(Level.WARNING, "Game instance already exists");
             return;
         }
+        _currentConfigName = (configName == null || configName.isEmpty()) ? "gifthunting" : configName;
         _gameInstance = new GameInstance();
-        _gameInstance.loadConfig(loadConfigRootNode());
+        _gameInstance.loadConfig(loadConfigRootNode(_currentConfigName));
         Bukkit.getPluginManager().registerEvents(_gameInstance, this);
     }
 
@@ -119,7 +141,8 @@ public final class GiftHunting extends JavaPlugin
 
     public void saveGHConfig()
     {
-        ConfigurationNode configRootNode = loadConfigRootNode();
+        if(_gameInstance == null || _currentConfigName == null) return;
+        ConfigurationNode configRootNode = loadConfigRootNode(_currentConfigName);
         try
         {
             _gameInstance.saveConfig(configRootNode);
@@ -134,12 +157,12 @@ public final class GiftHunting extends JavaPlugin
 
     private HoconConfigurationLoader _configLoader;
 
-    private ConfigurationNode loadConfigRootNode()
+    private ConfigurationNode loadConfigRootNode(String configName)
     {
         ConfigurationNode configRootNode = null;
         if(_configLoader == null)
         {
-            _configLoader = HoconConfigurationLoader.builder().path(Path.of(getDataFolder().getPath(), "gifthunting.conf")).build();
+            _configLoader = HoconConfigurationLoader.builder().path(Path.of(getDataFolder().getPath(), configName + ".conf")).build();
         }
         try
         {

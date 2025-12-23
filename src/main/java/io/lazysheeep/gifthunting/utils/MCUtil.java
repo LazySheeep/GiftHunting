@@ -73,10 +73,12 @@ public class MCUtil
         boolean heldNowEmpty = inventory.getItem(held) == null;
         if(heldWasEmpty && !heldNowEmpty)
         {
-            int firstEmpty = inventory.firstEmpty();
-            if(firstEmpty >= 0 && firstEmpty <= 8)
+            int target = GetFirstEmptyAndNotHeldSlot(inventory);
+            if(target != -1)
             {
-                inventory.setHeldItemSlot(firstEmpty);
+                ItemStack placed = inventory.getItem(held);
+                inventory.setItem(target, placed);
+                inventory.setItem(held, null);
             }
         }
         player.playSound(player, Sound.ENTITY_ITEM_PICKUP, SoundCategory.MASTER, 1.0f, 1.0f);

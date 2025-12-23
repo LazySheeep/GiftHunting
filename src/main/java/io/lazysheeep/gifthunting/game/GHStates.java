@@ -257,7 +257,11 @@ class ProgressingState extends State<GameInstance, GHStates>
     @Override
     public void onExit(GameInstance gameInstance)
     {
-        for(var gh : gameInstance.getPlayerManager().getOnlineGHPlayers()) gh.disableAllSkills();
+        for(GHPlayer ghPlayer : gameInstance.getPlayerManager().getOnlineGHPlayers())
+        {
+            ghPlayer.disableAllSkills();
+            MCUtil.ClearInventory(ghPlayer.getPlayer());
+        }
         // clear gifts
         gameInstance.getGiftManager().removeAllGifts();
     }

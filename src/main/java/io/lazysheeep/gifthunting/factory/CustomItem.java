@@ -135,7 +135,7 @@ public enum CustomItem
             return it;
         }
     },
-    SKILL_DAWN_ARROW("dawn_arrow", Material.ARROW, 29)
+    SKILL_DAWN_ARROW("skill_dawn_arrow", Material.ARROW, 29)
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.ARROW, 1);

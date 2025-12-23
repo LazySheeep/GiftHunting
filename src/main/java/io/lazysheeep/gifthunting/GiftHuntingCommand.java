@@ -36,9 +36,10 @@ public class GiftHuntingCommand extends BaseCommand
     {
         @Subcommand("load")
         @Description("Load game")
-        public void onLoad(CommandSender sender)
+        @CommandCompletion("@config_names")
+        public void onLoad(CommandSender sender, String configName)
         {
-            GiftHunting.GetPlugin().loadGameInstance();
+            GiftHunting.GetPlugin().loadGameInstance(configName);
             sender.sendMessage(Component.text("Loaded game instance", COLOR_GOOD));
         }
 

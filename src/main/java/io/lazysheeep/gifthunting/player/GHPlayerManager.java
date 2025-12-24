@@ -15,8 +15,11 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryInteractEvent;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.PlayerChangedMainHandEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -206,6 +209,23 @@ public class GHPlayerManager implements Listener
         if(CustomItem.checkItem(stack) != null)
         {
             event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onPlayerSwapHandItems(PlayerSwapHandItemsEvent event)
+    {
+        Player player = event.getPlayer();
+        GHPlayer gh = getGHPlayer(player);
+        if(gh == null) return;
+        int held = player.getInventory().getHeldItemSlot();
+        for(CustomItem ci : CustomItem.values())
+        {
+            if(ci.lockedSlot >= 0 && ci.lockedSlot == held)
+            {
+                event.setCancelled(true);
+                return;
+            }
         }
     }
 }

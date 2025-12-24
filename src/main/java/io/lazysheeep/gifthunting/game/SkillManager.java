@@ -3,6 +3,7 @@ package io.lazysheeep.gifthunting.game;
 import io.lazysheeep.gifthunting.buffs.*;
 import io.lazysheeep.gifthunting.factory.CustomItem;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
+import io.lazysheeep.gifthunting.orbs.BombDrone;
 import io.lazysheeep.gifthunting.orbs.ScoreOrb;
 import io.lazysheeep.gifthunting.player.GHPlayer;
 import io.lazysheeep.gifthunting.skills.Skill;
@@ -121,7 +122,7 @@ public class SkillManager implements Listener
                                                                                          .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
             clickedPlayer.getWorld().playSound(clickedPlayer.getLocation(), Sound.ENTITY_VILLAGER_NO, SoundCategory.MASTER, 1.0f, 1.0f);
             clickedGHPlayer.addScore(-stealScore);
-            _gameInstance.getOrbManager().addOrb(new ScoreOrb(clickedGHPlayer.getBodyLocation(), clickedGHPlayer, ghPlayer, stealScore));
+            _gameInstance.getEntityManager().addEntity(new ScoreOrb(clickedGHPlayer.getBodyLocation(), clickedGHPlayer, ghPlayer, stealScore));
         }
         else
         {
@@ -136,7 +137,7 @@ public class SkillManager implements Listener
                                                                                          .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
             clickedPlayer.getWorld().playSound(clickedPlayer.getLocation(), Sound.BLOCK_ANVIL_LAND, SoundCategory.MASTER, 1.0f, 1.0f);
             ghPlayer.addScore(-stealScore);
-            _gameInstance.getOrbManager().addOrb(new ScoreOrb(ghPlayer.getBodyLocation(), ghPlayer, clickedGHPlayer, stealScore));
+            _gameInstance.getEntityManager().addEntity(new ScoreOrb(ghPlayer.getBodyLocation(), ghPlayer, clickedGHPlayer, stealScore));
             clickedGHPlayer.removeBuff(CounteringBuff.class);
         }
     }
@@ -205,12 +206,31 @@ public class SkillManager implements Listener
     private void onUseAbsorb(GHPlayer ghPlayer)
     {
         double r2 = _absorbRadius * _absorbRadius;
-        for(var orb : _gameInstance.getOrbManager().getOrbsSnapshot())
+        for(var orb : _gameInstance.getEntityManager().getOrbs())
         {
             if(orb.getLocation().distanceSquared(ghPlayer.getBodyLocation()) <= r2)
             {
                 orb.setTarget(ghPlayer);
             }
+        }
+    }
+
+    private void onUseBombDrone(GHPlayer ghPlayer)
+    {
+        GHPlayer targetGHPlayer = null;
+        for(GHPlayer otherGHPlayer : ghPlayer.getGameInstance().getPlayerManager().getOnlineGHPlayers())
+        {
+            if(otherGHPlayer != ghPlayer)
+            {
+                if(targetGHPlayer == null || otherGHPlayer.getScore() > targetGHPlayer.getScore())
+                {
+                    targetGHPlayer = otherGHPlayer;
+                }
+            }
+        }
+        if(targetGHPlayer != null)
+        {
+            ghPlayer.getGameInstance().getEntityManager().addEntity(new BombDrone(ghPlayer.getEyeLocation(), targetGHPlayer));
         }
     }
 
@@ -269,6 +289,12 @@ public class SkillManager implements Listener
                 {
                     event.setCancelled(true);
                     onUseAbsorb(ghPlayer);
+                    item.setAmount(item.getAmount() - 1);
+                }
+                case BOMB_DRONE ->
+                {
+                    event.setCancelled(true);
+                    onUseBombDrone(ghPlayer);
                     item.setAmount(item.getAmount() - 1);
                 }
             }
@@ -415,7 +441,7 @@ public class SkillManager implements Listener
             event.setCancelled(false);
             int lose = Math.max(1, (int)(victim.getScore() * 0.1f));
             victim.addScore(-lose);
-            _gameInstance.getOrbManager().addOrb(new ScoreOrb(victim.getBodyLocation(), victim, null, lose));
+            _gameInstance.getEntityManager().addEntity(new ScoreOrb(victim.getBodyLocation(), victim, null, lose));
         }
     }
 }

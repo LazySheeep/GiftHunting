@@ -50,6 +50,11 @@ public class GHPlayer
         return _hostPlayer.getLocation().add(_hostPlayer.getEyeLocation()).multiply(0.5f);
     }
 
+    public Location getEyeLocation()
+    {
+        return _hostPlayer.getEyeLocation();
+    }
+
     public GameInstance getGameInstance()
     {
         return _gameInstance;

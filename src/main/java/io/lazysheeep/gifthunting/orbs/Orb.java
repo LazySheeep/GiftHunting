@@ -9,14 +9,12 @@ import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class Orb
+public abstract class Orb extends GHEntity
 {
     protected GHPlayer _target;
     protected final @Nullable GHPlayer _source;
-    protected Location _location;
     protected Vector _velocity;
     protected int _timer = -1;
-    protected boolean _collected = false;
 
     protected final int _startDelay = 10;
     protected final float _force = 24.0f;
@@ -27,20 +25,11 @@ public abstract class Orb
 
     protected Orb(Location location, @Nullable GHPlayer source, GHPlayer target)
     {
-        _location = location.clone();
+        super(location);
         _target = target;
         _source = source;
         _velocity = new Vector(RandUtil.nextFloat(-3.0f, 3.0f), RandUtil.nextFloat(2.0f, 4.0f), RandUtil.nextFloat(-3.0f, 3.0f));
     }
-
-    public boolean isCollected()
-    {
-        return _collected;
-    }
-
-    protected abstract void onCollected();
-
-    protected abstract void onTick();
 
     protected boolean canCapture(GHPlayer gh)
     {
@@ -48,19 +37,22 @@ public abstract class Orb
         return true;
     }
 
-    public void tick(GameInstance gameInstance)
+    @Override
+    public void onTick(GameInstance gameInstance)
     {
-        if(_target != null && (!_target.isValid() || _target.getLocation().getWorld() != _location.getWorld()))
-            _collected = true;
+        super.onTick(gameInstance);
 
-        if(_collected)
+        if(_target != null && (!_target.isValid() || _target.getLocation().getWorld() != _location.getWorld()))
+            _isDestroyed = true;
+
+        if(_isDestroyed)
             return;
 
         _timer ++;
 
         if(_timer >= _maxLifeTime)
         {
-            _collected = true;
+            _isDestroyed = true;
             return;
         }
 
@@ -96,8 +88,8 @@ public abstract class Orb
             {
                 if(_target.getBodyLocation().distance(_location) <= _collectDistance)
                 {
-                    _collected = true;
                     onCollected();
+                    _isDestroyed = true;
                     return;
                 }
 
@@ -109,17 +101,12 @@ public abstract class Orb
 
         _location.add(_velocity.clone().multiply(deltaTime));
         _velocity.multiply(Math.exp(-_friction * deltaTime));
-
-        onTick();
     }
 
-    public void setTarget(io.lazysheeep.gifthunting.player.GHPlayer target)
+    protected abstract void onCollected();
+
+    public void setTarget(GHPlayer target)
     {
         this._target = target;
-    }
-
-    public org.bukkit.Location getLocation()
-    {
-        return _location;
     }
 }

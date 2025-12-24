@@ -344,6 +344,23 @@ public enum CustomItem
             });
             return it;
         }
+    },
+    BOMB_DRONE("bomb_drone", Material.FIREWORK_ROCKET)
+    {
+        @Override public ItemStack create() {
+            var it = new ItemStack(Material.FIREWORK_ROCKET, 1);
+            var displayName = Component.text("炸弹无人机", NamedTextColor.LIGHT_PURPLE);
+            List<Component> lore = new ArrayList<>();
+            lore.add(Component.text("释放后会自动飞向分数最高的玩家并爆炸", NamedTextColor.AQUA));
+            lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
+            it.editMeta(meta -> {
+                meta.displayName(displayName);
+                meta.lore(lore);
+                meta.addEnchant(Enchantment.UNBREAKING, 1, true);
+                setTypeTag(meta, this);
+            });
+            return it;
+        }
     };
 
     public final String id;

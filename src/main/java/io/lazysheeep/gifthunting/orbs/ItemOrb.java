@@ -1,5 +1,6 @@
 package io.lazysheeep.gifthunting.orbs;
 
+import io.lazysheeep.gifthunting.game.GameInstance;
 import io.lazysheeep.gifthunting.player.GHPlayer;
 import io.lazysheeep.gifthunting.utils.MCUtil;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
@@ -37,8 +38,9 @@ public class ItemOrb extends Orb
     }
 
     @Override
-    protected void onTick()
+    public void onTick(GameInstance gameInstance)
     {
+        super.onTick(gameInstance);
         _location.getWorld().spawnParticle(Particle.DUST, _location, 2, new Particle.DustOptions(Color.AQUA, 1.0f));
     }
 }

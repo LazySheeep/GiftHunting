@@ -3,7 +3,7 @@ package io.lazysheeep.gifthunting.game;
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
 import io.lazysheeep.gifthunting.GiftHunting;
 import io.lazysheeep.gifthunting.gift.GiftManager;
-import io.lazysheeep.gifthunting.orbs.OrbManager;
+import io.lazysheeep.gifthunting.orbs.GHEntityManager;
 import io.lazysheeep.gifthunting.player.GHPlayerManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -33,7 +33,7 @@ public class GameInstance extends StateMachine<GameInstance, GHStates> implement
     private final GHPlayerManager _playerManager;
     private final GiftManager _giftManager;
     private final SkillManager _skillManager;
-    private final OrbManager _orbManager;
+    private final GHEntityManager _GHEntityManager;
 
     public GHPlayerManager getPlayerManager()
     {
@@ -45,9 +45,9 @@ public class GameInstance extends StateMachine<GameInstance, GHStates> implement
         return _giftManager;
     }
 
-    public OrbManager getOrbManager()
+    public GHEntityManager getEntityManager()
     {
-        return _orbManager;
+        return _GHEntityManager;
     }
 
     public World getGameWorld()
@@ -107,7 +107,7 @@ public class GameInstance extends StateMachine<GameInstance, GHStates> implement
         _playerManager = new GHPlayerManager(this);
         _giftManager = new GiftManager(this);
         _skillManager = new SkillManager(this);
-        _orbManager = new OrbManager();
+        _GHEntityManager = new GHEntityManager();
 
         Bukkit.getPluginManager().registerEvents(_playerManager, GiftHunting.GetPlugin());
         Bukkit.getPluginManager().registerEvents(_giftManager, GiftHunting.GetPlugin());
@@ -118,7 +118,7 @@ public class GameInstance extends StateMachine<GameInstance, GHStates> implement
     {
         _playerManager.tick();
         _giftManager.tick();
-        _orbManager.tick(this);
+        _GHEntityManager.tick(this);
 
         super.tick();
     }

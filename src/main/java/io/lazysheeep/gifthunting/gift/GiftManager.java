@@ -147,6 +147,11 @@ public class GiftManager implements Listener
         GiftHunting.Log(Level.INFO, "Saved " + _specialSpawners.size() + " special spawners");
     }
 
+    public void onDestroy()
+    {
+        removeAllGifts();
+    }
+
     private final List<Gift> _normalGifts = new LinkedList<>();
     private Gift _specialGift = null;
 

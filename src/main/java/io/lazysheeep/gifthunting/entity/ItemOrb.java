@@ -1,4 +1,4 @@
-package io.lazysheeep.gifthunting.orbs;
+package io.lazysheeep.gifthunting.entity;
 
 import io.lazysheeep.gifthunting.game.GameInstance;
 import io.lazysheeep.gifthunting.player.GHPlayer;

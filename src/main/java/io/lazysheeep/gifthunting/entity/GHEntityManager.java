@@ -1,4 +1,4 @@
-package io.lazysheeep.gifthunting.orbs;
+package io.lazysheeep.gifthunting.entity;
 
 import io.lazysheeep.gifthunting.game.GameInstance;
 
@@ -18,6 +18,19 @@ public class GHEntityManager
     public void removeEntity(GHEntity entity)
     {
         _entities.remove(entity);
+    }
+
+    public void onDestroy()
+    {
+        for(GHEntity entity : _entities)
+        {
+            if(!entity.isDestroyed())
+            {
+                entity.onDestroyed();
+                entity._isDestroyed = true;
+            }
+        }
+        _entities.clear();
     }
 
     public void tick(GameInstance gameInstance)

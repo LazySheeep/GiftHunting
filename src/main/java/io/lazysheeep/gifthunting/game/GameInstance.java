@@ -3,13 +3,14 @@ package io.lazysheeep.gifthunting.game;
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
 import io.lazysheeep.gifthunting.GiftHunting;
 import io.lazysheeep.gifthunting.gift.GiftManager;
-import io.lazysheeep.gifthunting.orbs.GHEntityManager;
+import io.lazysheeep.gifthunting.entity.GHEntityManager;
 import io.lazysheeep.gifthunting.player.GHPlayerManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;
@@ -162,6 +163,19 @@ public class GameInstance extends StateMachine<GameInstance, GHStates> implement
         gameSpawnNode.node("pitch").set(_gameSpawn.getPitch());
 
         _giftManager.saveConfig(configNode);
+    }
+
+    public void onDestroy()
+    {
+        switchState(GHStates.IDLE);
+
+        HandlerList.unregisterAll(_playerManager);
+        HandlerList.unregisterAll(_giftManager);
+        HandlerList.unregisterAll(_skillManager);
+
+        _playerManager.onDestroy();
+        _giftManager.onDestroy();
+        _GHEntityManager.onDestroy();
     }
 
     public boolean anyPlayerHasDawnBuff()

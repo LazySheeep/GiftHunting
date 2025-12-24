@@ -76,6 +76,16 @@ public class GHPlayerManager implements Listener
         _gameInstance = gameInstance;
     }
 
+    public void onDestroy()
+    {
+        for(GHPlayer ghPlayer : getOnlineGHPlayers())
+        {
+            ghPlayer.onDisconnect(_gameInstance);
+        }
+        _ghPlayers.clear();
+        _offlineGHPlayers.clear();
+    }
+
     public @Nullable GHPlayer getGHPlayer(@NotNull Player player)
     {
         return _ghPlayers.get(player.getUniqueId());

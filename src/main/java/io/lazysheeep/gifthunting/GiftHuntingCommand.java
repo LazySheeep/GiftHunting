@@ -39,8 +39,28 @@ public class GiftHuntingCommand extends BaseCommand
         @CommandCompletion("@config_names")
         public void onLoad(CommandSender sender, String configName)
         {
-            GiftHunting.GetPlugin().loadGameInstance(configName);
-            sender.sendMessage(Component.text("Loaded game instance", COLOR_GOOD));
+            if(GiftHunting.GetPlugin().loadGameInstance(configName))
+            {
+                sender.sendMessage(Component.text("Loaded game instance", COLOR_GOOD));
+            }
+            else
+            {
+                sender.sendMessage(Component.text("Failed to load game instance", COLOR_VITAL));
+            }
+        }
+
+        @Subcommand("unload")
+        @Description("Unload current game")
+        public void onUnload(CommandSender sender)
+        {
+            if(GiftHunting.GetPlugin().unloadGameInstance())
+            {
+                sender.sendMessage(Component.text("Unloaded game instance", COLOR_GOOD));
+            }
+            else
+            {
+                sender.sendMessage(Component.text("No game instance loaded", COLOR_VITAL));
+            }
         }
 
         @Subcommand("setSpawn")
@@ -95,8 +115,14 @@ public class GiftHuntingCommand extends BaseCommand
         @Description("Save config to file")
         public void onSave(CommandSender sender)
         {
-            GiftHunting.GetPlugin().saveGHConfig();
-            sender.sendMessage(MessageFactory.getSaveConfigText());
+            if(GiftHunting.GetPlugin().saveGHConfig())
+            {
+                sender.sendMessage(MessageFactory.getSaveConfigText());
+            }
+            else
+            {
+                sender.sendMessage(Component.text("No game instance loaded", COLOR_VITAL));
+            }
         }
     }
 

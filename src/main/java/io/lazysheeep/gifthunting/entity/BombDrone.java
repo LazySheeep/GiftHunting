@@ -1,4 +1,4 @@
-package io.lazysheeep.gifthunting.orbs;
+package io.lazysheeep.gifthunting.entity;
 
 import io.lazysheeep.gifthunting.game.GameInstance;
 import io.lazysheeep.gifthunting.player.GHPlayer;
@@ -9,9 +9,9 @@ import org.bukkit.util.Vector;
 
 public class BombDrone extends GHEntity
 {
-    private final float hoverHeightMin = 8.0f;
+    private final float hoverHeightMin = 4.0f;
     private final float hoverHeightMax = 10.0f;
-    private final float hoverRadius = 6.0f;
+    private final float hoverRadius = 4.0f;
     private final float chaseDistance = 32.0f;
     private final float attackDistance = 16.0f;
     private final float explodeDistance = 1.0f;

@@ -114,34 +114,34 @@ public final class GiftHunting extends JavaPlugin
         }
     }
 
-    public void loadGameInstance(String configName)
+    public boolean loadGameInstance(String configName)
     {
         if(_gameInstance != null)
         {
-            Log(Level.WARNING, "Game instance already exists");
-            return;
+            return false;
         }
         _currentConfigName = (configName == null || configName.isEmpty()) ? "gifthunting" : configName;
         _gameInstance = new GameInstance();
         _gameInstance.loadConfig(loadConfigRootNode(_currentConfigName));
         Bukkit.getPluginManager().registerEvents(_gameInstance, this);
+        return true;
     }
 
-    public void unloadGameInstance()
+    public boolean unloadGameInstance()
     {
         if(_gameInstance == null)
         {
-            Log(Level.WARNING, "No game instance to unload");
-            return;
+            return false;
         }
-        _gameInstance.switchState(GHStates.IDLE);
+        _gameInstance.onDestroy();
         _gameInstance = null;
         HandlerList.unregisterAll(this);
+        return true;
     }
 
-    public void saveGHConfig()
+    public boolean saveGHConfig()
     {
-        if(_gameInstance == null || _currentConfigName == null) return;
+        if(_gameInstance == null || _currentConfigName == null) return false;
         ConfigurationNode configRootNode = loadConfigRootNode(_currentConfigName);
         try
         {
@@ -153,6 +153,7 @@ public final class GiftHunting extends JavaPlugin
         {
             throw new RuntimeException(e);
         }
+        return true;
     }
 
     private HoconConfigurationLoader _configLoader;

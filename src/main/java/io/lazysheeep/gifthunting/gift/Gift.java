@@ -14,14 +14,13 @@ import io.lazysheeep.gifthunting.utils.RandUtil;
 import io.lazysheeep.lazuliui.LazuliUI;
 import net.kyori.adventure.text.Component;
 import org.bukkit.*;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.util.Vector;
+import org.bukkit.util.Transformation;
+import org.joml.AxisAngle4f;
+import org.joml.Vector3f;
 
 import java.util.List;
 import java.util.UUID;
@@ -33,16 +32,12 @@ public class Gift
 {
     public static final String TagName = "GiftHunting:Gift";
 
-    private final ArmorStand _giftEntity;
+    private final ItemDisplay _displayEntity;
+    private final Interaction _interactionEntity;
     private final GiftType _type;
 
     private int _remainingCapacity;
     private int _clicksToNextFetch;
-
-    public ArmorStand getEntity()
-    {
-        return _giftEntity;
-    }
 
     public GiftType getType()
     {
@@ -71,25 +66,38 @@ public class Gift
         this._remainingCapacity = type.capacityInFetches;
         this._clicksToNextFetch = type.clicksPerFetch;
 
-        this._giftEntity = (ArmorStand) location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
-        this._giftEntity.customName(Component.text(TagName));
-        this._giftEntity.addScoreboardTag(TagName);
-        this._giftEntity.setCanMove(false);
-        this._giftEntity.setInvulnerable(true);
-        this._giftEntity.setInvisible(true);
-
         PlayerProfile headProfile = Bukkit.createProfile(UUID.randomUUID());
         headProfile.setProperty(new ProfileProperty("textures", type.texture));
         ItemStack headItem = new ItemStack(Material.PLAYER_HEAD, 1);
         headItem.editMeta(itemMeta -> ((SkullMeta) itemMeta).setPlayerProfile(headProfile));
-        this._giftEntity.setItem(EquipmentSlot.HEAD, headItem);
 
-        this._giftEntity.setMetadata(TagName, new FixedMetadataValue(GiftHunting.GetPlugin(), this));
+        float scale = (float) (type.size * 2.0);
+        float halfSize = (float) (type.size * 0.5);
+
+        Location displayLoc = location.clone().add(0.0, halfSize, 0.0);
+        this._displayEntity = (ItemDisplay) displayLoc.getWorld().spawnEntity(displayLoc, EntityType.ITEM_DISPLAY);
+        this._displayEntity.setItemStack(headItem);
+        Transformation t = new Transformation(new Vector3f(0f, 0f, 0f), new AxisAngle4f(0f, 0f, 0f, 1f), new Vector3f(scale, scale, scale), new AxisAngle4f(0f, 0f, 0f, 1f));
+        this._displayEntity.setTransformation(t);
+        this._displayEntity.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.FIXED);
+        this._displayEntity.customName(Component.text(TagName));
+        this._displayEntity.addScoreboardTag(TagName);
+        this._displayEntity.setMetadata(TagName, new FixedMetadataValue(GiftHunting.GetPlugin(), this));
+
+        Location interactionLoc = location.clone();
+        this._interactionEntity = (Interaction) interactionLoc.getWorld().spawnEntity(interactionLoc, EntityType.INTERACTION);
+        float box = (float) Math.max(0.2, (float) type.size);
+        this._interactionEntity.setInteractionWidth(box);
+        this._interactionEntity.setInteractionHeight(box);
+        this._interactionEntity.setResponsive(true);
+        this._interactionEntity.customName(Component.text(TagName));
+        this._interactionEntity.addScoreboardTag(TagName);
+        this._interactionEntity.setMetadata(TagName, new FixedMetadataValue(GiftHunting.GetPlugin(), this));
     }
 
     public Location getLocation()
     {
-        return this._giftEntity.getLocation().add(new Vector(0.0f, 1.95f, 0.0f));
+        return this._displayEntity.getLocation();
     }
 
     public void clicked(GHPlayer ghPlayer)
@@ -112,7 +120,7 @@ public class Gift
             this._clicksToNextFetch--;
         }
         LazuliUI.sendMessage(ghPlayer.getPlayer(), MessageFactory.getGiftClickedActionbar(this));
-        ghPlayer.getPlayer().playSound(_giftEntity, Sound.BLOCK_WOOL_HIT, SoundCategory.MASTER, 1.0f, 1.0f);
+        ghPlayer.getPlayer().playSound(_displayEntity, Sound.BLOCK_WOOL_HIT, SoundCategory.MASTER, 1.0f, 1.0f);
 
         if(this._clicksToNextFetch == 0)
         {
@@ -130,7 +138,6 @@ public class Gift
 
         Player player = ghPlayer.getPlayer();
 
-        // Collect nearby GH players and compute weights
         Map<GHPlayer, Float> weightMap = getLootGHPlayers(ghPlayer);
         if(weightMap.isEmpty())
         {
@@ -141,7 +148,6 @@ public class Gift
         for(float w : weightMap.values()) sumW += w;
         if(sumW <= 0.0) sumW = 1.0;
 
-        // give score
         int totalScore = _type.scorePerFetch;
         if(totalScore < 1) totalScore = 1;
         for(Map.Entry<GHPlayer, Float> e : weightMap.entrySet())
@@ -152,7 +158,6 @@ public class Gift
             ghPlayer.getGameInstance().getEntityManager().addEntity(new ScoreOrb(this.getLocation(), null, e.getKey(), share));
         }
 
-        // give loot
         List<ItemStack> loots = _type.lootTable.loot();
         for(ItemStack loot : loots)
         {
@@ -160,22 +165,19 @@ public class Gift
             ghPlayer.getGameInstance().getEntityManager().addEntity(new ItemOrb(this.getLocation(), null, pickedPlayer, loot));
         }
 
-        // send actionbar infix:
         LazuliUI.sendMessage(player, MessageFactory.getGiftFetchedActionbar(this));
 
-        // display particle
         player.getWorld().spawnParticle(Particle.WAX_OFF, this.getLocation(), 4, 0.2f, 0.2f, 0.2f);
 
-        // update capacity
         this._remainingCapacity--;
     }
 
     void destroy()
     {
-        _giftEntity.remove();
+        _displayEntity.remove();
+        _interactionEntity.remove();
     }
 
-    // Helper: collect nearby GH players and return weights using normalized generalized Gaussian
     private Map<GHPlayer, Float> getLootGHPlayers(GHPlayer source)
     {
         Map<GHPlayer, Float> map = new HashMap<>();

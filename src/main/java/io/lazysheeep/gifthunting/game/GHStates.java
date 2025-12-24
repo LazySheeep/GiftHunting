@@ -38,7 +38,7 @@ class IdleState extends State<GameInstance, GHStates>
             {
                 for(Location spawnerLocation : gameInstance.getGiftManager().getNormalSpawners())
                 {
-                    player.spawnParticle(Particle.COMPOSTER, spawnerLocation.clone().add(new Vector(0.0f, 1.95f, 0.0f)), 1, 0.0f, 0.0f, 0.0f);
+                    player.spawnParticle(Particle.COMPOSTER, spawnerLocation.clone().add(new Vector(0.0f, 0.5f, 0.0f)), 1, 0.0f, 0.0f, 0.0f);
                 }
                 LazuliUI.sendMessage(player, MessageFactory.getNormalSpawnerCountActionbar(gameInstance.getGiftManager().getNormalSpawnerCount()));
             }
@@ -46,7 +46,7 @@ class IdleState extends State<GameInstance, GHStates>
             {
                 for(Location spawnerLocation : gameInstance.getGiftManager().getSpecialSpawners())
                 {
-                    player.spawnParticle(Particle.WAX_ON, spawnerLocation.clone().add(new Vector(0.0f, 1.95f, 0.0f)), 1, 0.0f, 0.0f, 0.0f);
+                    player.spawnParticle(Particle.WAX_ON, spawnerLocation.clone().add(new Vector(0.0f, 0.5f, 0.0f)), 1, 0.0f, 0.0f, 0.0f);
                 }
                 LazuliUI.sendMessage(player, MessageFactory.getSpecialSpawnerCountActionbar(gameInstance.getGiftManager().getSpecialSpawnerCount()));
             }

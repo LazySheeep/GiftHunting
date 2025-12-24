@@ -130,6 +130,7 @@ public enum CustomItem
                 meta.displayName(displayName);
                 meta.lore(lore);
                 meta.addEnchant(Enchantment.UNBREAKING, 1, true);
+                meta.setUnbreakable(true);
                 setTypeTag(meta, this);
             });
             return it;

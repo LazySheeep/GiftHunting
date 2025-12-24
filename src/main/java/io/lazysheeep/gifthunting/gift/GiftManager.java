@@ -10,17 +10,15 @@ import io.lazysheeep.gifthunting.utils.RandUtil;
 import io.lazysheeep.lazuliui.LazuliUI;
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
+import org.bukkit.block.BlockFace;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.Vector;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;
 
@@ -50,9 +48,17 @@ public class GiftManager implements Listener
         _normalSpawners.add(location);
     }
 
-    public boolean removeNormalSpawner(Location location)
+    public boolean removeNormalSpawner(Location location, double radius)
     {
-        return _normalSpawners.remove(location);
+        for(int i = 0; i < _normalSpawners.size(); i++)
+        {
+            if(_normalSpawners.get(i).distanceSquared(location) <= radius * radius)
+            {
+                _normalSpawners.remove(i);
+                return true;
+            }
+        }
+        return false;
     }
 
     public void clearNormalSpawners()
@@ -77,9 +83,17 @@ public class GiftManager implements Listener
         _specialSpawners.add(location);
     }
 
-    public boolean removeSpecialSpawner(Location location)
+    public boolean removeSpecialSpawner(Location location, double radius)
     {
-        return _specialSpawners.remove(location);
+        for(int i = 0; i < _specialSpawners.size(); i++)
+        {
+            if(_specialSpawners.get(i).distanceSquared(location) <= radius * radius)
+            {
+                _specialSpawners.remove(i);
+                return true;
+            }
+        }
+        return false;
     }
 
     public void clearSpecialSpawners()
@@ -202,7 +216,7 @@ public class GiftManager implements Listener
 
     public @Nullable Gift getGift(Entity entity)
     {
-        for(var m : entity.getMetadata("GiftHunting:Gift"))
+        for(var m : entity.getMetadata(Gift.TagName))
         {
             if(m.getOwningPlugin() == GiftHunting.GetPlugin() && m.value() instanceof Gift gift)
             {
@@ -225,7 +239,9 @@ public class GiftManager implements Listener
     {
         if(_specialGift == null)
         {
-            _specialGift = new Gift(GIFT_SPECIAL, location);
+            Location newLocation = location.clone();
+            newLocation.setYaw(RandUtil.nextFloat(0.0f, 360.0f));
+            _specialGift = new Gift(GIFT_SPECIAL, newLocation);
         }
         else
         {
@@ -267,7 +283,15 @@ public class GiftManager implements Listener
     public int removeUnTracked()
     {
         int counter = 0;
-        for(ArmorStand e : _gameInstance.getGameWorld().getEntitiesByClass(ArmorStand.class))
+        for(ItemDisplay e : _gameInstance.getGameWorld().getEntitiesByClass(ItemDisplay.class))
+        {
+            if(e.getScoreboardTags().contains(Gift.TagName))
+            {
+                e.remove();
+                counter ++;
+            }
+        }
+        for(Interaction e : _gameInstance.getGameWorld().getEntitiesByClass(Interaction.class))
         {
             if(e.getScoreboardTags().contains(Gift.TagName))
             {
@@ -303,28 +327,31 @@ public class GiftManager implements Listener
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteract(PlayerInteractEvent event)
     {
-        // get event attributes
         Player player = event.getPlayer();
         Action action = event.getAction();
         ItemStack item = event.getItem();
         Block clickedBlock = event.getClickedBlock();
-        Vector blockFaceDirection = event.getBlockFace().getDirection();
+        BlockFace clickedFace = event.getBlockFace();
 
-        if (item != null && clickedBlock != null && player.hasPermission("op") && _gameInstance.getCurrentStateEnum() == GHStates.IDLE)
+        if (item != null && clickedBlock != null && clickedFace == BlockFace.UP && player.hasPermission("op") && _gameInstance.getCurrentStateEnum() == GHStates.IDLE)
         {
-            // use giftSpawnerSetter to set or remove a spawner
+            Location spawnLocation = clickedBlock.getLocation().toCenterLocation().add(0.0, 0.5, 0.0);
+            Location interactionPoint = event.getInteractionPoint();
+            if(interactionPoint != null)
+            {
+                spawnLocation.setY(interactionPoint.getY());
+            }
+
             if (CustomItem.checkItem(item) == CustomItem.NORMAL_GIFT_SPAWNER_SETTER)
             {
                 if (action == Action.RIGHT_CLICK_BLOCK)
                 {
-                    Location newLocation = clickedBlock.getLocation().toCenterLocation().add(blockFaceDirection).add(0.0f, -1.95f, 0.0f);
-                    addNormalSpawner(newLocation);
+                    addNormalSpawner(spawnLocation);
                     LazuliUI.sendMessage(player, MessageFactory.getAddGiftSpawnerActionbar());
                 }
                 else if (action == Action.LEFT_CLICK_BLOCK)
                 {
-                    Location location = clickedBlock.getLocation().toCenterLocation().add(blockFaceDirection).add(0.0f, -1.95f, 0.0f);
-                    if (removeNormalSpawner(location))
+                    if (removeNormalSpawner(spawnLocation, 0.5))
                         LazuliUI.sendMessage(player, MessageFactory.getRemoveGiftSpawnerActionbar());
                     event.setCancelled(true);
                 }
@@ -333,14 +360,12 @@ public class GiftManager implements Listener
             {
                 if (action == Action.RIGHT_CLICK_BLOCK)
                 {
-                    Location newLocation = clickedBlock.getLocation().toCenterLocation().add(0.0f, -0.95f, 0.0f);
-                    addSpecialSpawner(newLocation);
+                    addSpecialSpawner(spawnLocation);
                     LazuliUI.sendMessage(player, MessageFactory.getAddGiftSpawnerActionbar());
                 }
                 else if (action == Action.LEFT_CLICK_BLOCK)
                 {
-                    Location location = clickedBlock.getLocation().toCenterLocation().add(0.0f, -0.95f, 0.0f);
-                    if (removeSpecialSpawner(location))
+                    if (removeSpecialSpawner(spawnLocation, 0.5))
                         LazuliUI.sendMessage(player, MessageFactory.getRemoveGiftSpawnerActionbar());
                     event.setCancelled(true);
                 }
@@ -350,9 +375,11 @@ public class GiftManager implements Listener
 
     // player click gift
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerArmorStandManipulate(PlayerArmorStandManipulateEvent event)
+    public void onPlayerInteractEntity(PlayerInteractEntityEvent event)
     {
-        Gift gift = getGift(event.getRightClicked());
+        Entity clicked = event.getRightClicked();
+        if(!(clicked instanceof Interaction)) return;
+        Gift gift = getGift(clicked);
         GHPlayer ghPlayer = _gameInstance.getPlayerManager().getGHPlayer(event.getPlayer());
         if(gift != null && ghPlayer != null)
         {

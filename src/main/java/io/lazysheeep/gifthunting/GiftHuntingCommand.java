@@ -124,6 +124,40 @@ public class GiftHuntingCommand extends BaseCommand
                 sender.sendMessage(Component.text("No game instance loaded", COLOR_VITAL));
             }
         }
+
+        @Subcommand("clear")
+        public class ClearCommand extends BaseCommand
+        {
+            @Subcommand("normalSpawner")
+            @Description("Clear all normal spawners")
+            public void onNormalSpawner(CommandSender sender)
+            {
+                GiftHunting.GetPlugin().getGameInstance().getGiftManager().clearNormalSpawners();
+            }
+
+            @Subcommand("specialSpawner")
+            @Description("Clear all special spawners")
+            public void onSpecialSpawner(CommandSender sender)
+            {
+                GiftHunting.GetPlugin().getGameInstance().getGiftManager().clearSpecialSpawners();
+            }
+
+            @Subcommand("gift")
+            @Description("Clear all gifts")
+            public void onGift(CommandSender sender)
+            {
+                int counter = GiftHunting.GetPlugin().getGameInstance().getGiftManager().removeAllGifts();
+                sender.sendMessage(MessageFactory.getClearAllGiftMsg(counter));
+            }
+
+            @Subcommand("untracked")
+            @Description("Clear all untracked gifts")
+            public void onUntracked(CommandSender sender)
+            {
+                int counter = GiftHunting.GetPlugin().getGameInstance().getGiftManager().removeUnTracked();
+                sender.sendMessage(MessageFactory.getClearUntrackedGiftMsg(counter));
+            }
+        }
     }
 
     @Subcommand("item")
@@ -137,39 +171,5 @@ public class GiftHuntingCommand extends BaseCommand
             return;
         }
         senderPlayer.getInventory().addItem(item.create());
-    }
-
-    @Subcommand("clear")
-    public class ClearCommand extends BaseCommand
-    {
-        @Subcommand("normalSpawner")
-        @Description("Clear all normal spawners")
-        public void onNormalSpawner(CommandSender sender)
-        {
-            GiftHunting.GetPlugin().getGameInstance().getGiftManager().clearNormalSpawners();
-        }
-
-        @Subcommand("specialSpawner")
-        @Description("Clear all special spawners")
-        public void onSpecialSpawner(CommandSender sender)
-        {
-            GiftHunting.GetPlugin().getGameInstance().getGiftManager().clearSpecialSpawners();
-        }
-
-        @Subcommand("gift")
-        @Description("Clear all gifts")
-        public void onGift(CommandSender sender)
-        {
-            int counter = GiftHunting.GetPlugin().getGameInstance().getGiftManager().removeAllGifts();
-            sender.sendMessage(MessageFactory.getClearAllGiftMsg(counter));
-        }
-
-        @Subcommand("untracked")
-        @Description("Clear all untracked gifts")
-        public void onUntracked(CommandSender sender)
-        {
-            int counter = GiftHunting.GetPlugin().getGameInstance().getGiftManager().removeUnTracked();
-            sender.sendMessage(MessageFactory.getClearUntrackedGiftMsg(counter));
-        }
     }
 }

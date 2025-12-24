@@ -12,6 +12,7 @@ public class GiftType
     public final LootTable lootTable;
     public final double lootRadius;
     public final double lootWeightShape;
+    public final double size;
 
     public GiftType(ConfigurationNode configNode)
     {
@@ -22,5 +23,6 @@ public class GiftType
         this.lootTable = new LootTable(configNode.node("lootTable"));
         this.lootRadius = configNode.node("lootRadius").getDouble();
         this.lootWeightShape = configNode.node("lootWeightShape").getDouble();
+        this.size = configNode.node("size").getDouble(1.0);
     }
 }

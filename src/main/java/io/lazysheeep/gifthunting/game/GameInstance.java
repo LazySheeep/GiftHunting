@@ -162,7 +162,7 @@ public class GameInstance extends StateMachine<GameInstance, GHStates> implement
         gameSpawnNode.node("yaw").set(_gameSpawn.getYaw());
         gameSpawnNode.node("pitch").set(_gameSpawn.getPitch());
 
-        _giftManager.saveConfig(configNode);
+        _giftManager.saveConfig(configNode.node("gifts"));
     }
 
     public void onDestroy()

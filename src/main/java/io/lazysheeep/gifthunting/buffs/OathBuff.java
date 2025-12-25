@@ -15,6 +15,11 @@ public class OathBuff extends Buff
 {
     private double _t;
 
+    public OathBuff()
+    {
+        super();
+    }
+
     public OathBuff(int duration)
     {
         super(duration);
@@ -40,10 +45,10 @@ public class OathBuff extends Buff
         double radius = 1.0;
         Vector a = new Vector(radius, 0, 0);
         Vector b = new Vector(0, 0, radius);
-        List<Vector> particlePositions = List.of(MathUtils.Ellipse(center, a, b, _t), MathUtils.Ellipse(center, a, b, _t + Math.PI));
+        List<Vector> particlePositions = List.of(MathUtils.Ellipse(center, a, b, _t), MathUtils.Ellipse(center, a, b, _t + Math.PI * 0.67), MathUtils.Ellipse(center, a, b, _t + Math.PI * 1.33));
         for (Vector p : particlePositions)
         {
-            world.spawnParticle(Particle.DUST, new Location(world, p.getX(), p.getY(), p.getZ()), 2, 0, 0, 0, 0, new Particle.DustOptions(Color.AQUA, 1.0f));
+            world.spawnParticle(Particle.DUST, new Location(world, p.getX(), p.getY(), p.getZ()), 2, 0, 0, 0, 0, new Particle.DustOptions(Color.ORANGE, 1.5f));
         }
         _t += Math.PI * 0.15;
     }
@@ -52,5 +57,11 @@ public class OathBuff extends Buff
     public TextComponent getDisplayName()
     {
         return Component.text("誓约", NamedTextColor.LIGHT_PURPLE);
+    }
+
+    @Override
+    public String getDescription()
+    {
+        return "免疫猎杀黎明";
     }
 }

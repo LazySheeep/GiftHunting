@@ -232,7 +232,18 @@ public class MessageFactory
         );
     }
 
-    public static Message getSilencedMsg(GHPlayer badGuy)
+    public static Message getSilenceMsg(GHPlayer victim)
+    {
+        return new Message(
+                Message.Type.CHAT,
+                Component.text("沉默了 ", COLOR_INFO_NORMAL)
+                         .append(Component.text(victim.getName(), COLOR_PLAYER_NAME)),
+                Message.LoadMode.IMMEDIATE,
+                1
+        );
+    }
+
+    public static Message getBeenSilencedMsg(GHPlayer badGuy)
     {
         return new Message(
                 Message.Type.CHAT,
@@ -277,7 +288,7 @@ public class MessageFactory
                 Message.Type.CHAT,
                 Component.text("被 ", COLOR_INFO_BAD)
                         .append(Component.text(thief.getName(), COLOR_PLAYER_NAME))
-                        .append(Component.text(" 偷走了", COLOR_INFO_BAD))
+                        .append(Component.text(" 偷走了 ", COLOR_INFO_BAD))
                         .append(Component.text(score, COLOR_VALUE))
                         .append(Component.text(" 点礼物", COLOR_INFO_BAD)),
                 Sound.ENTITY_VILLAGER_HURT,

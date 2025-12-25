@@ -6,6 +6,11 @@ import net.kyori.adventure.text.format.NamedTextColor;
 
 public class CounteringBuff extends Buff
 {
+    public CounteringBuff()
+    {
+        super();
+    }
+
     public CounteringBuff(int duration)
     {
         super(duration);
@@ -33,5 +38,11 @@ public class CounteringBuff extends Buff
     public net.kyori.adventure.text.TextComponent getDisplayName()
     {
         return Component.text("识破", NamedTextColor.GREEN);
+    }
+
+    @Override
+    public String getDescription()
+    {
+        return "识破一次技能, 成功后移除该Buff";
     }
 }

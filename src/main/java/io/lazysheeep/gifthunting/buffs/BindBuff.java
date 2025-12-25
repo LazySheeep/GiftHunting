@@ -19,6 +19,11 @@ public class BindBuff extends Buff
     private Location lockedLocation;
     private double _t;
 
+    public BindBuff()
+    {
+        super();
+    }
+
     public BindBuff(int duration)
     {
         super(duration);
@@ -71,5 +76,11 @@ public class BindBuff extends Buff
     public net.kyori.adventure.text.TextComponent getDisplayName()
     {
         return Component.text("束缚", NamedTextColor.RED);
+    }
+
+    @Override
+    public String getDescription()
+    {
+        return "使玩家无法使用道具或技能, 且无法移动";
     }
 }

@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
 
 public enum Skill
 {
-    COUNTER(CustomItem.SKILL_COUNTER, 1, 200, 20)
+    COUNTER(CustomItem.SKILL_COUNTER, 1, 300, 20)
     {
         @Override
         public void onUse(GHPlayer host, SkillState skillState)

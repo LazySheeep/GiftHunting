@@ -8,6 +8,11 @@ import org.bukkit.potion.PotionEffectType;
 
 public class SpeedBuff extends Buff
 {
+    public SpeedBuff()
+    {
+        super();
+    }
+
     public SpeedBuff(int duration)
     {
         super(duration);
@@ -28,12 +33,18 @@ public class SpeedBuff extends Buff
     @Override
     protected void onTick(GHPlayer player)
     {
-        player.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 10, 0));
+        player.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 10, 1));
     }
 
     @Override
     public net.kyori.adventure.text.TextComponent getDisplayName()
     {
         return Component.text("迅捷", NamedTextColor.GREEN);
+    }
+
+    @Override
+    public String getDescription()
+    {
+        return "提升移动速度和礼物开启速度";
     }
 }

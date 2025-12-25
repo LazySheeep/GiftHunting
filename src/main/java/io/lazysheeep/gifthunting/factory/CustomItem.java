@@ -104,7 +104,7 @@ public enum CustomItem
             lore.add(Component.text("右键使用", COLOR_ITEM_DESCRIPTION));
             lore.add(Component.text("将自己向所指方向弹射", COLOR_ITEM_DESCRIPTION));
             lore.add(Component.text("在助跑起跳时弹射效果最佳", COLOR_ITEM_DESCRIPTION));
-            lore.add(Component.text("飞起来！", COLOR_HINT));
+            lore.add(Component.text("飞起来!", COLOR_HINT));
             it.editMeta(meta -> {
                 meta.displayName(displayName);
                 meta.lore(lore);
@@ -124,8 +124,12 @@ public enum CustomItem
             lore.add(Component.text("持续时间: ", COLOR_TITLE).append(Component.text(String.format("%.1fs", Skill.COUNTER.activeDuration / 20f), COLOR_VALUE)));
             lore.add(Component.text("最大次数: ", COLOR_TITLE).append(Component.text(Skill.COUNTER.maxCharges, COLOR_VALUE)));
             lore.add(Component.text("右键使用", COLOR_ITEM_DESCRIPTION));
-            lore.add(Component.text("短时间内识破一次他人的技能", COLOR_ITEM_DESCRIPTION));
-            lore.add(Component.text("接下来，时机很重要", COLOR_HINT));
+            lore.add(Component.text("短时间内识破一次他人对自己使用的道具或技能", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("木棍: 反弹道具效果, 并夺取道具", COLOR_HINT));
+            lore.add(Component.text("沉默: 反弹道具效果", COLOR_HINT));
+            lore.add(Component.text("束缚: 反弹道具效果, 并夺取道具", COLOR_HINT));
+            lore.add(Component.text("钓礼物杆: 反弹道具效果, 并夺取道具", COLOR_HINT));
+            lore.add(Component.text("猎杀黎明: 免疫技能效果, 并获得誓约Buff", COLOR_HINT));
             it.editMeta(meta -> {
                 meta.displayName(displayName);
                 meta.lore(lore);
@@ -144,7 +148,10 @@ public enum CustomItem
             String cd = String.format("%.1fs", Skill.DAWN.cooldownDuration / 20f);
             lore.add(Component.text("冷却: ", COLOR_TITLE).append(Component.text(cd, COLOR_VALUE)));
             lore.add(Component.text("最大次数: ", COLOR_TITLE).append(Component.text(Skill.DAWN.maxCharges, COLOR_VALUE)));
-            lore.add(Component.text("用于释放技能：猎杀黎明", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("当场上存在有决胜Buff的玩家时解锁", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("且仅对有决胜Buff的玩家生效", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("击中目标时使其掉落一定比例的分数", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("○○を射ち堕とした日", COLOR_HINT));
             it.editMeta(meta -> {
                 meta.displayName(displayName);
                 meta.lore(lore);
@@ -161,7 +168,7 @@ public enum CustomItem
             ItemStack it = new ItemStack(Material.ARROW, 1);
             Component displayName = Component.text("猎杀黎明之箭", COLOR_ITEM_NAME);
             List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("用于技能：猎杀黎明", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("用于技能: 猎杀黎明", COLOR_ITEM_DESCRIPTION));
             it.editMeta(meta -> {
                 meta.displayName(displayName);
                 meta.lore(lore);

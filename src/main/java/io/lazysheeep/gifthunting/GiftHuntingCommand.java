@@ -2,13 +2,25 @@ package io.lazysheeep.gifthunting;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.*;
+import io.lazysheeep.gifthunting.buffs.BindBuff;
+import io.lazysheeep.gifthunting.buffs.BlewUpBuff;
+import io.lazysheeep.gifthunting.buffs.Buff;
+import io.lazysheeep.gifthunting.buffs.CounteringBuff;
+import io.lazysheeep.gifthunting.buffs.DawnBuff;
+import io.lazysheeep.gifthunting.buffs.OathBuff;
+import io.lazysheeep.gifthunting.buffs.SilenceBuff;
+import io.lazysheeep.gifthunting.buffs.SpeedBuff;
 import io.lazysheeep.gifthunting.factory.CustomItem;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
 import io.lazysheeep.gifthunting.game.GHStates;
 import io.lazysheeep.gifthunting.game.GameInstance;
+import io.lazysheeep.gifthunting.player.GHPlayer;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.List;
 
 import static io.lazysheeep.gifthunting.factory.MessageFactory.*;
 
@@ -23,11 +35,75 @@ public class GiftHuntingCommand extends BaseCommand
 
     }
 
-    @Subcommand("stats")
-    @Description("Get stats")
-    public void onStats(CommandSender sender)
+    @Subcommand("info")
+    public class InfoCommand extends BaseCommand
     {
-        sender.sendMessage(MessageFactory.getGameStatsText(GiftHunting.GetPlugin().getGameInstance()));
+        @Subcommand("game")
+        @Description("Get game info")
+        public void onGame(CommandSender sender)
+        {
+            sender.sendMessage(MessageFactory.getGameStatsText(GiftHunting.GetPlugin().getGameInstance()));
+        }
+
+        @Subcommand("buff")
+        public class BuffCommand extends BaseCommand
+        {
+            @Subcommand("current")
+            @Description("List your current buffs")
+            @CommandPermission("")
+            public void onBuffCurrent(Player sender)
+            {
+                GameInstance gameInstance = GiftHunting.GetPlugin().getGameInstance();
+                if (gameInstance == null)
+                {
+                    sender.sendMessage(Component.text("当前没有正在进行的游戏", COLOR_TEXT_VITAL));
+                    return;
+                }
+                GHPlayer ghPlayer = GiftHunting.GetPlugin().getGameInstance().getPlayerManager().getGHPlayer(sender);
+                if (ghPlayer == null)
+                {
+                    sender.sendMessage(Component.text("你不在当前游戏中", COLOR_TEXT_VITAL));
+                    return;
+                }
+                List<Buff> list = ghPlayer.getBuffs();
+                if (list.isEmpty())
+                {
+                    sender.sendMessage(Component.text("当前没有任何 Buff", COLOR_TEXT_VITAL));
+                    return;
+                }
+                TextComponent.Builder b = Component.text().content("当前拥有的 Buff:\n").color(COLOR_TEXT_NORMAL);
+                for (int i = 0; i < list.size(); i++)
+                {
+                    Buff bf = list.get(i);
+                    b.append(bf.getDisplayName())
+                     .append(Component.text(": ", COLOR_TEXT_NORMAL))
+                     .append(Component.text(bf.getDescription(), COLOR_TEXT_NORMAL));
+                    if (i < list.size() - 1)
+                        b.append(Component.text("\n"));
+                }
+                sender.sendMessage(b.build());
+            }
+
+            private final List<Buff> _allBuffs = List.of(new SpeedBuff(), new SilenceBuff(), new BindBuff(), new DawnBuff(), new OathBuff());
+
+            @Subcommand("all")
+            @Description("List all buff types and descriptions")
+            @CommandPermission("")
+            public void onBuffAll(Player sender)
+            {
+                TextComponent.Builder b = Component.text().content("所有 Buff:\n").color(COLOR_TEXT_NORMAL);
+                for (int i = 0; i < _allBuffs.size(); i++)
+                {
+                    Buff bf = _allBuffs.get(i);
+                    b.append(bf.getDisplayName())
+                     .append(Component.text(": ", COLOR_TEXT_NORMAL))
+                     .append(Component.text(bf.getDescription(), COLOR_TEXT_NORMAL));
+                    if (i < _allBuffs.size() - 1)
+                        b.append(Component.text("\n"));
+                }
+                sender.sendMessage(b.build());
+            }
+        }
     }
 
     @Subcommand("game")
@@ -38,7 +114,7 @@ public class GiftHuntingCommand extends BaseCommand
         @CommandCompletion("@config_names")
         public void onLoad(CommandSender sender, String configName)
         {
-            if(GiftHunting.GetPlugin().loadGameInstance(configName))
+            if (GiftHunting.GetPlugin().loadGameInstance(configName))
             {
                 sender.sendMessage(Component.text("Loaded game instance", COLOR_INFO_GOOD));
             }
@@ -52,7 +128,7 @@ public class GiftHuntingCommand extends BaseCommand
         @Description("Unload current game")
         public void onUnload(CommandSender sender)
         {
-            if(GiftHunting.GetPlugin().unloadGameInstance())
+            if (GiftHunting.GetPlugin().unloadGameInstance())
             {
                 sender.sendMessage(Component.text("Unloaded game instance", COLOR_INFO_GOOD));
             }
@@ -114,7 +190,7 @@ public class GiftHuntingCommand extends BaseCommand
         @Description("Save config to file")
         public void onSave(CommandSender sender)
         {
-            if(GiftHunting.GetPlugin().saveGHConfig())
+            if (GiftHunting.GetPlugin().saveGHConfig())
             {
                 sender.sendMessage(Component.text("Config saved!", COLOR_INFO_GOOD));
             }
@@ -164,7 +240,7 @@ public class GiftHuntingCommand extends BaseCommand
     public void onItem(Player senderPlayer, String itemID)
     {
         CustomItem item = CustomItem.fromId(itemID);
-        if(item == null)
+        if (item == null)
         {
             senderPlayer.sendMessage(Component.text("Unknown item id: " + itemID, COLOR_TEXT_VITAL));
             return;

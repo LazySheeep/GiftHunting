@@ -151,6 +151,11 @@ public class GHPlayer
         return false;
     }
 
+    public List<Buff> getBuffs()
+    {
+        return new ArrayList<>(_buffs);
+    }
+
     public void removeBuff(@NotNull Class<? extends Buff> buffClass)
     {
         for(Buff buff : _buffs)

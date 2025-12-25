@@ -9,6 +9,11 @@ import org.bukkit.SoundCategory;
 
 public class DawnBuff extends Buff
 {
+    public DawnBuff()
+    {
+        super();
+    }
+
     public DawnBuff(int duration)
     {
         super(duration);
@@ -38,5 +43,11 @@ public class DawnBuff extends Buff
     public TextComponent getDisplayName()
     {
         return Component.text("决胜", NamedTextColor.LIGHT_PURPLE);
+    }
+
+    @Override
+    public String getDescription()
+    {
+        return "得分达到胜利分数80%时获得, 玩家将获得发光效果, 并自动识破偷窃和束缚";
     }
 }

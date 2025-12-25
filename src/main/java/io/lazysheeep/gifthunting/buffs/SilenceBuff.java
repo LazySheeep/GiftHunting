@@ -6,6 +6,11 @@ import net.kyori.adventure.text.format.NamedTextColor;
 
 public class SilenceBuff extends Buff
 {
+    public SilenceBuff()
+    {
+        super();
+    }
+
     public SilenceBuff(int duration)
     {
         super(duration);
@@ -33,5 +38,11 @@ public class SilenceBuff extends Buff
     public net.kyori.adventure.text.TextComponent getDisplayName()
     {
         return Component.text("沉默", NamedTextColor.YELLOW);
+    }
+
+    @Override
+    public String getDescription()
+    {
+        return "无法使用道具或技能";
     }
 }

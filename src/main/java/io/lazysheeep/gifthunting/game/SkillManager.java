@@ -72,7 +72,7 @@ public class SkillManager implements Listener
                 if (victimGHPlayer.hasBuff(CounteringBuff.class))
                 {
                     ghPlayer.addBuff(new SilenceBuff(_silenceDuration * 2));
-                    LazuliUI.sendMessage(player, MessageFactory.getSilencedMsg(victimGHPlayer));
+                    LazuliUI.sendMessage(player, MessageFactory.getBeenSilencedMsg(victimGHPlayer));
                     player.getWorld().spawnParticle(Particle.ANGRY_VILLAGER, player.getLocation()
                                                                                    .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
                     player.getWorld().playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, SoundCategory.MASTER, 1.0f, 1.0f);
@@ -85,8 +85,10 @@ public class SkillManager implements Listener
                 }
                 else
                 {
+                    LazuliUI.sendMessage(player, MessageFactory.getSilenceMsg(victimGHPlayer));
+
                     victimGHPlayer.addBuff(new SilenceBuff(_silenceDuration));
-                    LazuliUI.sendMessage(victimPlayer, MessageFactory.getSilencedMsg(ghPlayer));
+                    LazuliUI.sendMessage(victimPlayer, MessageFactory.getBeenSilencedMsg(ghPlayer));
                     victimPlayer.getWorld().spawnParticle(Particle.ANGRY_VILLAGER, victimPlayer.getLocation()
                                                                                              .add(0.0f, 1.0f, 0.0f), 8, 0.3f, 0.3f, 0.3f);
                     victimPlayer.getWorld().playSound(victimPlayer.getLocation(), Sound.ENTITY_VILLAGER_NO, SoundCategory.MASTER, 1.0f, 1.0f);

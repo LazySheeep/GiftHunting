@@ -2,6 +2,7 @@ package io.lazysheeep.gifthunting.entity;
 
 import io.lazysheeep.gifthunting.game.GameInstance;
 import io.lazysheeep.gifthunting.player.GHPlayer;
+import io.lazysheeep.gifthunting.utils.MathUtils;
 import io.lazysheeep.lazuliui.LazuliUI;
 import io.lazysheeep.lazuliui.Message;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
@@ -15,11 +16,13 @@ import org.jetbrains.annotations.Nullable;
 public class ScoreOrb extends Orb
 {
     private final int _scoreValue;
+    private final float _particleSize;
 
     public ScoreOrb(Location location, @Nullable GHPlayer source, GHPlayer target, int scoreValue)
     {
         super(location, source, target);
         _scoreValue = scoreValue;
+        _particleSize = MathUtils.Lerp(0.4f, 5.0f, scoreValue / 500.0f);
     }
 
     @Override
@@ -42,6 +45,6 @@ public class ScoreOrb extends Orb
     public void onTick(GameInstance gameInstance)
     {
         super.onTick(gameInstance);
-        _location.getWorld().spawnParticle(Particle.DUST, _location, 2, new Particle.DustOptions(Color.LIME, 1.0f));
+        _location.getWorld().spawnParticle(Particle.DUST, _location, 2, new Particle.DustOptions(Color.LIME, _particleSize));
     }
 }

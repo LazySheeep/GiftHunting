@@ -89,9 +89,10 @@ public abstract class Orb extends GHEntity
                     return;
                 }
 
-                Vector direction = _target.getBodyLocation().toVector().subtract(_location.toVector());
-                direction.normalize();
-                _velocity.add(direction.multiply(_force * deltaTime));
+                Vector targetDirection = _target.getBodyLocation().toVector().subtract(_location.toVector()).normalize();
+                Vector desiredVelocity = targetDirection.clone().multiply(_force / _friction);
+                Vector forceDirection = desiredVelocity.subtract(_velocity).normalize();
+                _velocity.add(forceDirection.multiply(_force * deltaTime));
             }
         }
 

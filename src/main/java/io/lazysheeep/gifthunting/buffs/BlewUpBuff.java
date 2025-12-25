@@ -9,6 +9,11 @@ import org.bukkit.Particle;
 
 public class BlewUpBuff extends Buff
 {
+    public BlewUpBuff()
+    {
+        super();
+    }
+
     public BlewUpBuff(int duration)
     {
         super(duration);
@@ -36,5 +41,11 @@ public class BlewUpBuff extends Buff
     public TextComponent getDisplayName()
     {
         return Component.text("击飞", NamedTextColor.YELLOW);
+    }
+
+    @Override
+    public String getDescription()
+    {
+        return "只是在脚底产生烟雾粒子";
     }
 }

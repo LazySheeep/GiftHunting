@@ -18,10 +18,17 @@ public abstract class Buff
         this.remainingTime = duration;
     }
 
+    protected Buff()
+    {
+        this(0);
+    }
+
     public TextComponent getDisplayName()
     {
         return Component.text(this.getClass().getSimpleName());
     }
+
+    public abstract String getDescription();
 
     public abstract void onApply(GHPlayer ghPlayer);
 

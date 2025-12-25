@@ -180,4 +180,9 @@ public class MathUtils
             consumer.accept(location, (float)i / stepCount);
         }
     }
+
+    public static Vector Ellipse(Vector o, Vector a, Vector b, double t)
+    {
+        return o.clone().add(a.clone().multiply(Math.cos(t))).add(b.clone().multiply(Math.sin(t)));
+    }
 }

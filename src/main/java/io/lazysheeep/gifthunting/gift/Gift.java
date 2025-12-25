@@ -80,7 +80,6 @@ public class Gift
         Transformation t = new Transformation(new Vector3f(0f, 0f, 0f), new AxisAngle4f(0f, 0f, 0f, 1f), new Vector3f(scale, scale, scale), new AxisAngle4f(0f, 0f, 0f, 1f));
         this._displayEntity.setTransformation(t);
         this._displayEntity.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.FIXED);
-        this._displayEntity.customName(Component.text(TagName));
         this._displayEntity.addScoreboardTag(TagName);
         this._displayEntity.setMetadata(TagName, new FixedMetadataValue(GiftHunting.GetPlugin(), this));
 
@@ -90,7 +89,7 @@ public class Gift
         this._interactionEntity.setInteractionWidth(box);
         this._interactionEntity.setInteractionHeight(box);
         this._interactionEntity.setResponsive(true);
-        this._interactionEntity.customName(Component.text(TagName));
+        this._interactionEntity.customName(MessageFactory.getGiftNameComponent(this));
         this._interactionEntity.addScoreboardTag(TagName);
         this._interactionEntity.setMetadata(TagName, new FixedMetadataValue(GiftHunting.GetPlugin(), this));
     }
@@ -119,7 +118,7 @@ public class Gift
         {
             this._clicksToNextFetch--;
         }
-        LazuliUI.sendMessage(ghPlayer.getPlayer(), MessageFactory.getGiftClickedActionbar(this));
+        _interactionEntity.customName(MessageFactory.getGiftNameComponent(this));
         ghPlayer.getPlayer().playSound(_displayEntity, Sound.BLOCK_WOOL_HIT, SoundCategory.MASTER, 1.0f, 1.0f);
 
         if(this._clicksToNextFetch == 0)
@@ -135,8 +134,6 @@ public class Gift
         {
             return;
         }
-
-        Player player = ghPlayer.getPlayer();
 
         Map<GHPlayer, Float> weightMap = getLootGHPlayers(ghPlayer);
         if(weightMap.isEmpty())
@@ -165,9 +162,8 @@ public class Gift
             ghPlayer.getGameInstance().getEntityManager().addEntity(new ItemOrb(this.getLocation(), null, pickedPlayer, loot));
         }
 
-        LazuliUI.sendMessage(player, MessageFactory.getGiftFetchedActionbar(this));
-
-        player.getWorld().spawnParticle(Particle.WAX_OFF, this.getLocation(), 4, 0.2f, 0.2f, 0.2f);
+        _displayEntity.getWorld().playSound(_displayEntity, Sound.ITEM_BUNDLE_DROP_CONTENTS, SoundCategory.MASTER, 1.0f, 1.0f);
+        _displayEntity.getWorld().spawnParticle(Particle.WAX_OFF, this.getLocation(), 4, 0.2f, 0.2f, 0.2f);
 
         this._remainingCapacity--;
     }

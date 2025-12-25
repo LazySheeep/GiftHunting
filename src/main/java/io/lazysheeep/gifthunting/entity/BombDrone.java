@@ -1,8 +1,10 @@
 package io.lazysheeep.gifthunting.entity;
 
+import io.lazysheeep.gifthunting.factory.MessageFactory;
 import io.lazysheeep.gifthunting.game.GameInstance;
 import io.lazysheeep.gifthunting.player.GHPlayer;
 import io.lazysheeep.gifthunting.utils.MathUtils;
+import io.lazysheeep.lazuliui.LazuliUI;
 import org.bukkit.*;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
@@ -55,13 +57,15 @@ public class BombDrone extends GHEntity
 
     private static final float heightTolerance = 2.0f;
 
-    private final GHPlayer _targetPlayer;
+    private final GHPlayer _targetGHPlayer;
+    private final GHPlayer _sourceGHPlayer;
     private Vector _currentVelocity;
 
-    public BombDrone(Location location, GHPlayer targetPlayer)
+    public BombDrone(Location location, GHPlayer sourceGHPlayer, GHPlayer targetGHPlayer)
     {
         super(location);
-        this._targetPlayer = targetPlayer;
+        this._sourceGHPlayer = sourceGHPlayer;
+        this._targetGHPlayer = targetGHPlayer;
         _currentVelocity = new Vector(0, 0, 0);
     }
 
@@ -77,7 +81,7 @@ public class BombDrone extends GHEntity
     public void onTick(GameInstance gameInstance)
     {
         Location currentLocation = _location.clone();
-        Location targetLocation = _targetPlayer.getBodyLocation();
+        Location targetLocation = _targetGHPlayer.getBodyLocation();
         float deltaTime = 0.05f;
 
         // --- Compute target's current horizontal velocity ---
@@ -305,33 +309,39 @@ public class BombDrone extends GHEntity
         _location.getWorld().spawnParticle(Particle.DUST, _location, 2, new Particle.DustOptions(Color.YELLOW, 1.0f));
         if(attackFlag)
         {
-            MathUtils.ForLine(_location, _targetPlayer.getBodyLocation(), 0.2f, (location, progress) -> location.getWorld()
-                                                                                                                    .spawnParticle(Particle.DUST, location, 1, new Particle.DustOptions(Color.RED, 0.4f)));
+            MathUtils.ForLine(_location, _targetGHPlayer.getBodyLocation(), 0.2f, (location, progress) -> location.getWorld()
+                                                                                                                  .spawnParticle(Particle.DUST, location, 1, new Particle.DustOptions(Color.RED, 0.4f)));
         }
         // detonate if reached target or hit ground
-        if(_location.distance(_targetPlayer.getBodyLocation()) < explodeDistance || !_location.getWorld().getBlockAt(_location).getType().isAir())
+        if(_location.distance(_targetGHPlayer.getBodyLocation()) < explodeDistance || !_location.getWorld().getBlockAt(_location).getType().isAir())
         {
             _location.getWorld().spawnParticle(Particle.EXPLOSION_EMITTER, _location, 1);
             _location.getWorld().playSound(_location, Sound.ENTITY_GENERIC_EXPLODE, SoundCategory.PLAYERS, 1.0f, 1.0f);
 
             // get all gh players in range and drop score of them
+            int totalDroppedScore = 0;
             double eNeg1 = Math.exp(-1.0);
-            for(GHPlayer ghPlayer : gameInstance.getPlayerManager().getOnlineGHPlayers())
+            for(GHPlayer victimGHPlayer : gameInstance.getPlayerManager().getOnlineGHPlayers())
             {
-                double d = ghPlayer.getBodyLocation().distance(_location);
+                double d = victimGHPlayer.getBodyLocation().distance(_location);
                 if(d <= explodeRange)
                 {
                     double x = Math.clamp(d / explodeRange, 0.0, 1.0);
                     double w = (Math.exp(-Math.pow(x, 2.0)) - eNeg1) / (1.0 - eNeg1);
 
-                    int dropScore = Math.min(ghPlayer.getScore(), Math.round(ghPlayer.getScore() * explodeDropScore * (float) w));
+                    int dropScore = Math.min(victimGHPlayer.getScore(), Math.round(victimGHPlayer.getScore() * explodeDropScore * (float) w));
                     if(dropScore > 0)
                     {
-                        ghPlayer.addScore(-dropScore);
-                        gameInstance.getEntityManager().addEntity(new ScoreOrb(_location, ghPlayer, null, dropScore));
+                        victimGHPlayer.addScore(-dropScore);
+                        victimGHPlayer.getPlayer().damage(1.0);
+                        gameInstance.getEntityManager().addEntity(new ScoreOrb(_location, victimGHPlayer, null, dropScore));
+                        LazuliUI.sendMessage(victimGHPlayer.getPlayer(), MessageFactory.getBlewByBombDroneMsg(_sourceGHPlayer, dropScore));
+                        LazuliUI.sendMessage(_sourceGHPlayer.getPlayer(), MessageFactory.getDroneBlewMsg(victimGHPlayer, dropScore));
+                        totalDroppedScore += dropScore;
                     }
                 }
             }
+            LazuliUI.broadcast(MessageFactory.getDroneExplodedBroadcastMsg(_sourceGHPlayer, totalDroppedScore));
 
             _isDestroyed = true;
         }

@@ -84,6 +84,7 @@ public class GHPlayerManager implements Listener
         for(GHPlayer ghPlayer : getOnlineGHPlayers())
         {
             ghPlayer.onDisconnect(_gameInstance);
+            ghPlayer.onDestroy(_gameInstance);
         }
         _ghPlayers.clear();
         _offlineGHPlayers.clear();
@@ -112,11 +113,16 @@ public class GHPlayerManager implements Listener
             if(!shouldBeGHPlayer(ghPlayer.getPlayer()))
             {
                 _ghPlayers.remove(ghPlayer.getUUID());
-                if(_gameInstance.getCurrentStateEnum() != GHStates.IDLE)
+                ghPlayer.onDisconnect(_gameInstance);
+                if (_gameInstance.getCurrentStateEnum() == GHStates.IDLE)
+                {
+                    ghPlayer.onDestroy(_gameInstance);
+                }
+                else
                 {
                     _offlineGHPlayers.put(ghPlayer.getUUID(), ghPlayer);
                 }
-                ghPlayer.onDisconnect(_gameInstance);
+                LazuliUI.flush(ghPlayer.getPlayer());
                 LazuliUI.sendMessage(ghPlayer.getPlayer(), MessageFactory.getOnNoLongerGHPlayerMsg());
             }
         }

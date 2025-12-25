@@ -4,6 +4,8 @@ import io.lazysheeep.gifthunting.player.GHPlayer;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 
 public class DawnBuff extends Buff
 {
@@ -16,12 +18,14 @@ public class DawnBuff extends Buff
     public void onApply(GHPlayer ghPlayer)
     {
         ghPlayer.getPlayer().setGlowing(true);
+        ghPlayer.getPlayer().getWorld().playSound(ghPlayer.getPlayer(), Sound.BLOCK_BEACON_ACTIVATE, SoundCategory.MASTER, 1f, 1f);
     }
 
     @Override
     public void onRemove(GHPlayer ghPlayer)
     {
         ghPlayer.getPlayer().setGlowing(false);
+        ghPlayer.getPlayer().getWorld().playSound(ghPlayer.getPlayer(), Sound.BLOCK_BEACON_DEACTIVATE, SoundCategory.MASTER, 1f, 1f);
     }
 
     @Override

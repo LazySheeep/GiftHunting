@@ -1,6 +1,7 @@
 package io.lazysheeep.gifthunting.buffs;
 
 import io.lazysheeep.gifthunting.player.GHPlayer;
+import io.lazysheeep.gifthunting.utils.MathUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Color;
@@ -57,7 +58,7 @@ public class BindBuff extends Buff
         Vector a1 = right.clone().rotateAroundAxis(fwd, alpha).normalize().multiply(0.8);
         Vector a2 = right.clone().rotateAroundAxis(fwd, -alpha).normalize().multiply(0.8);
         Vector b = fwd.clone().multiply(0.5);
-        List<Vector> particlePositions = List.of(ellipse(center, a1, b, _t), ellipse(center, a1, b, _t + Math.PI), ellipse(center, a2, b, _t), ellipse(center, a2, b, _t + Math.PI));
+        List<Vector> particlePositions = List.of(MathUtils.Ellipse(center, a1, b, _t), MathUtils.Ellipse(center, a1, b, _t + Math.PI), MathUtils.Ellipse(center, a2, b, _t), MathUtils.Ellipse(center, a2, b, _t + Math.PI));
         Particle.DustOptions dustOption = new Particle.DustOptions(Color.fromRGB(255, 32, 32), 1.0f);
         for (Vector p : particlePositions)
         {
@@ -70,10 +71,5 @@ public class BindBuff extends Buff
     public net.kyori.adventure.text.TextComponent getDisplayName()
     {
         return Component.text("束缚", NamedTextColor.RED);
-    }
-
-    private static Vector ellipse(Vector o, Vector a, Vector b, double t)
-    {
-        return o.clone().add(a.clone().multiply(Math.cos(t))).add(b.clone().multiply(Math.sin(t)));
     }
 }

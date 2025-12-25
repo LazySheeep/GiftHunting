@@ -305,6 +305,7 @@ class FinishedState extends State<GameInstance, GHStates>
     {
         for(GHPlayer ghPlayer : gameInstance.getPlayerManager().getOnlineGHPlayers())
         {
+            ghPlayer.reset();
             Player player = ghPlayer.getPlayer();
             MCUtil.ClearInventory(player);
             LazuliUI.flush(player);

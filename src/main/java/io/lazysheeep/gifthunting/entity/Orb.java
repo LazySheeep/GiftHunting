@@ -1,9 +1,11 @@
 package io.lazysheeep.gifthunting.entity;
 
+import io.lazysheeep.gifthunting.factory.MessageFactory;
 import io.lazysheeep.gifthunting.game.GameInstance;
 import io.lazysheeep.gifthunting.player.GHPlayer;
 import io.lazysheeep.gifthunting.utils.MCUtil;
 import io.lazysheeep.gifthunting.utils.RandUtil;
+import io.lazysheeep.lazuliui.LazuliUI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
@@ -20,7 +22,7 @@ public abstract class Orb extends GHEntity
     protected final float _force = 24.0f;
     protected final float _friction = 1.5f;
     protected final int _maxLifeTime = 1200;
-    protected final float _captureDistance = 3.0f;
+    protected final float _captureDistance = 4.0f;
     protected final float _collectDistance = 0.6f;
 
     protected Orb(Location location, @Nullable GHPlayer source, GHPlayer target)
@@ -29,12 +31,6 @@ public abstract class Orb extends GHEntity
         _target = target;
         _source = source;
         _velocity = new Vector(RandUtil.nextFloat(-3.0f, 3.0f), RandUtil.nextFloat(2.0f, 4.0f), RandUtil.nextFloat(-3.0f, 3.0f));
-    }
-
-    protected boolean canCapture(GHPlayer gh)
-    {
-        if(_source != null && gh == _source) return false;
-        return true;
     }
 
     @Override
@@ -81,7 +77,7 @@ public abstract class Orb extends GHEntity
                         }
                     }
                 }
-                _target = best;
+                setTarget(best);
             }
 
             if(_target != null)
@@ -103,10 +99,20 @@ public abstract class Orb extends GHEntity
         _velocity.multiply(Math.exp(-_friction * deltaTime));
     }
 
-    protected abstract void onCollected();
-
-    public void setTarget(GHPlayer target)
+    public void setTarget(GHPlayer newTarget)
     {
-        this._target = target;
+        if(_target == newTarget) return;
+        if(_target != null && newTarget != null)
+        {
+            LazuliUI.sendMessage(_target.getPlayer(), MessageFactory.getOrbCapturedByOthersMsg(newTarget));
+        }
+        this._target = newTarget;
     }
+
+    protected boolean canCapture(GHPlayer gh)
+    {
+        return _source == null || gh != _source;
+    }
+
+    protected abstract void onCollected();
 }

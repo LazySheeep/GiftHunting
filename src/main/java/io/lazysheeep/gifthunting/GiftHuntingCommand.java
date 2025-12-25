@@ -10,8 +10,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import static io.lazysheeep.gifthunting.factory.MessageFactory.COLOR_GOOD;
-import static io.lazysheeep.gifthunting.factory.MessageFactory.COLOR_VITAL;
+import static io.lazysheeep.gifthunting.factory.MessageFactory.*;
 
 @CommandAlias("gifthunting")
 @CommandPermission("op")
@@ -41,11 +40,11 @@ public class GiftHuntingCommand extends BaseCommand
         {
             if(GiftHunting.GetPlugin().loadGameInstance(configName))
             {
-                sender.sendMessage(Component.text("Loaded game instance", COLOR_GOOD));
+                sender.sendMessage(Component.text("Loaded game instance", COLOR_INFO_GOOD));
             }
             else
             {
-                sender.sendMessage(Component.text("Failed to load game instance", COLOR_VITAL));
+                sender.sendMessage(Component.text("Failed to load game instance", COLOR_TEXT_VITAL));
             }
         }
 
@@ -55,11 +54,11 @@ public class GiftHuntingCommand extends BaseCommand
         {
             if(GiftHunting.GetPlugin().unloadGameInstance())
             {
-                sender.sendMessage(Component.text("Unloaded game instance", COLOR_GOOD));
+                sender.sendMessage(Component.text("Unloaded game instance", COLOR_INFO_GOOD));
             }
             else
             {
-                sender.sendMessage(Component.text("No game instance loaded", COLOR_VITAL));
+                sender.sendMessage(Component.text("No game instance loaded", COLOR_TEXT_VITAL));
             }
         }
 
@@ -71,11 +70,11 @@ public class GiftHuntingCommand extends BaseCommand
             if (gameInstance != null)
             {
                 gameInstance.setGameSpawn(senderPlayer.getLocation());
-                senderPlayer.sendMessage(Component.text("Game spawn set!", COLOR_GOOD));
+                senderPlayer.sendMessage(Component.text("Game spawn set!", COLOR_INFO_GOOD));
             }
             else
             {
-                senderPlayer.sendMessage(Component.text("No game instance loaded", COLOR_VITAL));
+                senderPlayer.sendMessage(Component.text("No game instance loaded", COLOR_TEXT_VITAL));
             }
         }
 
@@ -87,11 +86,11 @@ public class GiftHuntingCommand extends BaseCommand
             if (gameInstance != null)
             {
                 gameInstance.switchState(GHStates.READYING);
-                sender.sendMessage(MessageFactory.getEventStartText());
+                sender.sendMessage(Component.text("Game started!", COLOR_INFO_GOOD));
             }
             else
             {
-                sender.sendMessage(Component.text("No game instance loaded", COLOR_VITAL));
+                sender.sendMessage(Component.text("No game instance loaded", COLOR_TEXT_VITAL));
             }
         }
 
@@ -103,11 +102,11 @@ public class GiftHuntingCommand extends BaseCommand
             if (gameInstance != null)
             {
                 gameInstance.switchState(GHStates.IDLE);
-                sender.sendMessage(MessageFactory.getEventStopText());
+                sender.sendMessage(Component.text("Game stopped!", COLOR_TEXT_CAUTION));
             }
             else
             {
-                sender.sendMessage(Component.text("No game instance loaded", COLOR_VITAL));
+                sender.sendMessage(Component.text("No game instance loaded", COLOR_TEXT_VITAL));
             }
         }
 
@@ -117,11 +116,11 @@ public class GiftHuntingCommand extends BaseCommand
         {
             if(GiftHunting.GetPlugin().saveGHConfig())
             {
-                sender.sendMessage(MessageFactory.getSaveConfigText());
+                sender.sendMessage(Component.text("Config saved!", COLOR_INFO_GOOD));
             }
             else
             {
-                sender.sendMessage(Component.text("No game instance loaded", COLOR_VITAL));
+                sender.sendMessage(Component.text("No game instance loaded", COLOR_TEXT_VITAL));
             }
         }
 
@@ -147,7 +146,7 @@ public class GiftHuntingCommand extends BaseCommand
             public void onGift(CommandSender sender)
             {
                 int counter = GiftHunting.GetPlugin().getGameInstance().getGiftManager().removeAllGifts();
-                sender.sendMessage(MessageFactory.getClearAllGiftMsg(counter));
+                sender.sendMessage(Component.text("Cleared " + counter + " gifts!", COLOR_TEXT_CAUTION));
             }
 
             @Subcommand("untracked")
@@ -155,7 +154,7 @@ public class GiftHuntingCommand extends BaseCommand
             public void onUntracked(CommandSender sender)
             {
                 int counter = GiftHunting.GetPlugin().getGameInstance().getGiftManager().removeUnTracked();
-                sender.sendMessage(MessageFactory.getClearUntrackedGiftMsg(counter));
+                sender.sendMessage(Component.text("Cleared " + counter + " untracked gifts!", COLOR_TEXT_CAUTION));
             }
         }
     }
@@ -167,7 +166,7 @@ public class GiftHuntingCommand extends BaseCommand
         CustomItem item = CustomItem.fromId(itemID);
         if(item == null)
         {
-            senderPlayer.sendMessage(Component.text("Unknown item id: " + itemID, COLOR_VITAL));
+            senderPlayer.sendMessage(Component.text("Unknown item id: " + itemID, COLOR_TEXT_VITAL));
             return;
         }
         senderPlayer.getInventory().addItem(item.create());

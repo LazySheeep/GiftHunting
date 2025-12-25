@@ -26,13 +26,17 @@ public class GHPlayer
     private GameInstance _gameInstance;
     private int _score = 0;
     private final HashSet<Buff> _buffs = new HashSet<>();
-    public int lastClickGiftTime = 0;
-
     private final Map<Skill, SkillState> _skillStates = new HashMap<>();
+    public int lastClickGiftTime = 0;
 
     public @NotNull Player getPlayer()
     {
         return _hostPlayer;
+    }
+
+    public String getName()
+    {
+        return _hostPlayer.getName();
     }
 
     public UUID getUUID()
@@ -117,6 +121,11 @@ public class GHPlayer
         updateSlot();
     }
 
+    public void onDestroy(@NotNull GameInstance gameInstance)
+    {
+        reset();
+    }
+
     public void addBuff(@NotNull Buff buff)
     {
         for(Buff existingBuff : _buffs)
@@ -142,18 +151,6 @@ public class GHPlayer
         return false;
     }
 
-    public <T extends Buff> T getBuffInstance(Class<T> buffClass)
-    {
-        for(Buff buff : _buffs)
-        {
-            if(buffClass.isInstance(buff))
-            {
-                return buffClass.cast(buff);
-            }
-        }
-        return null;
-    }
-
     public void removeBuff(@NotNull Class<? extends Buff> buffClass)
     {
         for(Buff buff : _buffs)
@@ -165,6 +162,15 @@ public class GHPlayer
                 return;
             }
         }
+    }
+
+    public void clearBuffs()
+    {
+        for(Buff buff : _buffs)
+        {
+            buff.onRemove(this);
+        }
+        _buffs.clear();
     }
 
     public void enableAllSkills()
@@ -191,6 +197,15 @@ public class GHPlayer
         {
             disableSkill(skill);
         }
+    }
+
+    public void disableAndResetAllSkills()
+    {
+        for(Skill skill : Skill.values())
+        {
+            disableSkill(skill);
+        }
+        _skillStates.clear();
     }
 
     public void disableSkill(Skill skill)
@@ -224,6 +239,10 @@ public class GHPlayer
     {
         _score = 0;
         lastClickGiftTime = 0;
+        clearBuffs();
+        disableAndResetAllSkills();
+        _hostPlayer.clearActivePotionEffects();
+        _hostPlayer.setGlowing(false);
     }
 
     private void autoCraftBigClub()

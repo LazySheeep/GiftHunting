@@ -3,9 +3,7 @@ package io.lazysheeep.gifthunting.factory;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
 import io.lazysheeep.gifthunting.skills.Skill;
-import io.papermc.paper.datacomponent.item.UseCooldown;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -16,7 +14,6 @@ import org.bukkit.inventory.meta.CompassMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.NamespacedKey;
-import org.bukkit.inventory.meta.components.UseCooldownComponent;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
@@ -26,16 +23,40 @@ import java.util.UUID;
 import io.lazysheeep.gifthunting.GiftHunting;
 import org.jetbrains.annotations.Nullable;
 
+import static io.lazysheeep.gifthunting.factory.MessageFactory.*;
+
 public enum CustomItem
 {
+    SOUVENIR("souvenir", Material.PLAYER_HEAD)
+    {
+        @Override public ItemStack create() {
+            ItemStack it = new ItemStack(Material.PLAYER_HEAD, 1);
+            Component displayName = Component.text("2025圣诞纪念", COLOR_ITEM_NAME);
+            List<Component> lore = new ArrayList<>();
+            lore.add(Component.text("MCZJU2025年圣诞活动纪念品", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("游戏记录:", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("纪念物品不会被清除", COLOR_HINT));
+            it.editMeta(meta -> {
+                if(meta instanceof SkullMeta skullMeta) {
+                    skullMeta.displayName(displayName);
+                    skullMeta.lore(lore);
+                    skullMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
+                    PlayerProfile headProfile = Bukkit.createProfile(UUID.randomUUID());
+                    headProfile.setProperty(new ProfileProperty("textures", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmQ3YTlmNmVkMDhkZDIxN2ZkZjA5ZjQ2NTJiZjZiN2FmNjIxZTFkNWY4OTYzNjA1MzQ5ZGE3Mzk5OGE0NDMifX19"));
+                    skullMeta.setPlayerProfile(headProfile);
+                    setTypeTag(skullMeta, this);
+                }
+            });
+            return it;
+        }
+    },
     NORMAL_GIFT_SPAWNER_SETTER("normal_gift_spawner_setter", Material.BLAZE_ROD)
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.BLAZE_ROD, 1);
-            Component displayName = Component.text("礼物生成点设定器", NamedTextColor.LIGHT_PURPLE);
+            Component displayName = Component.text("礼物生成点设定器", COLOR_ITEM_NAME);
             List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("用于设定礼物生成点", NamedTextColor.AQUA));
-            lore.add(Component.text("对方块右键使用", NamedTextColor.YELLOW));
+            lore.add(Component.text("用于设定礼物生成点", COLOR_ITEM_DESCRIPTION));
             it.editMeta(meta -> {
                 meta.displayName(displayName);
                 meta.lore(lore);
@@ -49,10 +70,9 @@ public enum CustomItem
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.BLAZE_ROD, 1);
-            Component displayName = Component.text("特殊礼物生成点设定器", NamedTextColor.LIGHT_PURPLE);
+            Component displayName = Component.text("特殊礼物生成点设定器", COLOR_ITEM_NAME);
             List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("用于设定特殊礼物生成点", NamedTextColor.AQUA));
-            lore.add(Component.text("对方块右键使用", NamedTextColor.YELLOW));
+            lore.add(Component.text("用于设定特殊礼物生成点", COLOR_ITEM_DESCRIPTION));
             it.editMeta(meta -> {
                 meta.displayName(displayName);
                 meta.lore(lore);
@@ -65,9 +85,9 @@ public enum CustomItem
     PLACEHOLDER("placeholder", Material.GRAY_STAINED_GLASS_PANE)
     {
         @Override public ItemStack create() {
-            ItemStack it = new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE, 1);
+            ItemStack it = new ItemStack(Material.GRAY_STAINED_GLASS_PANE, 1);
             it.editMeta(meta -> {
-                meta.displayName(Component.text("锁定栏位", NamedTextColor.GRAY));
+                meta.displayName(Component.text("锁定栏位", COLOR_HINT));
                 setTypeTag(meta, this);
             });
             return it;
@@ -77,14 +97,14 @@ public enum CustomItem
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.WIND_CHARGE, 1);
-            Component displayName = Component.text("技能: 弹射", NamedTextColor.LIGHT_PURPLE);
+            Component displayName = Component.text("技能: 弹射", COLOR_ITEM_NAME);
             List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("冷却: ", NamedTextColor.GOLD).append(Component.text(String.format("%.1fs", Skill.BOOST.cooldownDuration / 20f), NamedTextColor.GREEN)));
-            lore.add(Component.text("最大次数: ", NamedTextColor.GOLD).append(Component.text(Skill.BOOST.maxCharges, NamedTextColor.GREEN)));
-            lore.add(Component.text("将自己向所指的方向弹射", NamedTextColor.AQUA));
-            lore.add(Component.text("在助跑起跳时弹射效果最佳", NamedTextColor.AQUA));
-            lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
-            lore.add(Component.text("飞起来！", NamedTextColor.GRAY));
+            lore.add(Component.text("冷却: ", COLOR_TITLE).append(Component.text(String.format("%.1fs", Skill.BOOST.cooldownDuration / 20f), COLOR_VALUE)));
+            lore.add(Component.text("最大次数: ", COLOR_TITLE).append(Component.text(Skill.BOOST.maxCharges, COLOR_VALUE)));
+            lore.add(Component.text("右键使用", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("将自己向所指方向弹射", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("在助跑起跳时弹射效果最佳", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("飞起来！", COLOR_HINT));
             it.editMeta(meta -> {
                 meta.displayName(displayName);
                 meta.lore(lore);
@@ -98,15 +118,14 @@ public enum CustomItem
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.ENDER_EYE, 1);
-            Component displayName = Component.text("技能: 识破", NamedTextColor.LIGHT_PURPLE);
+            Component displayName = Component.text("技能: 识破", COLOR_ITEM_NAME);
             List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("冷却: ", NamedTextColor.GOLD).append(Component.text(String.format("%.1fs", Skill.COUNTER.cooldownDuration / 20f), NamedTextColor.GREEN)));
-            lore.add(Component.text("持续时间: ", NamedTextColor.GOLD).append(Component.text(String.format("%.1fs", Skill.COUNTER.activeDuration / 20f), NamedTextColor.GREEN)));
-            lore.add(Component.text("最大次数: ", NamedTextColor.GOLD).append(Component.text(Skill.COUNTER.maxCharges, NamedTextColor.GREEN)));
-            lore.add(Component.text("能够在短时间内内", NamedTextColor.AQUA));
-            lore.add(Component.text("反弹一次他人对你使用的技能", NamedTextColor.AQUA));
-            lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
-            lore.add(Component.text("接下来，时机很重要", NamedTextColor.GRAY));
+            lore.add(Component.text("冷却: ", COLOR_TITLE).append(Component.text(String.format("%.1fs", Skill.COUNTER.cooldownDuration / 20f), COLOR_VALUE)));
+            lore.add(Component.text("持续时间: ", COLOR_TITLE).append(Component.text(String.format("%.1fs", Skill.COUNTER.activeDuration / 20f), COLOR_VALUE)));
+            lore.add(Component.text("最大次数: ", COLOR_TITLE).append(Component.text(Skill.COUNTER.maxCharges, COLOR_VALUE)));
+            lore.add(Component.text("右键使用", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("短时间内识破一次他人的技能", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("接下来，时机很重要", COLOR_HINT));
             it.editMeta(meta -> {
                 meta.displayName(displayName);
                 meta.lore(lore);
@@ -120,12 +139,12 @@ public enum CustomItem
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.BOW, 1);
-            Component displayName = Component.text("技能: 猎杀黎明", NamedTextColor.LIGHT_PURPLE);
+            Component displayName = Component.text("技能: 猎杀黎明", COLOR_ITEM_NAME);
             List<Component> lore = new ArrayList<>();
             String cd = String.format("%.1fs", Skill.DAWN.cooldownDuration / 20f);
-            lore.add(Component.text("冷却: ", NamedTextColor.GOLD).append(Component.text(cd, NamedTextColor.GREEN)));
-            lore.add(Component.text("最大次数: ", NamedTextColor.GOLD).append(Component.text(Skill.DAWN.maxCharges, NamedTextColor.GREEN)));
-            lore.add(Component.text("用于释放技能：猎杀黎明", NamedTextColor.AQUA));
+            lore.add(Component.text("冷却: ", COLOR_TITLE).append(Component.text(cd, COLOR_VALUE)));
+            lore.add(Component.text("最大次数: ", COLOR_TITLE).append(Component.text(Skill.DAWN.maxCharges, COLOR_VALUE)));
+            lore.add(Component.text("用于释放技能：猎杀黎明", COLOR_ITEM_DESCRIPTION));
             it.editMeta(meta -> {
                 meta.displayName(displayName);
                 meta.lore(lore);
@@ -140,9 +159,9 @@ public enum CustomItem
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.ARROW, 1);
-            Component displayName = Component.text("猎杀黎明之箭", NamedTextColor.LIGHT_PURPLE);
+            Component displayName = Component.text("猎杀黎明之箭", COLOR_ITEM_NAME);
             List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("用于技能：猎杀黎明", NamedTextColor.AQUA));
+            lore.add(Component.text("用于技能：猎杀黎明", COLOR_ITEM_DESCRIPTION));
             it.editMeta(meta -> {
                 meta.displayName(displayName);
                 meta.lore(lore);
@@ -155,15 +174,16 @@ public enum CustomItem
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.COMPASS, 1);
-            Component displayName = Component.text("技能: 探测", NamedTextColor.LIGHT_PURPLE);
+            Component displayName = Component.text("技能: 探测", COLOR_ITEM_NAME);
             List<Component> lore = new ArrayList<>();
             String cd = String.format("%.1fs", Skill.DETECT.cooldownDuration / 20f);
             String dur = String.format("%.1fs", Skill.DETECT.activeDuration / 20f);
-            lore.add(Component.text("冷却: ", NamedTextColor.GOLD).append(Component.text(cd, NamedTextColor.GREEN)));
-            lore.add(Component.text("持续时间: ", NamedTextColor.GOLD).append(Component.text(dur, NamedTextColor.GREEN)));
-            lore.add(Component.text("最大次数: ", NamedTextColor.GOLD).append(Component.text(Skill.DETECT.maxCharges, NamedTextColor.GREEN)));
-            lore.add(Component.text("在持续时间内指向礼物", NamedTextColor.AQUA));
-            lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
+            lore.add(Component.text("冷却: ", COLOR_TITLE).append(Component.text(cd, COLOR_VALUE)));
+            lore.add(Component.text("持续时间: ", COLOR_TITLE).append(Component.text(dur, COLOR_VALUE)));
+            lore.add(Component.text("最大次数: ", COLOR_TITLE).append(Component.text(Skill.DETECT.maxCharges, COLOR_VALUE)));
+            lore.add(Component.text("右键使用", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("在持续时间内指向最近的礼物", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("优先指向超级礼物", COLOR_ITEM_DESCRIPTION));
             it.editMeta(meta -> {
                 meta.displayName(displayName);
                 meta.lore(lore);
@@ -182,11 +202,11 @@ public enum CustomItem
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.STICK, 1);
-            Component displayName = Component.text("木棍", NamedTextColor.LIGHT_PURPLE);
+            Component displayName = Component.text("木棍", COLOR_ITEM_NAME);
             List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("看起来只是普通的木棍", NamedTextColor.AQUA));
-            lore.add(Component.text("但是能够把人打飞", NamedTextColor.AQUA));
-            lore.add(Component.text("集齐10个合成超级木棍", NamedTextColor.GRAY));
+            lore.add(Component.text("看起来只是普通的木棍", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("但是能够把人打飞", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("集齐10个合成超级木棍", COLOR_HINT));
             it.editMeta(meta -> {
                 meta.displayName(displayName);
                 meta.lore(lore);
@@ -200,11 +220,11 @@ public enum CustomItem
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.BREEZE_ROD, 1);
-            Component displayName = Component.text("超级木棍", NamedTextColor.LIGHT_PURPLE);
+            Component displayName = Component.text("超级木棍", COLOR_ITEM_NAME);
             List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("用普通木棍合成的超级木棍", NamedTextColor.AQUA));
-            lore.add(Component.text("能真的把人打飞", NamedTextColor.AQUA));
-            lore.add(Component.text("请求起飞", NamedTextColor.GRAY));
+            lore.add(Component.text("用普通木棍合成的超级木棍", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("能真的把人打飞", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("请求起飞", COLOR_HINT));
             it.editMeta(meta -> {
                 meta.displayName(displayName);
                 meta.lore(lore);
@@ -218,15 +238,16 @@ public enum CustomItem
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.FISHING_ROD, 1);
-            Component displayName = Component.text("钓礼物竿", NamedTextColor.LIGHT_PURPLE);
+            Component displayName = Component.text("钓礼物竿", COLOR_ITEM_NAME);
             List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("可以偷取其他玩家的礼物", NamedTextColor.AQUA));
-            lore.add(Component.text("钩中其他玩家后收杆", NamedTextColor.YELLOW));
-            lore.add(Component.text("这是俺拾滴", NamedTextColor.GRAY));
+            lore.add(Component.text("钩中其它玩家后收杆", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("可以偷取其他玩家的礼物", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("这是俺拾滴", COLOR_HINT));
             it.editMeta(meta -> {
                 meta.displayName(displayName);
                 meta.lore(lore);
                 meta.addEnchant(Enchantment.FORTUNE, 1, true);
+                meta.setUnbreakable(true);
                 setTypeTag(meta, this);
             });
             return it;
@@ -236,31 +257,11 @@ public enum CustomItem
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.BONE_MEAL, 1);
-            Component displayName = Component.text("沉默", NamedTextColor.LIGHT_PURPLE);
+            Component displayName = Component.text("沉默", COLOR_ITEM_NAME);
             List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("使周围玩家无法开启礼物和使用道具", NamedTextColor.AQUA));
-            lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
-            lore.add(Component.text("为什么不说话，是不喜欢吗", NamedTextColor.GRAY));
-            it.editMeta(meta -> {
-                meta.displayName(displayName);
-                meta.lore(lore);
-                meta.addEnchant(Enchantment.UNBREAKING, 1, true);
-                setTypeTag(meta, this);
-            });
-            return it;
-        }
-    },
-    REVOLUTION("revolution", Material.RED_DYE)
-    {
-        @Override public ItemStack create() {
-            ItemStack it = new ItemStack(Material.RED_DYE, 1);
-            Component displayName = Component.text("革命", NamedTextColor.LIGHT_PURPLE);
-            List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("广播分数最高的玩家", NamedTextColor.AQUA));
-            lore.add(Component.text("降低其移动速度", NamedTextColor.AQUA));
-            lore.add(Component.text("并持续标记其一段时间", NamedTextColor.AQUA));
-            lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
-            lore.add(Component.text("也要做好被革命的觉悟", NamedTextColor.GRAY));
+            lore.add(Component.text("右键使用", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("使周围玩家无法开启礼物和使用道具", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("为什么不说话，是不喜欢吗", COLOR_HINT));
             it.editMeta(meta -> {
                 meta.displayName(displayName);
                 meta.lore(lore);
@@ -274,12 +275,12 @@ public enum CustomItem
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.SUGAR, 1);
-            Component displayName = Component.text("迅捷", NamedTextColor.LIGHT_PURPLE);
+            Component displayName = Component.text("迅捷", COLOR_ITEM_NAME);
             List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("一段时间内提升移动速度", NamedTextColor.AQUA));
-            lore.add(Component.text("以及礼物开启速度", NamedTextColor.AQUA));
-            lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
-            lore.add(Component.text("是暴风吸入的时候了", NamedTextColor.GRAY));
+            lore.add(Component.text("右键使用", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("一段时间内提升移动速度", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("以及礼物开启速度", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("是暴风吸入的时候了", COLOR_HINT));
             it.editMeta(meta -> {
                 meta.displayName(displayName);
                 meta.lore(lore);
@@ -289,37 +290,14 @@ public enum CustomItem
             return it;
         }
     },
-    SOUVENIR("souvenir", Material.PLAYER_HEAD)
-    {
-        @Override public ItemStack create() {
-            ItemStack it = new ItemStack(Material.PLAYER_HEAD, 1);
-            Component displayName = Component.text("2025圣诞纪念", NamedTextColor.LIGHT_PURPLE);
-            List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("MCZJU2025年圣诞活动纪念品", NamedTextColor.AQUA));
-            lore.add(Component.text("游戏记录:", NamedTextColor.AQUA));
-            lore.add(Component.text("纪念物品不会被清除", NamedTextColor.GRAY));
-            it.editMeta(meta -> {
-                if(meta instanceof SkullMeta skullMeta) {
-                    skullMeta.displayName(displayName);
-                    skullMeta.lore(lore);
-                    skullMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
-                    PlayerProfile headProfile = Bukkit.createProfile(UUID.randomUUID());
-                    headProfile.setProperty(new ProfileProperty("textures", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmQ3YTlmNmVkMDhkZDIxN2ZkZjA5ZjQ2NTJiZjZiN2FmNjIxZTFkNWY4OTYzNjA1MzQ5ZGE3Mzk5OGE0NDMifX19"));
-                    skullMeta.setPlayerProfile(headProfile);
-                    setTypeTag(skullMeta, this);
-                }
-            });
-            return it;
-        }
-    },
     BIND("bind", Material.LEAD)
     {
         @Override public ItemStack create() {
             ItemStack it = new ItemStack(Material.LEAD, 1);
-            Component displayName = Component.text("束缚", NamedTextColor.LIGHT_PURPLE);
+            Component displayName = Component.text("束缚", COLOR_ITEM_NAME);
             List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("使目标在一段时间内无法移动", NamedTextColor.AQUA));
-            lore.add(Component.text("右键玩家使用", NamedTextColor.YELLOW));
+            lore.add(Component.text("对其他玩家右键使用", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("使目标在一段时间内无法移动", COLOR_ITEM_DESCRIPTION));
             it.editMeta(meta -> {
                 meta.displayName(displayName);
                 meta.lore(lore);
@@ -333,10 +311,11 @@ public enum CustomItem
     {
         @Override public ItemStack create() {
             var it = new ItemStack(Material.HEART_OF_THE_SEA, 1);
-            var displayName = Component.text("吸取", NamedTextColor.LIGHT_PURPLE);
+            var displayName = Component.text("吸取", COLOR_ITEM_NAME);
             List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("吸引周围的所有能量球", NamedTextColor.AQUA));
-            lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
+            lore.add(Component.text("右键使用", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("吸引周围所有礼物以及道具球", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("使得它们的目标成为自己", COLOR_ITEM_DESCRIPTION));
             it.editMeta(meta -> {
                 meta.displayName(displayName);
                 meta.lore(lore);
@@ -350,10 +329,12 @@ public enum CustomItem
     {
         @Override public ItemStack create() {
             var it = new ItemStack(Material.FIREWORK_ROCKET, 1);
-            var displayName = Component.text("炸弹无人机", NamedTextColor.LIGHT_PURPLE);
+            var displayName = Component.text("炸弹无人机", COLOR_ITEM_NAME);
             List<Component> lore = new ArrayList<>();
-            lore.add(Component.text("释放后会自动飞向分数最高的玩家并爆炸", NamedTextColor.AQUA));
-            lore.add(Component.text("右键使用", NamedTextColor.YELLOW));
+            lore.add(Component.text("右键使用", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("释放后自动飞向分数最高的玩家", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("并撞击目标产生爆炸", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("使得范围内所有玩家掉落一些礼物", COLOR_ITEM_DESCRIPTION));
             it.editMeta(meta -> {
                 meta.displayName(displayName);
                 meta.lore(lore);
@@ -421,12 +402,13 @@ public enum CustomItem
                 if(lore != null)
                 {
                     lore.removeLast();
-                    lore.add(Component.text(player.getName(), NamedTextColor.YELLOW)
-                        .append(Component.text(" - 排名: ", NamedTextColor.GOLD))
-                        .append(Component.text(rank + "/" + totalPlayer, NamedTextColor.GREEN))
-                        .append(Component.text(", 得分: ", NamedTextColor.GOLD))
-                        .append(Component.text(score, NamedTextColor.GREEN)));
-                    lore.add(Component.text("纪念物品不会被清除", NamedTextColor.GRAY));
+                    lore.add(Component.text(player.getName(), COLOR_PLAYER_NAME)
+                        .append(Component.text(" - ", COLOR_MISC))
+                        .append(Component.text("排名: ", COLOR_TITLE))
+                        .append(Component.text(rank + "/" + totalPlayer, COLOR_VALUE))
+                        .append(Component.text(", 得分: ", COLOR_TITLE))
+                        .append(Component.text(score, COLOR_VALUE)));
+                    lore.add(Component.text("纪念物品不会被清除", COLOR_HINT));
                 }
                 itemMeta.lore(lore);
             });

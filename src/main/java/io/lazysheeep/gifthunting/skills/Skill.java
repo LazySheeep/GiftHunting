@@ -63,7 +63,7 @@ public enum Skill
             MCUtil.RemoveItem(host.getPlayer(), CustomItem.SKILL_DAWN_ARROW);
         }
     },
-    DETECT(CustomItem.SKILL_DETECT, 1, 1200, 200)
+    DETECT(CustomItem.SKILL_DETECT, 1, 2400, 600)
     {
         @Override
         public void onUse(GHPlayer host, SkillState skillState) { }

@@ -1,6 +1,8 @@
 package io.lazysheeep.gifthunting.buffs;
 
+import io.lazysheeep.gifthunting.factory.MessageFactory;
 import io.lazysheeep.gifthunting.player.GHPlayer;
+import io.lazysheeep.lazuliui.LazuliUI;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;

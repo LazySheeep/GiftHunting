@@ -118,7 +118,7 @@ public class GHPlayer
     public void onDisconnect(@NotNull GameInstance gameInstance)
     {
         disableAllSkills();
-        updateSlot();
+        // updateSlot();
     }
 
     public void onDestroy(@NotNull GameInstance gameInstance)
@@ -374,10 +374,12 @@ public class GHPlayer
         if(shouldHave && !has)
         {
             addBuff(new DawnBuff(-1));
+            LazuliUI.broadcast(MessageFactory.getPlayerGetDawnBuffBroadcastMsg(this));
         }
         else if(!shouldHave && has)
         {
             removeBuff(DawnBuff.class);
+            LazuliUI.broadcast(MessageFactory.getPlayerLoseDawnBuffBroadcastMsg(this));
         }
         // tick buffs
         for(Buff buff : _buffs.stream().toList())

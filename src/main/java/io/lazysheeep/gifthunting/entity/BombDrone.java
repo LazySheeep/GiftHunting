@@ -11,14 +11,14 @@ import org.bukkit.util.Vector;
 
 public class BombDrone extends GHEntity
 {
-    private final float hoverHeightMin = 4.0f;
-    private final float hoverHeightMax = 10.0f;
+    private final float hoverHeightMin = 8.0f;
+    private final float hoverHeightMax = 12.0f;
     private final float hoverRadius = 4.0f;
-    private final float chaseDistance = 32.0f;
-    private final float attackDistance = 16.0f;
+    private final float chaseDistance = 48.0f;
+    private final float attackDistance = 24.0f;
     private final float explodeDistance = 1.0f;
     private final float explodeRange = 5.0f;
-    private final float explodeDropScore = 0.1f;
+    private final float explodeDropScore = 0.075f;
     private final float hoverSpeed = 2.0f;
     private final float maxSpeed = 40.0f;
     private final float attackSpeed = 40.0f;
@@ -270,7 +270,7 @@ public class BombDrone extends GHEntity
             Location particleStartLocation = currentLocation.clone().add(_currentVelocity.clone().multiply(-0.15));
             Vector force = _currentVelocity.clone()
                                            .subtract(nextCameraVelocity)
-                                           .multiply(2.5)
+                                           .multiply(2.0)
                                            .add(new Vector(0.0, -1.0, 0.0));
             float forceLevel = MathUtils.Clamp((float) force.length() / (maxSpeed / 10.0f), 0.0f, 1.0f);
             Location particleEndLocation = particleStartLocation.clone().add(force);
@@ -291,8 +291,6 @@ public class BombDrone extends GHEntity
             });
         }
 
-
-
         // apply force and velocity
         _currentVelocity = nextCameraVelocity;
         _location.add(_currentVelocity.clone().multiply(deltaTime));
@@ -304,9 +302,8 @@ public class BombDrone extends GHEntity
         // update last focus position for next tick
         lastTargetLocation = targetLocation.clone();
 
-
         // particles
-        _location.getWorld().spawnParticle(Particle.DUST, _location, 2, new Particle.DustOptions(Color.YELLOW, 1.0f));
+        _location.getWorld().spawnParticle(Particle.FIREWORK, _location, 2);
         if(attackFlag)
         {
             MathUtils.ForLine(_location, _targetGHPlayer.getBodyLocation(), 0.2f, (location, progress) -> location.getWorld()

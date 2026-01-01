@@ -3,9 +3,7 @@ package io.lazysheeep.gifthunting;
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.*;
 import io.lazysheeep.gifthunting.buffs.BindBuff;
-import io.lazysheeep.gifthunting.buffs.BlewUpBuff;
 import io.lazysheeep.gifthunting.buffs.Buff;
-import io.lazysheeep.gifthunting.buffs.CounteringBuff;
 import io.lazysheeep.gifthunting.buffs.DawnBuff;
 import io.lazysheeep.gifthunting.buffs.OathBuff;
 import io.lazysheeep.gifthunting.buffs.SilenceBuff;
@@ -25,11 +23,11 @@ import java.util.List;
 import static io.lazysheeep.gifthunting.factory.MessageFactory.*;
 
 @CommandAlias("gifthunting")
-@CommandPermission("op")
 public class GiftHuntingCommand extends BaseCommand
 {
     @Default
     @Description("GiftHunting default command")
+    @CommandPermission("op")
     public void onDefault(CommandSender sender)
     {
 
@@ -40,6 +38,7 @@ public class GiftHuntingCommand extends BaseCommand
     {
         @Subcommand("game")
         @Description("Get game info")
+        @CommandPermission("op")
         public void onGame(CommandSender sender)
         {
             sender.sendMessage(MessageFactory.getGameStatsText(GiftHunting.GetPlugin().getGameInstance()));
@@ -107,6 +106,7 @@ public class GiftHuntingCommand extends BaseCommand
     }
 
     @Subcommand("game")
+    @CommandPermission("op")
     public class GameCommand extends BaseCommand
     {
         @Subcommand("load")
@@ -237,6 +237,7 @@ public class GiftHuntingCommand extends BaseCommand
 
     @Subcommand("item")
     @CommandCompletion("@custom_item_ids")
+    @CommandPermission("op")
     public void onItem(Player senderPlayer, String itemID)
     {
         CustomItem item = CustomItem.fromId(itemID);

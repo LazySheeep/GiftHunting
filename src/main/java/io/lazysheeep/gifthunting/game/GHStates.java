@@ -112,7 +112,6 @@ class ProgressingState extends State<GameInstance, GHStates>
     private int _timer;
     private int _normalGiftSpawnTimer = -1;
     private int _specialGiftSpawnTimer = -1;
-    private int _discipleBirthTimer = -1;
     private int _stealerGiveTimer = -1;
     private boolean _hasDawnBuff = false;
 
@@ -127,7 +126,6 @@ class ProgressingState extends State<GameInstance, GHStates>
         _timer = -1;
         _normalGiftSpawnTimer = 60;
         _specialGiftSpawnTimer = gameInstance.getSpecialGiftSpawnInterval();
-        _discipleBirthTimer = -1;
         _stealerGiveTimer = -1;
         for (GHPlayer ghPlayer : gameInstance.getPlayerManager().getOnlineGHPlayers())
         {
@@ -186,26 +184,8 @@ class ProgressingState extends State<GameInstance, GHStates>
                 gameInstance.getGiftManager().spawnSpecialGift();
                 LazuliUI.broadcast(MessageFactory.getDeliverSpecialGiftMsg());
                 _specialGiftSpawnTimer = -1;
-                _discipleBirthTimer = 60;
             }
         }
-
-        /*if(_discipleBirthTimer != -1)
-        {
-            _discipleBirthTimer--;
-            if(_discipleBirthTimer == 0)
-            {
-                List<GHPlayer> ghPlayers = gameInstance.getPlayerManager().getOnlineGHPlayers();
-                if(!ghPlayers.isEmpty())
-                {
-                    GHPlayer disciple = RandUtil.Pick(ghPlayers);
-                    disciple.isDisciple = true;
-                    LazuliUI.broadcast(MessageFactory.getDiscipleBirthMsg(disciple));
-                    disciple.getPlayer().getWorld().playSound(disciple.getPlayer(), Sound.ENTITY_EVOKER_PREPARE_SUMMON, SoundCategory.MASTER, 1.0f, 0.8f);
-                }
-                _discipleBirthTimer = -1;
-            }
-        }*/
 
         // give stealer
         int stealerGiveScore = (int)(gameInstance.getVictoryScore() * gameInstance.getStealerGiveWhenHighestScore());
@@ -303,22 +283,21 @@ class FinishedState extends State<GameInstance, GHStates>
     @Override
     public void onExit(GameInstance gameInstance)
     {
+        List<GHPlayer> allGHPlayers = gameInstance.getPlayerManager().getAllGHPlayersSorted();
         for(GHPlayer ghPlayer : gameInstance.getPlayerManager().getOnlineGHPlayers())
         {
             ghPlayer.reset();
             Player player = ghPlayer.getPlayer();
             MCUtil.ClearInventory(player);
+
+            int rank = allGHPlayers.indexOf(ghPlayer) + 1;
+            CustomItem.UpdateSouvenir(player, rank, allGHPlayers.size(), ghPlayer.getScore());
+            player.playSound(player, Sound.ENTITY_ITEM_PICKUP, SoundCategory.MASTER, 1.0f, 1.0f);
+
             LazuliUI.flush(player);
             LazuliUI.sendMessage(player, MessageFactory.getGameBackToIdleMsg());
+
             player.teleport(gameInstance.getGameSpawn());
-        }
-        List<GHPlayer> ghPlayers = gameInstance.getPlayerManager().getAllGHPlayersSorted();
-        for(int i = 0; i < ghPlayers.size(); i ++)
-        {
-            GHPlayer ghPlayer = ghPlayers.get(i);
-            Player player = ghPlayer.getPlayer();
-            CustomItem.UpdateSouvenir(player, i + 1, ghPlayers.size(), ghPlayer.getScore());
-            player.playSound(player, Sound.ENTITY_ITEM_PICKUP, SoundCategory.MASTER, 1.0f, 1.0f);
         }
     }
 }

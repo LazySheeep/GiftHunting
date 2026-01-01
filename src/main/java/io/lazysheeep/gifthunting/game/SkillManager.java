@@ -41,6 +41,7 @@ public class SkillManager implements Listener
     private int _bindDuration;
     private int _oathDuration;
     private double _absorbRadius;
+    private float _dawnScorePercentage;
 
     private final GameInstance _gameInstance;
 
@@ -51,13 +52,14 @@ public class SkillManager implements Listener
 
     public void loadConfig(ConfigurationNode configNode)
     {
-        _stealerScorePercentage = configNode.node("stealerScorePercentage").getFloat(0.0f);
+        _stealerScorePercentage = configNode.node("stealerScorePercentage").getFloat(0.05f);
         _silenceDuration = configNode.node("silenceDuration").getInt(0);
         _silenceDistance = configNode.node("silenceDistance").getFloat(0.0f);
         _speedDuration = configNode.node("speedDuration").getInt(0);
         _bindDuration = configNode.node("bindDuration").getInt(0);
         _oathDuration = configNode.node("oathDuration").getInt(600);
         _absorbRadius = configNode.node("absorbRadius").getDouble(6.0);
+        _dawnScorePercentage = configNode.node("dawnScorePercentage").getFloat(0.1f);
     }
 
     private void onUseSilence(GHPlayer ghPlayer)
@@ -503,7 +505,7 @@ public class SkillManager implements Listener
         else
         {
             event.setCancelled(false);
-            int lose = Math.max(1, (int)(victimGHPlayer.getScore() * 0.1f));
+            int lose = Math.max(1, (int)(victimGHPlayer.getScore() * _dawnScorePercentage));
 
             LazuliUI.sendMessage(attackerPlayer, MessageFactory.getDawnHitMsg(victimGHPlayer, lose));
 

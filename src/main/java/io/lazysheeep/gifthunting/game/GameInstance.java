@@ -21,7 +21,6 @@ public class GameInstance extends StateMachine<GameInstance, GHStates> implement
 {
     private Location _gameSpawn;
     private int _readyStateDuration;
-    private int _progressStateMaxDuration;
     private int _finishedStateDuration;
     private int _victoryScore;
     private int _spawnGiftCountPerPlayer;
@@ -138,7 +137,6 @@ public class GameInstance extends StateMachine<GameInstance, GHStates> implement
                                   gameSpawnNode.node("yaw").getFloat(0.0f),
                                   gameSpawnNode.node("pitch").getFloat(0.0f));
         _readyStateDuration = configNode.node("readyStateDuration").getInt(0);
-        _progressStateMaxDuration = configNode.node("progressStateMaxDuration").getInt(Integer.MAX_VALUE);
         _finishedStateDuration = configNode.node("finishedStateDuration").getInt(0);
         _victoryScore = configNode.node("victoryScore").getInt(Integer.MAX_VALUE);
         _spawnGiftCountPerPlayer = configNode.node("spawnGiftCountPerPlayer").getInt(0);

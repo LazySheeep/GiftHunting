@@ -1,6 +1,9 @@
 package io.lazysheeep.gifthunting.gift;
 
 import io.lazysheeep.gifthunting.GiftHunting;
+import io.lazysheeep.gifthunting.buffs.BindBuff;
+import io.lazysheeep.gifthunting.buffs.SilenceBuff;
+import io.lazysheeep.gifthunting.buffs.SpeedBuff;
 import io.lazysheeep.gifthunting.factory.CustomItem;
 import io.lazysheeep.gifthunting.factory.MessageFactory;
 import io.lazysheeep.gifthunting.game.GHStates;

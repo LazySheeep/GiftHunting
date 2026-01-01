@@ -803,4 +803,27 @@ public class MessageFactory
                 1
         );
     }
+
+    public static @NotNull Message getPlayerGetDawnBuffBroadcastMsg(GHPlayer ghPlayer)
+    {
+        return new Message(
+                Message.Type.CHAT,
+                Component.text(ghPlayer.getName(), COLOR_PLAYER_NAME)
+                         .append(Component.text(" 即将取得胜利!", COLOR_TEXT_CAUTION)),
+                Sound.BLOCK_NOTE_BLOCK_PLING,
+                Message.LoadMode.IMMEDIATE,
+                1
+        );
+    }
+
+    public static @NotNull Message getPlayerLoseDawnBuffBroadcastMsg(GHPlayer ghPlayer)
+    {
+        return new Message(
+                Message.Type.CHAT,
+                Component.text(ghPlayer.getName(), COLOR_PLAYER_NAME)
+                         .append(Component.text(" 不再即将取得胜利", COLOR_TEXT_NORMAL)),
+                Message.LoadMode.IMMEDIATE,
+                1
+        );
+    }
 }

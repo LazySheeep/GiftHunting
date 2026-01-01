@@ -342,6 +342,7 @@ public enum CustomItem
             lore.add(Component.text("释放后自动飞向分数最高的玩家", COLOR_ITEM_DESCRIPTION));
             lore.add(Component.text("并撞击目标产生爆炸", COLOR_ITEM_DESCRIPTION));
             lore.add(Component.text("使得范围内所有玩家掉落一些礼物", COLOR_ITEM_DESCRIPTION));
+            lore.add(Component.text("很容易撞墙, 说实话", COLOR_HINT));
             it.editMeta(meta -> {
                 meta.displayName(displayName);
                 meta.lore(lore);

@@ -45,7 +45,8 @@ public class MCUtil
         for(int i = 0; i < inventory.getSize(); i ++)
         {
             ItemStack item = inventory.getItem(i);
-            if(item != null && CustomItem.checkItem(item) != CustomItem.SOUVENIR)
+            CustomItem customItem = CustomItem.checkItem(item);
+            if(customItem != null && customItem != CustomItem.SOUVENIR)
             {
                 inventory.clear(i);
             }
